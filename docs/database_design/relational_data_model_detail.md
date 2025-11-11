@@ -65,43 +65,46 @@
 ### `categories`
 (`category_id`, `name`, `slug`, `parent_id`)
 
-* **Data Type:** `category_id` (INT), `name` (VARCHAR), `parent_id` (INT), `slug` (VARCHAR)
+* **Data Type:** `category_id` (INT), `name` (VARCHAR), `slug` (VARCHAR), `parent_id` (INT)
 * **PK:** `category_id`
-* **FK:** `parent_id` → `category(category_id)`
+* **FK:** `parent_id` → `categories(category_id)`
 * **Constraint in DB:**
     * `name`: NOT NULL
     * `parent_id`: Nullable
-    * `slug`: Nullable
-    * `CHECK ("left" < "right")`
-    * UNIQUE(parent_id, slug) => a category with different parent can have the same slug
+    * `slug`: NOT NULL
+    * `UNIQUE(parent_id, slug)` - a category with different parent can have the same slug
+    * `CHECK (parent_id IS NULL OR parent_id != category_id)` - prevent self-reference
 * **Constraint in Application:**
-    * A child category must have a parent with parent_id = null
+    * Only 2 levels allowed: root (parent_id = NULL) and child (parent_id != NULL)
+    * A child category must have a parent with parent_id = NULL (cannot be grandchild)
+    * Validate max depth = 2 when inserting/updating
 * **Trigger:**
-    * auto_generate_slug() when inserting and updating
+    * `auto_generate_slug()` when inserting and updating
 * **Notes:**
     * What is a slug? Read document: https://itnext.io/whats-a-slug-f7e74b6c23e0
 
 ---
 
 ### `products`
-(`product_id`, `category_id`, `seller_id`, `highest_bidder_id`, `name`, `current_price`, `buy_now_price`, `start_price`, `step_price`, `start_time`, `end_time`, `bid_count`, `auto_extend`, `status`)
+(`product_id`, `category_id`, `seller_id`, `highest_bidder_id`, `name`, `thumbnail_url`, `current_price`, `buy_now_price`, `start_price`, `step_price`, `start_time`, `end_time`, `bid_count`, `auto_extend`, `status`)
 
-* **Data Type:** `product_id` (INT), `category_id` (INT), `seller_id` (INT), `highest_bidder_id` (INT), `name` (VARCHAR), thumbnail_url (STRING) `current_price` (DECIMAL), `buy_now_price` (DECIMAL), `start_price` (DECIMAL), `step_price` (DECIMAL), `start_time` (TIMESTAMP), `end_time` (TIMESTAMP), bid_count (INT), `auto_extend` (BOOLEAN), `status` (ENUM('active', 'sold', 'expired', 'removed'))
+* **Data Type:** `product_id` (INT), `category_id` (INT), `seller_id` (INT), `highest_bidder_id` (INT), `name` (VARCHAR), `thumbnail_url` (VARCHAR), `current_price` (DECIMAL), `buy_now_price` (DECIMAL), `start_price` (DECIMAL), `step_price` (DECIMAL), `start_time` (TIMESTAMP), `end_time` (TIMESTAMP), `bid_count` (INT), `auto_extend` (BOOLEAN), `status` (ENUM('active', 'sold', 'expired', 'removed'))
 * **PK:** `product_id`
 * **FK:**
-    * `category_id` → `category(category_id)`
+    * `category_id` → `categories(category_id)`
     * `seller_id` → `users(user_id)`
     * `highest_bidder_id` → `users(user_id)`
-* **Constraint:**
+* **Constraint in DB:**
     * `highest_bidder_id`: Nullable
     * `name`: NOT NULL
+    * `thumbnail_url`: Nullable
     * `current_price`: NOT NULL
     * `buy_now_price`: Nullable
     * `start_price`: NOT NULL
     * `step_price`: NOT NULL
     * `start_time`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
     * `end_time`: NOT NULL
-    * `bid_count`: DEFAULT VALUE = 0
+    * `bid_count`: NOT NULL, DEFAULT 0
     * `auto_extend`: NOT NULL, DEFAULT false
     * `status`: NOT NULL, DEFAULT 'active'
     * `CHECK (end_time > start_time)`
@@ -109,6 +112,17 @@
     * `CHECK (start_price > 0)`
     * `CHECK (current_price >= start_price)`
     * `CHECK (buy_now_price IS NULL OR buy_now_price >= start_price)`
+* **Constraint in Application:**
+    * Cannot bid if `CURRENT_TIMESTAMP > end_time`
+    * Cannot bid if `status != 'active'`
+    * Cannot bid if `seller_id = bidder_id` (prevent self-bidding)
+    * New bid amount must be `>= current_price + step_price`
+* **Index:**
+    * INDEX (status, end_time) - for listing active products sorted by end time
+    * INDEX (category_id, status) - for category filtering
+* **Trigger:**
+    * `update_product_on_bid` - updates current_price, highest_bidder_id, bid_count when new bid inserted
+    * `auto_extend_auction` - extends end_time if bid placed within threshold (see system_settings)
 
 ---
 
@@ -120,14 +134,16 @@
 * **FK:**
     * `product_id` → `products(product_id)`
     * `bidder_id` → `users(user_id)`
-* **Constraint:**
-    * `max_amount`: NOT NULL
+* **Constraint in DB:**
+    * `max_amount`: NOT NULL, CHECK (max_amount > 0)
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
     * `UNIQUE (product_id, bidder_id)`
+* **Constraint in Application:**
+    * `max_amount` must be >= product.current_price + product.step_price
+    * Cannot auto-bid on own product (seller_id != bidder_id)
+    * Check bidder rating >= 80% or seller allows unrated bidders
 * **Index:**
     * INDEX (product_id, created_at ASC) - tie-breaker for equal max amounts (earlier bid wins)
-* **Trigger**:
-    * When a valid entity was added to the auto_bids table, the bids_count in table products will increase 1 (Trigger: auto_increase_bid_cnt)
 
 ---
 
@@ -139,29 +155,44 @@
 * **FK:**
     * `product_id` → `products(product_id)`
     * `bidder_id` → `users(user_id)`
-* **Constraint:**
+* **Constraint in DB:**
     * `amount`: NOT NULL, CHECK (amount > 0)
     * `is_auto`: NOT NULL, DEFAULT false
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+* **Constraint in Application:**
+    * `amount` must be >= product.current_price + product.step_price
+    * Cannot bid if bidder is in product_rejections for this product
+    * Check bidder rating >= 80% or seller allows unrated bidders
+    * Cannot bid on expired products (CURRENT_TIMESTAMP <= end_time)
+    * Cannot bid on own product (seller_id != bidder_id)
 * **Index:**
-    * INDEX (product_id, created_at DESC) - helps fast query bid history by product
-    * INDEX (bidder_id) - supports query bid history by bidder
+    * INDEX (product_id, created_at DESC) - fast query bid history by product
+    * INDEX (bidder_id) - query bid history by bidder
+* **Trigger:**
+    * `update_product_on_bid_insert` - updates products.current_price, products.highest_bidder_id, products.bid_count
+    * `auto_extend_on_late_bid` - extends products.end_time if bid within auto_extend_threshold minutes
 
 ---
 
 ### `product_descriptions`
-(`description_id`, `product_id`, `author_id`, `content`, `lang`, `created_at`)
+(`description_id`, `product_id`, `author_id`, `content`, `lang`, `version`, `created_at`)
 
-* **Data Type:** `description_id` (INT), `product_id` (INT), `author_id` (INT), `content` (TEXT), `lang` (VARCHAR), `created_at` (TIMESTAMP)
+* **Data Type:** `description_id` (INT), `product_id` (INT), `author_id` (INT), `content` (TEXT), `lang` (VARCHAR), `version` (INT), `created_at` (TIMESTAMP)
 * **PK:** `description_id`
 * **FK:**
     * `product_id` → `products(product_id)`
     * `author_id` → `users(user_id)`
-* **Constraint:**
+* **Constraint in DB:**
     * `content`: NOT NULL
     * `author_id`: NOT NULL
     * `lang`: NOT NULL, DEFAULT 'en'
+    * `version`: NOT NULL, DEFAULT 1
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+    * `UNIQUE (product_id, version)` - ensures version uniqueness per product
+* **Constraint in Application:**
+    * Append-only: Cannot update existing descriptions, only INSERT new version
+    * `version` = MAX(version) + 1 for the product
+    * Display all versions in chronological order (append style)
 
 ---
 
@@ -195,10 +226,15 @@
 * **FK:**
     * `product_id` → `products(product_id)`
     * `bidder_id` → `users(user_id)`
-* **Constraint:**
+* **Constraint in DB:**
     * `reason`: Nullable
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
     * `UNIQUE (product_id, bidder_id)`
+* **Constraint in Application:**
+    * Can only reject bidder who has at least 1 bid on this product
+    * If rejected bidder is current highest_bidder, move to second highest bidder
+* **Trigger:**
+    * `reassign_highest_bidder_on_rejection` - if rejected bidder is highest, find next highest valid bidder
 
 ---
 
@@ -259,20 +295,28 @@
 ---
 
 ### `reviews`
-(`review_id`, `order_id`, `reviewer_id`, `reviewered_id`, `rating`, `content`, `created_at`)
+(`review_id`, `order_id`, `reviewer_id`, `reviewered_id`, `rating`, `content`, `created_at`, `updated_at`)
 
-* **Data Type:** `review_id` (INT), `order_id` (INT), `reviewer_id` (INT), `reviewered_id` (INT), `rating` (INT), `content` (TEXT), `created_at` (TIMESTAMP)
+* **Data Type:** `review_id` (INT), `order_id` (INT), `reviewer_id` (INT), `reviewered_id` (INT), `rating` (INT), `content` (TEXT), `created_at` (TIMESTAMP), `updated_at` (TIMESTAMP)
 * **PK:** `review_id`
 * **FK:**
     * `order_id` → `orders(order_id)`
     * `reviewer_id` → `users(user_id)`
     * `reviewered_id` → `users(user_id)`
-* **Constraint:**
-    * `rating`: NOT NULL
-    * `CHECK (rating = 1 OR rating = -1)`
+* **Constraint in DB:**
+    * `rating`: NOT NULL, CHECK (rating = 1 OR rating = -1)
     * `content`: Nullable
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
-    * `UNIQUE (order_id, reviewer_id, reviewered_id)` - ensures each review direction only has 1 record
+    * `updated_at`: Nullable
+    * `UNIQUE (order_id, reviewer_id, reviewered_id)` - each review direction only has 1 record
+* **Constraint in Application:**
+    * Can only review if order.status = 'completed' OR 'cancelled'
+    * Reviewer must be either order.winner_id or order.seller_id
+    * Reviewered must be the other party (winner reviews seller, seller reviews winner)
+    * Allow updating rating/content (updated_at tracks changes)
+* **Trigger:**
+    * `update_user_rating_on_review_insert` - increment users.positive_reviews or negative_reviews
+    * `update_user_rating_on_review_update` - adjust counters if rating changed from +1 to -1 or vice versa
 
 ---
 
@@ -333,3 +377,27 @@
     * `read_at`: Nullable
     * `action_url`: Nullable
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+* **Index:**
+    * INDEX (user_id, is_read, created_at DESC) - fast query unread notifications
+
+---
+
+### `system_settings`
+(`setting_key`, `setting_value`, `description`, `updated_at`)
+
+* **Data Type:** `setting_key` (VARCHAR(50)), `setting_value` (VARCHAR(255)), `description` (TEXT), `updated_at` (TIMESTAMP)
+* **PK:** `setting_key`
+* **FK:** (None)
+* **Constraint:**
+    * `setting_key`: NOT NULL
+    * `setting_value`: NOT NULL
+    * `description`: Nullable
+    * `updated_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+* **Initial Data:**
+    * ('auto_extend_threshold_minutes', '5', 'Time threshold in minutes before auction end to trigger auto-extend')
+    * ('auto_extend_duration_minutes', '10', 'Duration in minutes to extend auction when triggered')
+    * ('new_product_highlight_minutes', '60', 'Products posted within N minutes are highlighted as NEW')
+    * ('min_rating_percentage', '80', 'Minimum rating percentage (0-100) required to bid')
+* **Notes:**
+    * Admin can update these settings via admin panel
+    * Application reads these values for business logic (auto-extend, rating checks, etc.)
