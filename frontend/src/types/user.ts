@@ -1,7 +1,10 @@
+import type { UserRole } from "../constants/roles"; // 1. Import kiểu UserRole
+// 1. Import kiểu UserRole
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  // Thêm bất cứ trường nào mà API /auth/me trả về
-  // vi_du: role: 'admin' | 'user';
+  role: UserRole; // 2. Thêm trường 'role'
+  // ... các trường khác từ API
 }

@@ -2,16 +2,16 @@ import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import StatusPageLayout from "../components/common/StatusPageLayout";
 
-export default function NotFoundPage() {
+export default function UnderDevelopmentPage() {
   const navigate = useNavigate();
   const handleGoBack = () => navigate(-1);
 
   return (
     // 2. Sử dụng layout
     <StatusPageLayout
-      icon="❓"
-      title="404 - Page Not Found"
-      message="Sorry, we couldn't find the page you were looking for."
+      icon="🚧"
+      title="Feature Under Development"
+      message="We're working hard to bring you this feature. Please check back soon!"
     >
       {/* 3. Truyền nút bấm vào làm 'children' */}
       <Button onClick={handleGoBack} variant="secondary">

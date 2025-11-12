@@ -1,4 +1,4 @@
-.notfound-container {
+.status-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -11,26 +11,36 @@
   padding: 20px;
 }
 
-.notfound-icon {
+.status-icon {
   font-size: 4.5rem;
   margin-bottom: 1.5rem;
   animation: bounce 2s infinite;
 }
 
-.notfound-title {
+.status-title {
   font-size: 2rem;
   font-weight: 600;
   color: #1a1a1a;
   margin-bottom: 0.75rem;
 }
 
-.notfound-message {
+.status-message {
   font-size: 1.125rem;
   color: #555;
   max-width: 400px;
   line-height: 1.6;
 }
 
+/* Đây là nơi chứa các nút bấm (children) */
+.status-actions {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column; /* Xếp chồng nếu có nhiều nút */
+  gap: 1rem; /* Khoảng cách giữa các nút */
+  min-width: 150px;
+}
+
+/* Giữ nguyên animation */
 @keyframes bounce {
   0%,
   20%,
@@ -45,10 +55,4 @@
   60% {
     transform: translateY(-10px);
   }
-}
-
-.notfound-back-button {
-  margin-top: 2rem;
-  min-width: 150px;
-  max-height: 50px;
 }
