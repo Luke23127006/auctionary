@@ -12,11 +12,7 @@ export interface PaginatedResult<T> {
     };
 }
 
-export const fullTextSearch = async (
-    q: string, 
-    page: number = 1, 
-    limit: number = 10
-): Promise<PaginatedResult<any>> => {
+export const fullTextSearch = async (q: string, page: number = 1, limit: number = 10): Promise<PaginatedResult<any>> => {
     const offset = (page - 1) * limit;
 
     const [products, totalCount] = await Promise.all([
@@ -27,11 +23,12 @@ export const fullTextSearch = async (
                 name,
                 current_price,
                 highest_bidder_id,
+                status,
                 start_time,
                 end_time,
                 bid_count,
                 ts_rank(fts, websearch_to_tsquery('english', ${q})) as relevance
-            FROM products  -- Kiểm tra tên table!
+            FROM products
             WHERE 
                 fts @@ websearch_to_tsquery('english', ${q})
                 AND status = 'active'
@@ -64,11 +61,7 @@ export const fullTextSearch = async (
     };
 };
 
-export const findByCategory = async (
-    category: string, 
-    page: number, 
-    limit: number
-): Promise<PaginatedResult<any>> => {
+export const findByCategory = async (category: string, page: number, limit: number): Promise<PaginatedResult<any>> => {
     const slug = toSlug(category);
     const offset = (page - 1) * limit;
 
@@ -94,6 +87,7 @@ export const findByCategory = async (
                 name: true,
                 current_price: true,
                 highest_bidder_id: true,
+                status: true,
                 start_time: true,
                 end_time: true,
                 bid_count: true,
