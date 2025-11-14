@@ -3,6 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import authRouter from "./api/routes/auth.routes";
+import productRouter from "./api/routes/product.routes";
+import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 
 const app: Application = express();
 const PORT: number = Number(process.env.PORT) || 3000;
@@ -10,12 +12,21 @@ const PORT: number = Number(process.env.PORT) || 3000;
 app.use(
   cors({
     origin: "http://localhost:5173",
-    credentials: true, // Allow cookies
+    credentials: true,
   })
 );
 app.use(express.json());
-app.use(cookieParser()); // Add cookie parser
+app.use(cookieParser());
 app.use("/auth", authRouter);
+app.use("/products", productRouter);
+
+
+app.get('/', (req, res) => {
+  res.send('Online Auction API is running');
+});
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

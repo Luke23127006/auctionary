@@ -1,11 +1,19 @@
 import * as productRepository from '../repositories/product.repository';
 
 export const searchProducts = async (query: any) => {
-    if (query.name) {
-        return await productRepository.fullTextSearch(query.name, query.page || 1, query.limit || 20);
-    } else if (query.category) {
-        return await productRepository.findByCategory(query.category, query.page || 1, query.limit || 20);
+    const { q, category, page = 1, limit = 20 } = query;
+
+    // Handle empty q & category in validate middleware
+
+    if (category) {
+        const result = await productRepository.findByCategory(category, page, limit);
+        // Don't need to throw NotFoundError here, just return empty result and let frontend handle it
+        // if (result.data.length === 0) {
+        //     throw new NotFoundError(`No products found for category: ${category}`);
+        // }
+        return result;
     }
-    throw new Error("Either 'name' or 'category' query parameter must be provided");
-}
+
+    return await productRepository.fullTextSearch(q, page, limit);
+};
 

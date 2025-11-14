@@ -6,4 +6,5 @@ import * as productController from "../controllers/product.controller";
 const router = Router();
 
 router.get("/", validate(productSearchQuerySchema, 'query'), productController.searchProducts);
+
 export default router;
