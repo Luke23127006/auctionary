@@ -11,6 +11,8 @@ import { ROLES } from "../constants/roles";
 import UnderDevelopmentPage from "../pages/UnderDevelopmentPage"; // Trang đang phát triển
 import UnauthorizedPage from "../pages/UnauthorizedPage"; // Trang 403
 import NotFoundPage from "../pages/NotFoundPage"; // Trang 404
+import SignupPage from "../pages/Auth/SignupPage";
+import LoginPage from "../pages/Auth/LoginPage";
 
 // (Import các trang thật của bạn)
 // import HomePage from "../pages/HomePage";
@@ -33,14 +35,8 @@ const AppRouter = () => {
       {/* TUYẾN ĐƯỜNG CÔNG KHAI (CHỈ CHO KHÁCH) */}
       {/* ============================================== */}
       <Route element={<PublicOnlyRoute />}>
-        <Route
-          path="/login"
-          element={<UnderDevelopmentPage /* <LoginPage /> */ />}
-        />
-        <Route
-          path="/register"
-          element={<UnderDevelopmentPage /* <RegisterPage /> */ />}
-        />
+        <Route path="/login" element={<LoginPage /* <LoginPage /> */ />} />
+        <Route path="/signup" element={<SignupPage /* <RegisterPage /> */ />} />
       </Route>
       {/* ============================================== */}
       {/* TUYẾN ĐƯỜG ĐƯỢC BẢO VỆ (RBAC) */}

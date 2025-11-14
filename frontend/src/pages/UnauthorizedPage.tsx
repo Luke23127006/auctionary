@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import Button from "../components/common/Button";
-import StatusPageLayout from "../components/common/StatusPageLayout";
+import Button from "../components/ui/Button";
+import StatusPageLayout from "../components/layout/StatusPageLayout";
 
 export default function UnauthorizedPage() {
   const navigate = useNavigate();

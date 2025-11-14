@@ -1,33 +1,54 @@
 import apiClient from "./apiClient";
 
+// --- NEW ---
+// Define the shape of signup data based on your schema
+// This matches the interface in AuthContext
+export interface SignupData {
+  full_name: string;
+  email: string;
+  password: string;
+  address?: string;
+  recaptchaToken: string;
+}
+
 /**
  * Handles the login API call.
- * @param {string} username
- * @param {string} password
- * @returns {Promise<object>} The user data and token
- * @throws {Error} If login fails
+ * @param {string} email - The user's email.
+ * @param {string} password - The user's password.
+ * @param {string} recaptchaToken - The token from reCAPTCHA.
+ * @returns {Promise<object>} The user data and token.
+ * @throws {Error} If login fails.
  */
-export const login = async (username: string, password: string) => {
-  // POST /auth/login, sends a body, no auth required
+export const login = async (
+  email: string,
+  password: string,
+  recaptchaToken: string
+) => {
+  // POST /auth/login, sends the new body, no auth required
   // This will return { access_token: "..." }
-  return apiClient.post("/auth/login", { username, password }, false);
+  return apiClient.post(
+    "/auth/login",
+    { email, password, recaptchaToken },
+    false
+  );
 };
 
 /**
  * Handles the signup API call.
- * @param {object} signupData - An object containing all required signup fields
- * @returns {Promise<object>} The success message or data
- * @throws {Error} If signup fails
+ * @param {SignupData} signupData - An object matching the SignupData interface.
+ * @returns {Promise<object>} The success message or data.
+ * @throws {Error} If signup fails.
  */
-export const signup = async (signupData: { [key: string]: any }) => {
+export const signup = async (signupData: SignupData) => {
   // apiService.post(endpoint, body, requiresAuth)
+  // The body now matches the new schema
   return apiClient.post("/auth/signup", signupData, false);
 };
 
 /**
  * Verifies the token from localStorage and returns user data.
- * @returns {Promise<object>} The user data
- * @throws {Error} If token is invalid or request fails
+ * @returns {Promise<object>} The user data.
+ * @throws {Error} If token is invalid or request fails.
  */
 export const getMe = async () => {
   // GET /auth/me, no body, *auth is required*
@@ -35,12 +56,18 @@ export const getMe = async () => {
 };
 
 /**
- * Logs the user out on the server.
+ * Logs the user out on the server and clears local token.
  */
 export const logout = async () => {
-  // POST /auth/logout, no body, *auth is required*
-  // This invalidates the token on the server
-  await apiClient.post("/auth/logout", {}, true);
-  // Also remove the token from local storage
-  localStorage.removeItem("token");
+  try {
+    // POST /auth/logout, no body, *auth is required*
+    // This invalidates the token on the server
+    await apiClient.post("/auth/logout", {}, true);
+  } catch (error) {
+    // Log the error but proceed to clear local data
+    console.error("Server logout failed, clearing local token anyway:", error);
+  } finally {
+    // Always remove the token from local storage
+    localStorage.removeItem("token");
+  }
 };

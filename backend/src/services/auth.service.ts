@@ -13,14 +13,16 @@ import {
 } from "../utils/jwt.util";
 
 export const signupUser = async (userData: any) => {
-  const existingUser = await userRepo.findByEmail(userData.email);
+  const { recaptchaToken, ...restUserData } = userData;
+
+  const existingUser = await userRepo.findByEmail(restUserData.email);
   if (existingUser) {
     throw new Error("Email already in use");
   }
 
-  const hashedPassword = await hashPassword(userData.password);
+  const hashedPassword = await hashPassword(restUserData.password);
   const newUser = {
-    ...userData,
+    ...restUserData,
     password: hashedPassword,
   };
 
@@ -180,4 +182,28 @@ export const resendOTP = async (userId: number) => {
   await sendOTPEmail(user.email, otp, user.full_name);
 
   return { message: "New OTP sent to your email" };
+};
+
+export const getAuthenticatedUser = async (userId: number) => {
+  const user = await userRepo.findByIdWithRoles(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Extract role names from the users_roles relation
+  const roles = user.users_roles.map((ur) => ur.roles.name);
+
+  return {
+    id: user.id,
+    email: user.email,
+    full_name: user.full_name,
+    address: user.address,
+    is_verified: user.is_verified,
+    status: user.status,
+    positive_reviews: user.positive_reviews,
+    negative_reviews: user.negative_reviews,
+    roles: roles, // ['bidder', 'seller', 'admin']
+    created_at: user.created_at,
+  };
 };

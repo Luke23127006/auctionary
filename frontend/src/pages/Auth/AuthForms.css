@@ -1,0 +1,20 @@
+/* Link for "Forgot Password?" */
+.auth-link {
+  font-size: 13px;
+  color: #00376b;
+  text-decoration: none;
+  margin-top: 24px;
+  transition: color 0.2s ease-in-out;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+  color: #0056a3;
+}
+
+/* Button to switch between Login/Signup */
+.switch-auth-button {
+  width: 100%;
+  margin-top: 10px;
+  font-weight: 600 !important; /* Use !important if needed to override */
+}

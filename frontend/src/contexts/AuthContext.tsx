@@ -1,40 +1,47 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
-import * as authService from "../services/authService"; // Import your service
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import * as authService from "../services/authService";
+import { useNavigate } from "react-router-dom";
 import type { User } from "../types/user";
 
-// Define the shape of the auth context
+export interface SignupData {
+  full_name: string;
+  email: string;
+  password: string;
+  address?: string;
+  recaptchaToken: string;
+}
+
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<any>;
-  signup: (formData: { [key: string]: any }) => Promise<any>;
+  hasRole: (role: string) => boolean; // Add this helper
+  login: (
+    email: string,
+    password: string,
+    recaptchaToken: string
+  ) => Promise<any>;
+  signup: (formData: SignupData) => Promise<any>;
   logout: () => Promise<void>;
 }
 
-// 1. Create the Context with a proper generic (nullable)
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-// 2. Create the Provider Component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Track initial token verification
-  const navigate = useNavigate(); // Get navigate for logout
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
-  // 3. Check for a token on app load
   useEffect(() => {
     const verifyUser = async () => {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          // This function checks the token and returns the user
-          const userData = await authService.getMe();
-          setUser(userData);
+          const response = await authService.getMe();
+          setUser(response.data); // Extract data from response
         } catch (error) {
-          // Token is invalid or expired
           console.error("Token verification failed:", error);
-          authService.logout(); // Use the service to clear the bad token
+          authService.logout();
           setUser(null);
         }
       }
@@ -44,49 +51,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     verifyUser();
   }, []);
 
-  // 4. Login Action
-  const login = async (username: string, password: string): Promise<any> => {
-    // Service throws error on failure, component will catch it
-    const data = await authService.login(username, password);
-    localStorage.setItem("token", data.access_token);
+  const login = async (
+    email: string,
+    password: string,
+    recaptchaToken: string
+  ): Promise<any> => {
+    const response = await authService.login(email, password, recaptchaToken);
+
+    localStorage.setItem("token", response.data.accessToken);
 
     try {
-      const userData = await authService.getMe();
-      setUser(userData);
-      return userData;
+      const userResponse = await authService.getMe();
+      setUser(userResponse.data);
+      return userResponse.data;
     } catch (error) {
       console.error("Failed to fetch user data after login:", error);
-      authService.logout(); // Clear the bad token
+      authService.logout();
       setUser(null);
       throw new Error("Login succeeded but failed to verify user.");
     }
   };
 
-  // 5. Signup Action
-  const signup = async (formData: { [key: string]: any }): Promise<any> => {
-    // Service handles the API call, component handles navigation
+  const signup = async (formData: SignupData): Promise<any> => {
     return authService.signup(formData);
   };
 
-  // 6. Logout Action
   const logout = async (): Promise<void> => {
     try {
-      await authService.logout(); // Call the service to logout from server and clear token
+      await authService.logout();
     } catch (error) {
       console.error("Logout failed:", error);
-      // Still clear user state even if server call fails
     } finally {
       setUser(null);
-      navigate("/login"); // Redirect to login after logout
+      navigate("/login");
     }
   };
 
-  // 7. Memoize the context value
+  // Helper function to check if user has a specific role
+  const hasRole = (role: string): boolean => {
+    return user?.roles?.includes(role as any) || false;
+  };
+
   const value: AuthContextType = useMemo(
     () => ({
       user,
       isAuthenticated: !!user,
       isLoading,
+      hasRole,
       login,
       signup,
       logout,
@@ -94,11 +105,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user, isLoading]
   );
 
-  // 8. Return the Provider
   return (
     <AuthContext.Provider value={value}>
       {/* Don't render children until we know auth status */}
-      {!isLoading ? children : null /* Or a global spinner */}
+      {!isLoading ? children : <div>Loading...</div>}
     </AuthContext.Provider>
   );
 }

@@ -114,3 +114,24 @@ export const logoutAll = async (
     next(error);
   }
 };
+
+// Add this new function
+export const getMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // req.user is set by the requireAuth middleware
+    const userId = (req as any).user.id;
+
+    const user = await authService.getAuthenticatedUser(userId);
+
+    res.status(200).json({
+      message: "User data retrieved successfully",
+      data: user,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};

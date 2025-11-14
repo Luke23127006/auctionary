@@ -32,6 +32,7 @@ router.post("/verify-otp", validate(verifyOTPSchema), otpController.verifyOTP);
 router.post("/resend-otp", validate(resendOTPSchema), otpController.resendOTP);
 
 // Protected routes
+router.get("/me", requireAuth, authController.getMe);
 router.post("/logout-all", requireAuth, authController.logoutAll);
 
 export default router;
