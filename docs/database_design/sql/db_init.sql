@@ -868,52 +868,7 @@ LEFT JOIN bids b ON u.id = b.bidder_id
 GROUP BY u.id;
 
 -- ============================================
--- 19. SAMPLE DATA
--- ============================================
-
--- Insert sample verified users (without username)
-INSERT INTO users (full_name, email, password, address, is_verified) VALUES
-('John Doe', 'john.doe@example.com', '$2b$10$K7L/YJ4i4aVOuBmxJ7BHWOFbVVjPsJCh3kH6RgJYq6yGqIJXDq4Hy', '123 Main St, New York, NY', TRUE),
-('Jane Smith', 'jane.smith@example.com', '$2b$10$K7L/YJ4i4aVOuBmxJ7BHWOFbVVjPsJCh3kH6RgJYq6yGqIJXDq4Hy', '456 Oak Ave, Los Angeles, CA', TRUE),
-('Bob Wilson', 'bob.wilson@example.com', '$2b$10$K7L/YJ4i4aVOuBmxJ7BHWOFbVVjPsJCh3kH6RgJYq6yGqIJXDq4Hy', '789 Pine Rd, Chicago, IL', TRUE);
-
--- Assign roles to users (using email to find users)
-INSERT INTO users_roles (user_id, role_id)
-SELECT u.id, r.role_id
-FROM users u, roles r
-WHERE u.email = 'john.doe@example.com' AND r.name = 'seller'
-UNION
-SELECT u.id, r.role_id
-FROM users u, roles r
-WHERE u.email = 'jane.smith@example.com' AND r.name = 'bidder'
-UNION
-SELECT u.id, r.role_id
-FROM users u, roles r
-WHERE u.email = 'bob.wilson@example.com' AND r.name = 'admin';
-
--- Insert sample conversations
-INSERT INTO conversations (name, is_group, creator_id) VALUES
-(NULL, FALSE, 1),
-('Auction Discussions', TRUE, 1);
-
--- Insert conversation participants
-INSERT INTO conversation_participants (user_id, conversation_id) VALUES
-(1, 1),
-(2, 1),
-(1, 2),
-(2, 2),
-(3, 2);
-
--- Insert sample messages
-INSERT INTO messages (conversation_id, sender_id, body) VALUES
-(1, 1, 'Hi, is the vintage watch still available?'),
-(1, 2, 'Yes, it is! Would you like to bid?'),
-(2, 1, 'Welcome to the auction discussion group!'),
-(2, 2, 'Thanks for adding me!'),
-(2, 3, 'Excited to participate in the auctions!');
-
--- ============================================
--- 20. COMPLETION MESSAGE
+-- 19. COMPLETION MESSAGE
 -- ============================================
 
 SELECT 'Database initialization completed successfully!' AS status;
