@@ -146,3 +146,55 @@ export const findByCategory = async (categorySlug: string, page: number, limit: 
         }
     };
 };
+
+export const createProduct = async (data: {
+    name: string;
+    category_id: number;
+    seller_id: number;
+    start_price: number;
+    step_price: number;
+    buy_now_price?: number;
+    end_time: Date;
+    auto_extend: boolean;
+    description: string;
+    images: string[];
+}) => {
+    const thumbnail_url = data.images[0];
+
+    return await prisma.$transaction(async (tx) => {
+        const product = await tx.products.create({
+            data: {
+                name: data.name,
+                category_id: data.category_id,
+                seller_id: data.seller_id,
+                start_price: data.start_price,
+                current_price: data.start_price,
+                step_price: data.step_price,
+                buy_now_price: data.buy_now_price,
+                end_time: data.end_time,
+                auto_extend: data.auto_extend,
+                thumbnail_url,
+                status: 'active'
+            }
+        });
+
+        await tx.product_descriptions.create({
+            data: {
+                product_id: product.product_id,
+                author_id: data.seller_id,
+                content: data.description,
+                lang: 'vi',
+                version: 1
+            }
+        });
+
+        await tx.product_images.createMany({
+            data: data.images.map(image_url => ({
+                product_id: product.product_id,
+                image_url
+            }))
+        });
+
+        return product;
+    });
+};

@@ -1,4 +1,3 @@
-import prisma from "../database/prisma";
 import * as categoryRepository from "./category.repository";
 
 export const getCategoriesForSchema = async () => {

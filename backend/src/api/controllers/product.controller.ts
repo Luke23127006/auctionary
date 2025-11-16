@@ -19,3 +19,22 @@ export const searchProducts = async (
         next(error);
     }
 };
+
+export const createProduct = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+) => {
+    try {
+        const userId = (request as any).user.id;
+        const result = await productService.createProduct(userId, request.body);
+        
+        response.status(201).json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error('[createProduct] Error:', error);
+        next(error);
+    }
+};

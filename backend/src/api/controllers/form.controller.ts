@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import * as formService from "../../services/form.service";
 
 export const getProductSchema = async (
-    request: Request,
+    _request: Request,
     response: Response,
     next: NextFunction
 ) => {

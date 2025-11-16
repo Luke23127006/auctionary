@@ -1,9 +1,9 @@
 import * as productRepository from '../repositories/product.repository';
-import { productSearchQuerySchema } from '../api/schemas/product.schema';
+import { searchProductSchema } from '../api/schemas/product.schema';
 
 export const searchProducts = async (query: any) => {
     // Default values are handled in validate middleware
-    const { q, category, page, limit, sort } = productSearchQuerySchema.parse(query);
+    const { q, category, page, limit, sort } = searchProductSchema.parse(query);
 
     // Handle empty q & category in validate middleware
 
@@ -17,5 +17,36 @@ export const searchProducts = async (query: any) => {
     }
 
     return await productRepository.fullTextSearch(q, page, limit, sort);
+};
+
+export const createProduct = async (userId: number, data: {
+    name: string;
+    category_id: number;
+    start_price: number;
+    step_price: number;
+    buy_now_price?: number;
+    description: string;
+    end_time: string;
+    auto_extend: string;
+    images: string[];
+}) => {
+    const product = await productRepository.createProduct({
+        name: data.name,
+        category_id: data.category_id,
+        seller_id: userId,
+        start_price: data.start_price,
+        step_price: data.step_price,
+        buy_now_price: data.buy_now_price,
+        end_time: new Date(data.end_time),
+        auto_extend: data.auto_extend === 'yes',
+        description: data.description,
+        images: data.images
+    });
+
+    return {
+        product_id: product.product_id,
+        name: product.name,
+        status: product.status
+    };
 };
 
