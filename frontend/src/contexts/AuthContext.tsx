@@ -15,12 +15,12 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  hasRole: (role: string) => boolean; // Add this helper
+  hasRole: (role: string) => boolean;
   login: (
     email: string,
     password: string,
     recaptchaToken: string
-  ) => Promise<any>;
+  ) => Promise<any>; // Trả về Awaited<AxiosResponse<any>>
   signup: (formData: SignupData) => Promise<any>;
   logout: () => Promise<void>;
 }
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (token) {
         try {
           const response = await authService.getMe();
-          setUser(response.data); // Extract data from response
+          setUser(response.data);
         } catch (error) {
           console.error("Token verification failed:", error);
           authService.logout();
@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setIsLoading(false);
     };
-
     verifyUser();
   }, []);
 
@@ -56,20 +55,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     recaptchaToken: string
   ): Promise<any> => {
-    const response = await authService.login(email, password, recaptchaToken);
+    // 1. Gọi service. Nếu thất bại (401, 500), nó sẽ tự động throw lỗi
+    // và LoginPage sẽ bắt được.
+    const loginResponse = await authService.login(
+      email,
+      password,
+      recaptchaToken
+    );
 
-    localStorage.setItem("token", response.data.accessToken);
+    // 2. Nếu thành công, LƯU TOKEN NGAY LẬP TỨC
+    localStorage.setItem("token", loginResponse.data.accessToken);
 
-    try {
-      const userResponse = await authService.getMe();
-      setUser(userResponse.data);
-      return userResponse.data;
-    } catch (error) {
-      console.error("Failed to fetch user data after login:", error);
-      authService.logout();
-      setUser(null);
-      throw new Error("Login succeeded but failed to verify user.");
+    // 3. Cập nhật user state (nếu không cần verify)
+    // Nếu cần verify, backend sẽ không gửi token,
+    // nhưng để an toàn, chúng ta kiểm tra cả ở đây.
+    if (!loginResponse.data.requiresVerification) {
+      try {
+        const userResponse = await authService.getMe();
+        setUser(userResponse.data);
+      } catch (error) {
+        console.error("Failed to fetch user data after login:", error);
+        authService.logout(); // Dọn dẹp token hỏng
+        setUser(null);
+        throw new Error("Login succeeded but failed to verify user.");
+      }
     }
+
+    // 4. TRẢ VỀ KẾT QUẢ LOGIN GỐC (quan trọng nhất)
+    // Để LoginPage có thể kiểm tra 'requiresVerification'
+    return loginResponse;
   };
 
   const signup = async (formData: SignupData): Promise<any> => {
@@ -87,7 +101,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Helper function to check if user has a specific role
   const hasRole = (role: string): boolean => {
     return user?.roles?.includes(role as any) || false;
   };
@@ -107,7 +120,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {/* Don't render children until we know auth status */}
       {!isLoading ? children : <div>Loading...</div>}
     </AuthContext.Provider>
   );

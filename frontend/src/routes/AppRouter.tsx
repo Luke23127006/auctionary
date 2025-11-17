@@ -14,6 +14,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 import SignupPage from "../pages/Auth/SignupPage";
 import LoginPage from "../pages/Auth/LoginPage";
 import VerifyOTPPage from "../pages/Auth/VerifyOTPPage"; // Add this
+import HomePage from "../pages/HomePage";
 
 const AppRouter = () => {
   return (
@@ -21,7 +22,7 @@ const AppRouter = () => {
       {/* ============================================== */}
       {/* TUYẾN ĐƯỜNG CÔNG KHAI (Guest, Bidder, Seller, Admin) */}
       {/* ============================================== */}
-      <Route path="/" element={<UnderDevelopmentPage />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/auction/:id" element={<UnderDevelopmentPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<NotFoundPage />} />

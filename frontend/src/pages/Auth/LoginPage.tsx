@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import { toast } from "react-toastify";
-import * as authService from "../../services/authService"; // Assuming service is here
 import AuthLayout from "../../layouts/AuthLayout"; // 1. Import layout
 import Button from "../../components/ui/Button"; // Assuming Button/Input are in ui/
 import Input from "../../components/ui/Input";
@@ -38,7 +37,7 @@ export default function LoginPage() {
 
     try {
       // Call login with the new schema
-      const response = await authService.login(email, password, recaptchaToken);
+      const response = await login(email, password, recaptchaToken);
 
       // Check if user requires verification
       if (response.data.requiresVerification) {
@@ -58,8 +57,6 @@ export default function LoginPage() {
       localStorage.setItem("token", response.data.accessToken);
 
       try {
-        const userResponse = await authService.getMe();
-        // Use AuthContext to set user state (if needed)
         toast.success("Welcome back!");
         navigate("/");
       } catch (error) {

@@ -1,15 +1,14 @@
 import React, {
   useRef,
-  useState,
   useEffect,
-  KeyboardEvent,
-  ClipboardEvent,
+  type KeyboardEvent,
+  type ClipboardEvent,
 } from "react";
 import "./OTPInput.css"; // Đảm bảo bạn đã import file CSS
 
 interface OTPInputProps {
   length?: number;
-  value: string;
+  value: string; // value từ cha là nguồn chân lý duy nhất
   onChange: (value: string) => void;
   disabled?: boolean;
   onComplete?: (value: string) => void;
@@ -24,60 +23,62 @@ const OTPInput: React.FC<OTPInputProps> = ({
 }) => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // 1. Khởi tạo mảng bằng KHOẢNG TRẮNG
-  const [otp, setOtp] = useState<string[]>(Array(length).fill(" ")); // Update internal state when value prop changes
+  // 1. KHÔNG DÙNG useState cho 'otp' nữa.
+  // Thay vào đó, chúng ta tạo mảng 'otpDisplay' từ 'value' prop
+  // để render. Dùng khoảng trắng (" ") làm ký tự đệm.
+  const otpDisplay = value.padEnd(length, " ").slice(0, length).split("");
 
-  useEffect(() => {
-    // 2. SỬA LỖI LOGIC: Dùng " " (khoảng trắng) để đệm.
-    // Điều này sẽ tạo ra mảng 6 phần tử
-    const newOtp = value.padEnd(length, " ").slice(0, length).split("");
-    setOtp(newOtp);
-  }, [value, length]); // Kích hoạt lại useEffect // Handle input change
-
+  // Handle input change
   const handleChange = (index: number, digit: string) => {
     if (disabled) return;
 
-    // Chỉ cho phép 1 chữ số cuối cùng
+    // Chỉ cho phép 1 chữ số
     const finalDigit = digit.length > 1 ? digit.slice(-1) : digit;
     if (finalDigit && !/^\d$/.test(finalDigit)) return;
 
-    const newOtp = [...otp];
-    // Nếu người dùng nhập số, điền, nếu không (xóa) thì điền khoảng trắng
-    newOtp[index] = finalDigit || " ";
-    setOtp(newOtp);
+    // Tạo mảng mới từ 'value' prop
+    const newOtpArray = value.padEnd(length, " ").slice(0, length).split("");
+    newOtpArray[index] = finalDigit || " "; // Đặt số mới hoặc khoảng trắng
+    const newOtpString = newOtpArray.join("");
 
-    // Dùng trim() để xóa khoảng trắng khi gửi đi
-    const otpString = newOtp.join("").trim();
-    onChange(otpString); // Auto-focus next input
+    // 2. Báo cho cha (VerifyOTPPage) biết 'value' MỚI
+    onChange(newOtpString);
 
+    // Auto-focus next input
     if (finalDigit && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
-    } // Call onComplete if all digits are filled
-
-    if (otpString.length === length) {
-      onComplete?.(otpString);
     }
-  }; // 3. SỬA LỖI BACKSPACE: Logic xóa dây chuyền mượt hơn
 
+    // Call onComplete if all digits are filled
+    const trimmedString = newOtpString.trim();
+    if (trimmedString.length === length) {
+      onComplete?.(trimmedString);
+    }
+  };
+
+  // 3. SỬA LỖI BACKSPACE (Logic 1 lần nhấn mượt mà)
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace") {
-      e.preventDefault(); // Ngăn trình duyệt tự động lùi trang
+      e.preventDefault();
+      const newOtpArray = value.padEnd(length, " ").slice(0, length).split("");
 
-      if (otp[index] !== " ") {
+      if (newOtpArray[index] !== " ") {
         // 1. Nếu ô hiện tại CÓ SỐ: Chỉ xóa nó (thành khoảng trắng)
-        handleChange(index, " ");
+        newOtpArray[index] = " ";
       } else if (index > 0) {
-        // 2. Nếu ô hiện tại RỖNG: Di chuyển và xóa ô TRƯỚC ĐÓ
+        // 2. Nếu ô hiện tại RỖNG: Di chuyển focus và xóa ô TRƯỚC ĐÓ
         inputRefs.current[index - 1]?.focus();
-        handleChange(index - 1, " ");
+        newOtpArray[index - 1] = " ";
       }
+      onChange(newOtpArray.join("")); // Báo cho cha biết
     } else if (e.key === "ArrowLeft" && index > 0) {
       inputRefs.current[index - 1]?.focus();
     } else if (e.key === "ArrowRight" && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
-  }; // Handle paste (cập nhật để dùng khoảng trắng)
+  };
 
+  // Handle paste (cập nhật để dùng khoảng trắng)
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text/plain").trim();
@@ -85,41 +86,48 @@ const OTPInput: React.FC<OTPInputProps> = ({
     if (!/^\d+$/.test(pastedData)) return;
 
     const digits = pastedData.slice(0, length).split("");
-    const newOtp = Array(length).fill(" "); // Khởi tạo bằng khoảng trắng
+    const newOtpArray = Array(length).fill(" "); // Khởi tạo bằng khoảng trắng
 
     digits.forEach((digit, index) => {
       if (index < length) {
-        newOtp[index] = digit;
+        newOtpArray[index] = digit;
       }
     });
 
-    setOtp(newOtp);
-    const otpString = newOtp.join("").trim();
-    onChange(otpString);
+    const newOtpString = newOtpArray.join("");
+    onChange(newOtpString); // Báo cho cha biết
 
-    const nextEmptyIndex = newOtp.findIndex((digit) => digit === " ");
+    // Logic focus
+    const nextEmptyIndex = newOtpArray.findIndex((digit) => digit === " ");
     const focusIndex = nextEmptyIndex === -1 ? length - 1 : nextEmptyIndex;
     inputRefs.current[focusIndex]?.focus();
 
-    if (otpString.length === length) {
-      onComplete?.(otpString);
+    const trimmedString = newOtpString.trim();
+    if (trimmedString.length === length) {
+      onComplete?.(trimmedString);
     }
-  }; // Focus first input on mount
+  };
 
+  // Focus first input on mount
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
 
+  // 4. KHÔNG CÒN 'useEffect' xung đột với [value, length] nữa
+
   return (
     <div className="otp-input-container">
-      {otp.map((digit, index) => (
+      {/* 5. Dùng 'otpDisplay' (lấy từ prop) để render */}
+      {otpDisplay.map((digit, index) => (
         <input
           key={index}
-          ref={(el) => (inputRefs.current[index] = el)}
+          ref={(el) => {
+            inputRefs.current[index] = el;
+          }}
           type="text"
           inputMode="numeric"
           maxLength={1}
-          value={digit.trim()} // Dùng trim() để hiển thị (loại bỏ khoảng trắng)
+          value={digit.trim()} // 6. Dùng trim() để hiển thị
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={index === 0 ? handlePaste : undefined}

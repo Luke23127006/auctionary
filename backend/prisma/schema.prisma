@@ -48,6 +48,7 @@ model categories {
   products         products[]
 
   @@unique([parent_id, slug])
+  @@index([category_id], map: "idx_category_id")
 }
 
 model invoices {
