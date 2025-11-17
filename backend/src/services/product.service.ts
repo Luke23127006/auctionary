@@ -1,5 +1,5 @@
 import * as productRepository from '../repositories/product.repository';
-import { searchProductSchema } from '../api/schemas/product.schema';
+import { searchProductSchema, getProductCommentsSchema } from '../api/schemas/product.schema';
 
 export const searchProducts = async (query: any) => {
     // Default values are handled in validate middleware
@@ -64,7 +64,7 @@ export const getCurrentProductBidById = async (productId: number) => {
 };
 
 export const getProductCommentsById = async (productId: number, query: any) => {
-    const { page, limit } = query;
+    const { page, limit } = getProductCommentsSchema.parse(query);
     const comments = await productRepository.findCommentsById(productId, page, limit);
     return comments;
 };

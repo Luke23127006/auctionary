@@ -57,6 +57,27 @@ export interface CurrentBid {
     }
 }
 
+export interface ProductComment {
+    comment_id: number;
+    content: string;
+    user: {
+        user_id: number;
+        full_name: string;
+    };
+    created_at: Date;
+    updated_at: Date | null;
+    replies: {
+        comment_id: number;
+        content: string;
+        user: {
+            user_id: number;
+            full_name: string;
+        };
+        created_at: Date;
+        updated_at: Date | null;
+    }[];
+}
+
 function escapeQuery(q: string) {
     return q
         .replace(/[-:!&|]+/g, " ")
@@ -340,8 +361,6 @@ export const findDetailById = async (productId: number): Promise<ProductDetail |
     };
 };
 
-
-
 export const findCurrentBidById = async (productId: number): Promise<CurrentBid> => {
     const currentBid = await prisma.products.findUnique({
         where: { product_id: productId },
@@ -367,27 +386,6 @@ export const findCurrentBidById = async (productId: number): Promise<CurrentBid>
             negative_reviews: currentBid?.users_products_highest_bidder_idTousers?.negative_reviews ?? 0,
         }
     }
-}
-
-export interface ProductComment {
-    comment_id: number;
-    content: string;
-    user: {
-        user_id: number;
-        full_name: string;
-    };
-    created_at: Date;
-    updated_at: Date | null;
-    replies: {
-        comment_id: number;
-        content: string;
-        user: {
-            user_id: number;
-            full_name: string;
-        };
-        created_at: Date;
-        updated_at: Date | null;
-    }[];
 }
 
 export const findCommentsById = async (productId: number, page: number, limit: number): Promise<PaginatedResult<ProductComment>> => {
