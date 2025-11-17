@@ -115,7 +115,7 @@ export const fullTextSearch = async (q: string | undefined, page: number, limit:
                 name: true,
                 current_price: true,
                 status: true,
-                start_time: true,
+                created_at: true,
                 end_time: true,
                 bid_count: true,
                 users_products_highest_bidder_idTousers: {
@@ -145,7 +145,7 @@ export const fullTextSearch = async (q: string | undefined, page: number, limit:
             name: p.name,
             current_price: p.current_price,
             status: p.status,
-            start_time: p.start_time,
+            created_at: p.created_at,
             end_time: p.end_time,
             bid_count: p.bid_count,
             highest_bidder: p.users_products_highest_bidder_idTousers ? {
@@ -191,7 +191,7 @@ export const findByCategory = async (categorySlug: string, page: number, limit: 
                 name: true,
                 current_price: true,
                 status: true,
-                start_time: true,
+                created_at: true,
                 end_time: true,
                 bid_count: true,
                 users_products_highest_bidder_idTousers: {
@@ -229,7 +229,7 @@ export const findByCategory = async (categorySlug: string, page: number, limit: 
             name: p.name,
             current_price: p.current_price,
             status: p.status,
-            start_time: p.start_time,
+            created_at: p.created_at,
             end_time: p.end_time,
             bid_count: p.bid_count,
             highest_bidder: p.users_products_highest_bidder_idTousers ? {
