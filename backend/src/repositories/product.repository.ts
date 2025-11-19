@@ -476,3 +476,34 @@ export const findCommentsById = async (productId: number, page: number, limit: n
         }
     };
 }
+
+export const getStepPriceById = async (productId: number): Promise<number> => {
+    const product = await prisma.products.findUnique({
+        where: { product_id: productId },
+        select: { step_price: true }
+    });
+    return toNum(product?.step_price);
+};
+
+export const getStartPriceById = async (productId: number): Promise<number> => {
+    const product = await prisma.products.findUnique({
+        where: { product_id: productId },
+        select: { start_price: true }
+    });
+    return toNum(product?.start_price);
+};
+
+export const getHighestBidderId = async (productId: number): Promise<number | null> => {
+    const product = await prisma.products.findUnique({
+        where: { product_id: productId },
+        select: { highest_bidder_id: true }
+    });
+    return product?.highest_bidder_id ?? null;
+};
+
+export const updateHighestBidderId = async (productId: number, newHighestBidderId: number): Promise<void> => {
+    await prisma.products.update({
+        where: { product_id: productId },
+        data: { highest_bidder_id: newHighestBidderId }
+    });
+};

@@ -1,15 +1,17 @@
-import Router from 'express';
+import { Router } from 'express';
 import * as bidController from "../controllers/bid.controller";
 import { validate } from '../../middlewares/validate.middleware';
-import { placebidSchema } from '../schemas/bid.schema';
+import { placeBidSchema } from '../schemas/bid.schema';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.get("",
     bidController.getHighestBidById
 );
 
 router.post("",
-    validate(placebidSchema, 'body'), 
-    bidController.placeBidOnProductById
+    validate(placeBidSchema, 'body'), 
+    bidController.placeBid
 );
+
+export default router;
