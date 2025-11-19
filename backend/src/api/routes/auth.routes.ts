@@ -8,6 +8,8 @@ import {
   loginSchema,
   resetPasswordSchema,
   forgotPasswordSchema,
+  googleLoginSchema,
+  facebookLoginSchema,
 } from "../schemas/auth.schema";
 import { verifyOTPSchema, resendOTPSchema } from "../schemas/otp.schema";
 import { requireAuth } from "../../middlewares/requireAuth.middleware";
@@ -29,7 +31,17 @@ router.post(
   authController.login
 );
 
-router.post("/google-login", authController.googleLoginController);
+router.post(
+  "/google-login",
+  validate(googleLoginSchema),
+  authController.googleLogin
+);
+
+router.post(
+  "/facebook-login",
+  validate(facebookLoginSchema),
+  authController.facebookLogin
+);
 
 router.post("/refresh", authController.refreshToken);
 router.post("/logout", authController.logout);

@@ -90,17 +90,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return authService.signup(formData);
   };
 
-  const loginWithGoogle = async (credential: string): Promise<any> => {
+  const loginWithGoogle = async (code: string): Promise<any> => {
     try {
-      const response = await authService.loginWithGoogle(credential);
+      const response = await authService.loginWithGoogle(code);
 
-      localStorage.setItem("token", response.data.accessToken);
+      localStorage.setItem("token", response.accessToken);
 
-      setUser(response.data.user);
+      setUser(response.user);
 
       return response;
     } catch (error) {
       console.error("Google login error in context:", error);
+      throw error;
+    }
+  };
+
+  const loginWithFacebook = async (accessToken: string): Promise<any> => {
+    try {
+      const response = await authService.loginWithFacebook(accessToken);
+
+      localStorage.setItem("token", response.accessToken);
+      setUser(response.user);
+
+      return response;
+    } catch (error) {
+      console.error("Facebook login error in context:", error);
       throw error;
     }
   };
@@ -143,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       forgotPassword,
       resetPassword,
       loginWithGoogle,
+      loginWithFacebook,
       logout,
     }),
     [user, isLoading]

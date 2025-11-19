@@ -13,6 +13,7 @@ import {
   getRefreshTokenExpiry,
 } from "../utils/jwt.util";
 import * as googleService from "./google.service";
+import * as facebookService from "./facebook.service";
 
 const OTP_EXPIRY_MINUTES = 15;
 
@@ -28,6 +29,7 @@ export const signupUser = async (userData: any) => {
   const newUser = {
     ...restUserData,
     password: hashedPassword,
+    address: restUserData.address || null,
   };
 
   const user = await userRepo.createUser(newUser);
@@ -326,12 +328,12 @@ export const getAuthenticatedUser = async (userId: number) => {
 */
 
 export const loginWithGoogle = async (
-  credential: string,
+  code: string,
   deviceInfo?: string,
   ipAddress?: string
 ) => {
   // 1. Xác thực token với Google
-  const googlePayload = await googleService.verifyGoogleToken(credential);
+  const googlePayload = await googleService.verifyGoogleToken(code);
 
   if (!googlePayload || !googlePayload.email) {
     throw new Error("Google account invalid or missing email");
@@ -369,6 +371,52 @@ export const loginWithGoogle = async (
       email: user.email,
       full_name: user.full_name,
       avatar: picture, // Hoặc user.avatar nếu bạn lưu avatar vào bảng user
+      is_verified: true,
+    },
+  };
+};
+
+export const loginWithFacebook = async (
+  accessToken: string,
+  deviceInfo?: string,
+  ipAddress?: string
+) => {
+  const fbPayload = await facebookService.verifyFacebookToken(accessToken);
+
+  if (!fbPayload.email) {
+    throw new Error("Facebook account must have an email to sign up.");
+  }
+
+  const { email, name, picture, sub: facebookId } = fbPayload;
+
+  const user = await socialRepo.findOrCreateUserFromSocial(
+    "facebook",
+    facebookId,
+    email,
+    name || null,
+    picture || null
+  );
+
+  const userPayload = { id: user.id, email: user.email, roles: [] };
+  const jwtAccessToken = generateAccessToken(userPayload);
+  const jwtRefreshToken = generateRefreshToken(userPayload);
+
+  await tokenRepo.createRefreshToken(
+    user.id,
+    hashToken(jwtRefreshToken),
+    getRefreshTokenExpiry(),
+    deviceInfo,
+    ipAddress
+  );
+
+  return {
+    accessToken: jwtAccessToken,
+    refreshToken: jwtRefreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      avatar: picture,
       is_verified: true,
     },
   };

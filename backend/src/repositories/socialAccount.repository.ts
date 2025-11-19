@@ -1,3 +1,4 @@
+import { is } from "zod/v4/locales";
 import prisma from "../database/prisma";
 import * as userRepo from "./user.repository";
 
@@ -64,16 +65,13 @@ export const findOrCreateUserFromSocial = async (
   let user = await userRepo.findByEmail(email);
 
   if (!user) {
-    // 3. User chưa tồn tại -> Tạo user mới
-    user = await userRepo.createUser({
-      data: {
-        email,
-        full_name: name || "New User",
-        is_verified: true, // Email từ social luôn tin cậy
-        status: "active",
-        // password là null
-      },
-    });
+    const newUser = {
+      email,
+      full_name: name || "New User",
+      is_verified: true,
+      status: "active",
+    };
+    user = await userRepo.createUser(newUser);
   }
 
   // 4. Tạo liên kết Social Account (cho cả user mới và cũ)

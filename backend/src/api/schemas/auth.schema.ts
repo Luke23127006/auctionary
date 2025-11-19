@@ -36,3 +36,11 @@ export const resetPasswordSchema = z.object({
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
 });
+
+export const googleLoginSchema = z.object({
+  code: z.string().min(1, "Google code is required"),
+});
+
+export const facebookLoginSchema = z.object({
+  accessToken: z.string().min(1, "Facebook access token is required"),
+});

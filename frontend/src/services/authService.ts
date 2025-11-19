@@ -45,8 +45,12 @@ export const signup = async (signupData: SignupData) => {
   return apiClient.post("/auth/signup", signupData, false);
 };
 
-export const loginWithGoogle = async (credential: string) => {
-  return apiClient.post("/auth/google-login", { credential }, false);
+export const loginWithGoogle = async (code: string) => {
+  return apiClient.post("/auth/google-login", { code }, false);
+};
+
+export const loginWithFacebook = async (accessToken: string) => {
+  return apiClient.post("/auth/facebook-login", { accessToken }, false);
 };
 
 /**

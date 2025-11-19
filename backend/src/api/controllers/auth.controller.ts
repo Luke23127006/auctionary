@@ -167,11 +167,11 @@ export const resetPassword = async (
   next: NextFunction
 ) => {
   try {
-    const { email, otp, new_password } = req.body;
+    const { email, otp, newPassword } = req.body;
     const result = await authService.resetPasswordWithOTP(
       email,
       otp,
-      new_password
+      newPassword
     );
     res.status(200).json(result);
   } catch (error: any) {
@@ -179,16 +179,40 @@ export const resetPassword = async (
   }
 };
 
-export const googleLoginController = async (req: Request, res: Response) => {
+export const googleLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { credential } = req.body; // Google trả về token trong trường 'credential'
+    const { code } = req.body; // Google trả về token trong trường 'credential'
     const result = await authService.loginWithGoogle(
-      credential,
+      code,
       req.headers["user-agent"],
       req.ip
     );
+
     res.status(200).json(result);
   } catch (error: any) {
-    res.status(400).json({ message: error.message });
+    next(error);
+  }
+};
+
+export const facebookLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { accessToken } = req.body;
+    const result = await authService.loginWithFacebook(
+      accessToken,
+      req.headers["user-agent"],
+      req.ip
+    );
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    next(error);
   }
 };

@@ -30,3 +30,46 @@
 .auth-label-enter-otp {
   margin-bottom: 0px;
 }
+
+/* Divider Container */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 8px 0; /* Khoảng cách trên dưới */
+  color: #8e8e8e; /* Màu chữ xám nhẹ */
+  font-size: 13px; /* Cỡ chữ nhỏ vừa phải */
+  font-weight: 600; /* Chữ đậm để dễ đọc */
+  text-transform: uppercase; /* Chữ in hoa: OR */
+  width: 100%;
+}
+
+/* Đường kẻ ngang */
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1; /* Chiếm hết không gian còn lại */
+  border-bottom: 1px solid #dbdbdb; /* Đường kẻ mảnh */
+}
+
+/* Khoảng cách giữa chữ và đường kẻ */
+.divider span {
+  padding: 0 16px; /* Đệm trái phải cho chữ */
+}
+
+/* (Tùy chọn) Responsive cho mobile */
+@media (max-width: 480px) {
+  .divider {
+    margin: 8px 0;
+  }
+  .divider span {
+    padding: 0 10px;
+  }
+}
+
+.social-button-group {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  width: 100%;
+}

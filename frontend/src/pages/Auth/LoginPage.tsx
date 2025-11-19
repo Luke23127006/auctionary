@@ -8,14 +8,17 @@ import Input from "../../components/ui/Input";
 import { useAuth } from "../../hooks/useAuth"; // Assuming hook is in contexts/
 import "./AuthForms.css"; // 7. Import common CSS for forms
 import { useGoogleLogin } from "@react-oauth/google";
+// @ts-ignore: module 'react-facebook-login/dist/facebook-login-render-props' has no type declarations
+import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 
 // 2. Get Site Key from .env (Vite)
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, loginWithFacebook } = useAuth();
 
   // 3. Update state according to schema: username -> email
   const [email, setEmail] = useState("");
@@ -73,16 +76,16 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
+    flow: "auth-code", // <--- THAY ĐỔI QUAN TRỌNG NHẤT
+    onSuccess: async (codeResponse) => {
       try {
         setIsLoading(true);
-        await loginWithGoogle(tokenResponse.access_token);
+        await loginWithGoogle(codeResponse.code);
 
         toast.success("Login with Google successful!");
-        navigate("/"); // Điều hướng về trang chủ ngay
+        navigate("/");
       } catch (err: any) {
-        console.error("Google Login Failed:", err);
-        toast.error("Google login failed. Please try again.");
+        setError(err.message || "Google login failed.");
       } finally {
         setIsLoading(false);
       }
@@ -91,6 +94,27 @@ export default function LoginPage() {
       toast.error("Google login failed.");
     },
   });
+
+  const responseFacebook = async (response: any) => {
+    if (response.accessToken) {
+      try {
+        setIsLoading(true);
+        // Gửi Token xuống Backend
+        await loginWithFacebook(response.accessToken);
+
+        toast.success("Login with Facebook successful!");
+        navigate("/");
+      } catch (err: any) {
+        console.error("FB Login Failed:", err);
+        toast.error("Facebook login failed.");
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // User hủy login hoặc lỗi
+      console.log("FB Login cancelled or failed");
+    }
+  };
 
   return (
     // 6. Use AuthLayout, pass in the title
@@ -132,7 +156,6 @@ export default function LoginPage() {
           </Button>
         </div>
       </form>
-
       <Button
         variant="secondary"
         onClick={() => navigate("/signup")}
@@ -141,7 +164,6 @@ export default function LoginPage() {
       >
         Don't have an account? Sign Up
       </Button>
-
       <a
         href="#"
         className="auth-link" // 7. Use common CSS class
@@ -152,24 +174,45 @@ export default function LoginPage() {
       >
         Forgot password?
       </a>
-
       <div className="divider">
         <span>OR</span>
       </div>
-
-      <Button
-        variant="secondary"
-        onClick={() => handleGoogleLogin()} // Gọi hàm của hook
-        disabled={isLoading}
-        className="google-login-button"
-      >
-        <img
-          src="/assets/Google__G__logo.svg.webp"
-          alt="G"
-          style={{ width: 18, height: 18, marginRight: 8 }}
+      <div className="social-button-group">
+        <Button
+          variant="secondary"
+          onClick={() => handleGoogleLogin()} // Gọi hàm của hook
+          disabled={isLoading}
+        >
+          <img
+            src="/assets/Google__G__logo.svg.webp"
+            alt="G"
+            style={{ width: 18, height: 18, marginRight: 8 }}
+          />
+          Google
+        </Button>
+        <div style={{ marginTop: "8px" }}></div> {/* Khoảng cách */}
+        {/* NÚT FACEBOOK */}
+        <FacebookLogin
+          appId={FACEBOOK_APP_ID}
+          autoLoad={false} // Quan trọng: Để false để không tự popup khi vào trang
+          fields="name,email,picture"
+          callback={responseFacebook} // Hàm xử lý kết quả
+          render={(renderProps: any) => (
+            <Button
+              variant="secondary"
+              onClick={renderProps.onClick}
+              disabled={isLoading}
+            >
+              <img
+                src="/assets/2023_Facebook_icon.svg.png"
+                alt="F"
+                style={{ width: 18, height: 18, marginRight: 8 }}
+              />
+              <span>Facebook</span>
+            </Button>
+          )}
         />
-        Continue with Google
-      </Button>
+      </div>
     </AuthLayout>
   );
 }
