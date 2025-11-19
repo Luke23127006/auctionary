@@ -1,218 +1,254 @@
 import { Request, Response, NextFunction } from "express";
 import * as authService from "../../services/auth.service";
+import { formatResponse } from "../../utils/response.util";
+import { logger } from "../../utils/logger.util";
+import { AUTH_CONSTANTS } from "../../utils/constant.util";
 
 export const signup = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const result = await authService.signupUser(req.body);
-    res.status(201).json({
-      message: "User created successfully",
-      data: result,
-    });
-  } catch (error: any) {
+    const result = await authService.signupUser(request.body);
+    formatResponse(response, 201, result, "User created successfully");
+  } catch (error) {
+    logger.error("AuthController", "Failed to signup user", error);
     next(error);
   }
 };
 
 export const login = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const deviceInfo = req.headers["user-agent"] || "Unknown";
-    const ipAddress = req.ip || req.socket.remoteAddress || "Unknown";
+    const deviceInfo = request.headers["user-agent"] || "Unknown";
+    const ipAddress = request.ip || request.socket.remoteAddress || "Unknown";
 
-    const result = await authService.loginUser(req.body, deviceInfo, ipAddress);
+    const result = await authService.loginUser(
+      request.body,
+      deviceInfo,
+      ipAddress
+    );
 
-    // Check if user requires verification
-    if (result.requiresVerification) {
-      return res.status(200).json({
-        message: result.message,
-        data: {
+    if ("requiresVerification" in result) {
+      formatResponse(
+        response,
+        200,
+        {
           requiresVerification: true,
           user: result.user,
         },
-      });
+        result.message
+      );
+      return;
     }
 
-    // Set refresh token as httpOnly cookie for verified users
-    res.cookie("refreshToken", result.refreshToken, {
+    response.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
     });
 
-    res.status(200).json({
-      message: "Login successful",
-      data: {
+    formatResponse(
+      response,
+      200,
+      {
         accessToken: result.accessToken,
         user: result.user,
       },
-    });
-  } catch (error: any) {
-    return next(error);
+      "Login successful"
+    );
+  } catch (error) {
+    logger.error("AuthController", "Failed to login user", error);
+    next(error);
   }
 };
 
 export const refreshToken = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+    const refreshToken =
+      request.cookies.refreshToken || request.body.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({
-        message: "Refresh token not provided",
-      });
+      formatResponse(response, 401, null, "Refresh token not provided");
+      return;
     }
 
     const result = await authService.refreshAccessToken(refreshToken);
-
-    res.status(200).json({
-      message: "Token refreshed successfully",
-      data: result,
-    });
-  } catch (error: any) {
-    return next(error);
+    formatResponse(response, 200, result, "Token refreshed successfully");
+  } catch (error) {
+    logger.error("AuthController", "Failed to refresh token", error);
+    next(error);
   }
 };
 
 export const logout = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+    const refreshToken =
+      request.cookies.refreshToken || request.body.refreshToken;
 
     if (refreshToken) {
       await authService.logoutUser(refreshToken);
     }
 
-    res.clearCookie("refreshToken");
-
-    res.status(200).json({
-      message: "Logged out successfully",
-    });
-  } catch (error: any) {
+    response.clearCookie("refreshToken");
+    formatResponse(response, 200, null, "Logged out successfully");
+  } catch (error) {
+    logger.error("AuthController", "Failed to logout user", error);
     next(error);
   }
 };
 
 export const logoutAll = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const userId = (req as any).user.id; // From auth middleware
+    const userId = (request as any).user.id;
 
     await authService.logoutAllDevices(userId);
 
-    res.clearCookie("refreshToken");
-
-    res.status(200).json({
-      message: "Logged out from all devices successfully",
-    });
-  } catch (error: any) {
+    response.clearCookie("refreshToken");
+    formatResponse(
+      response,
+      200,
+      null,
+      "Logged out from all devices successfully"
+    );
+  } catch (error) {
+    logger.error("AuthController", "Failed to logout from all devices", error);
     next(error);
   }
 };
 
-// Add this new function
 export const getMe = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    // req.user is set by the requireAuth middleware
-    const userId = (req as any).user.id;
-
+    const userId = (request as any).user.id;
     const user = await authService.getAuthenticatedUser(userId);
-
-    res.status(200).json({
-      message: "User data retrieved successfully",
-      data: user,
-    });
-  } catch (error: any) {
+    formatResponse(response, 200, user, "User data retrieved successfully");
+  } catch (error) {
+    logger.error("AuthController", "Failed to get user data", error);
     next(error);
   }
 };
 
 export const forgotPassword = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { email } = req.body;
+    const { email } = request.body;
     const result = await authService.requestPasswordReset(email);
-    res.status(200).json(result);
-  } catch (error: any) {
+    formatResponse(response, 200, null, result.message);
+  } catch (error) {
+    logger.error("AuthController", "Failed to process forgot password", error);
     next(error);
   }
 };
 
 export const resetPassword = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { email, otp, newPassword } = req.body;
+    const { email, otp, newPassword } = request.body;
     const result = await authService.resetPasswordWithOTP(
       email,
       otp,
       newPassword
     );
-    res.status(200).json(result);
-  } catch (error: any) {
+    formatResponse(response, 200, null, result.message);
+  } catch (error) {
+    logger.error("AuthController", "Failed to reset password", error);
     next(error);
   }
 };
 
 export const googleLogin = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { code } = req.body; // Google trả về token trong trường 'credential'
+    const { code } = request.body;
     const result = await authService.loginWithGoogle(
       code,
-      req.headers["user-agent"],
-      req.ip
+      request.headers["user-agent"],
+      request.ip
     );
 
-    res.status(200).json(result);
-  } catch (error: any) {
+    response.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
+    });
+
+    formatResponse(
+      response,
+      200,
+      {
+        accessToken: result.accessToken,
+        user: result.user,
+      },
+      "Google login successful"
+    );
+  } catch (error) {
+    logger.error("AuthController", "Failed to login with Google", error);
     next(error);
   }
 };
 
 export const facebookLogin = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { accessToken } = req.body;
+    const { accessToken } = request.body;
     const result = await authService.loginWithFacebook(
       accessToken,
-      req.headers["user-agent"],
-      req.ip
+      request.headers["user-agent"],
+      request.ip
     );
 
-    res.status(200).json(result);
-  } catch (error: any) {
+    response.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
+    });
+
+    formatResponse(
+      response,
+      200,
+      {
+        accessToken: result.accessToken,
+        user: result.user,
+      },
+      "Facebook login successful"
+    );
+  } catch (error) {
+    logger.error("AuthController", "Failed to login with Facebook", error);
     next(error);
   }
 };

@@ -3,83 +3,91 @@ import prisma from "../database/prisma";
 import { NotFoundError } from "../errors";
 
 interface SubCategory {
-    category_id: number;
-    name: string;
+  categoryId: number;
+  name: string;
 }
 
 export interface Category {
-    data: {
-        category_id: number;
-        name: string;
-        sub_categories: SubCategory[];
-    }[];
+  data: {
+    categoryId: number;
+    name: string;
+    subCategories: SubCategory[];
+  }[];
 }
 
 export const getCategoryBySlug = async (slug: string) => {
-    const category = await prisma.categories.findFirst({
-        where: { slug },
-        select: { category_id: true, parent_id: true }
-    });
+  const category = await prisma.categories.findFirst({
+    where: { slug },
+    select: { category_id: true, parent_id: true },
+  });
 
-    if (!category) {
-        throw new NotFoundError(`Category '${slug}' not found`);
-    }
+  if (!category) {
+    throw new NotFoundError(`Category '${slug}' not found`);
+  }
 
-    return category;
+  return {
+    categoryId: category.category_id,
+    parentId: category.parent_id,
+  };
 };
 
 export const getChildCategories = async (parentId: number) => {
-    return await prisma.categories.findMany({
-        where: { parent_id: parentId },
-        select: { category_id: true }
-    });
+  const categories = await prisma.categories.findMany({
+    where: { parent_id: parentId },
+    select: { category_id: true },
+  });
+  return categories.map((c) => ({ categoryId: c.category_id }));
 };
 
 export const getCategoryIds = async (slug: string): Promise<number[]> => {
-    const category = await prisma.categories.findFirst({
-        where: { slug },
-        select: { category_id: true, parent_id: true }
+  const category = await prisma.categories.findFirst({
+    where: { slug },
+    select: { category_id: true, parent_id: true },
+  });
+
+  if (!category) return [];
+
+  if (category.parent_id === null) {
+    const children = await prisma.categories.findMany({
+      where: { parent_id: category.category_id },
+      select: { category_id: true },
     });
 
-    if (!category) return [];
+    return [category.category_id, ...children.map((c) => c.category_id)];
+  }
 
-    if (category.parent_id === null) {
-        const children = await prisma.categories.findMany({
-            where: { parent_id: category.category_id },
-            select: { category_id: true }
-        });
-
-        return [
-            category.category_id,
-            ...children.map(c => c.category_id) // If no "..." syntax, it will return a nested array. Ex: [1, [2,3,4]]. We want [1,2,3,4]
-        ];
-    }
-
-    return [category.category_id];
+  return [category.category_id];
 };
 
 export const getAllCategories = async (): Promise<Category> => {
-    const parents = await prisma.$queryRaw<Array<{ category_id: number; name: string }>>`
+  const parents = await prisma.$queryRaw<
+    Array<{ category_id: number; name: string }>
+  >`
         SELECT category_id, name
         FROM categories
         WHERE parent_id IS NULL
     `;
 
-    const result: Category['data'] = [];
+  const result: Category["data"] = [];
 
-    for (const parent of parents) {
-        const children = await prisma.$queryRaw<SubCategory[]>`
+  for (const parent of parents) {
+    const children = await prisma.$queryRaw<
+      Array<{ category_id: number; name: string }>
+    >`
             SELECT category_id, name
             FROM categories
             WHERE parent_id = ${parent.category_id}
         `;
 
-        result.push({
-            category_id: parent.category_id,
-            name: parent.name,
-            sub_categories: children ?? []
-        });
-    }
+    result.push({
+      categoryId: parent.category_id,
+      name: parent.name,
+      subCategories: children.map((c) => ({
+        categoryId: c.category_id,
+        name: c.name,
+      })),
+    });
+  }
 
-    return { data: result };
+  return { data: result };
 };

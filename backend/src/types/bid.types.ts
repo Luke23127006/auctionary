@@ -1,15 +1,15 @@
 export interface HighestBidder {
-    current_price: number;
-    highest_bidder: {
-        id: number;
-        full_name: string;
-        positive_reviews: number;
-        negative_reviews: number;
-    }
+  currentPrice: number;
+  highestBidder: {
+    id: number;
+    fullName: string;
+    positiveReviews: number;
+    negativeReviews: number;
+  };
 }
 
 export interface BidHistoryItem {
-    created_at: Date;
-    bidder_name: string;
-    amount: number;
+  createdAt: Date;
+  bidderName: string;
+  amount: number;
 }

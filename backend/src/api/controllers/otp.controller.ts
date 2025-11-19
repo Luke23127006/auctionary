@@ -1,48 +1,54 @@
 import { NextFunction, Request, Response } from "express";
 import * as authService from "../../services/auth.service";
+import { formatResponse } from "../../utils/response.util";
+import { logger } from "../../utils/logger.util";
+import { AUTH_CONSTANTS } from "../../utils/constant.util";
 
 export const verifyOTP = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { user_id, otp } = req.body;
+    const { userId, otp } = request.body;
 
-    const result = await authService.verifyOTP(user_id, otp);
+    const result = await authService.verifyOTP(userId, otp);
 
-    // Set refresh token as httpOnly cookie
-    res.cookie("refreshToken", result.refreshToken, {
+    response.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
     });
 
-    res.status(200).json({
-      message: "Email verified successfully",
-      data: {
+    formatResponse(
+      response,
+      200,
+      {
         accessToken: result.accessToken,
         user: result.user,
       },
-    });
-  } catch (error: any) {
+      "Email verified successfully"
+    );
+  } catch (error) {
+    logger.error("OTPController", "Failed to verify OTP", error);
     next(error);
   }
 };
 
 export const resendOTP = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { user_id } = req.body;
+    const { userId } = request.body;
 
-    const result = await authService.resendOTP(user_id);
+    const result = await authService.resendOTP(userId);
 
-    res.status(200).json(result);
-  } catch (error: any) {
+    formatResponse(response, 200, null, result.message);
+  } catch (error) {
+    logger.error("OTPController", "Failed to resend OTP", error);
     next(error);
   }
 };

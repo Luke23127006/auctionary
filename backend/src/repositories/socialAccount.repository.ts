@@ -46,6 +46,23 @@ export const createSocialAccount = async (data: {
  * Tìm hoặc tạo mới User và Social Account
  * Đây là logic phức tạp mà chúng ta tách ra từ Service
  */
+const mapUserToResponse = (user: any) => {
+  if (!user) return null;
+  return {
+    id: user.id,
+    email: user.email,
+    fullName: user.full_name,
+    address: user.address,
+    isVerified: user.is_verified,
+    status: user.status,
+    positiveReviews: user.positive_reviews,
+    negativeReviews: user.negative_reviews,
+    password: user.password,
+    createdAt: user.created_at,
+    updatedAt: user.updated_at,
+  };
+};
+
 export const findOrCreateUserFromSocial = async (
   provider: string,
   providerId: string,
@@ -53,14 +70,12 @@ export const findOrCreateUserFromSocial = async (
   name: string | null,
   avatarUrl: string | null
 ) => {
-  // 1. Tìm social account
   let socialAccount = await findSocialAccount(provider, providerId);
 
   if (socialAccount) {
-    return socialAccount.users;
+    return mapUserToResponse(socialAccount.users);
   }
 
-  // 2. Chưa có social account -> Tìm user theo email
   let user = await userRepo.findByEmail(email);
 
   if (!user) {
@@ -73,7 +88,10 @@ export const findOrCreateUserFromSocial = async (
     user = await userRepo.createUser(newUser);
   }
 
-  // 4. Tạo liên kết Social Account (cho cả user mới và cũ)
+  if (!user) {
+    return null;
+  }
+
   await createSocialAccount({
     userId: user.id,
     provider,

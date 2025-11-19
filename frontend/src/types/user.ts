@@ -4,12 +4,12 @@ import type { UserRole } from "../constants/roles"; // 1. Import kiểu UserRole
 export interface User {
   id: number;
   email: string;
-  full_name: string;
+  fullName: string;
   address?: string;
-  is_verified: boolean;
+  isVerified: boolean;
   status: "pending_verification" | "active" | "pending_upgrade" | "suspended";
-  positive_reviews: number;
-  negative_reviews: number;
+  positiveReviews: number;
+  negativeReviews: number;
   roles: UserRole[]; // Array of roles like ['bidder', 'seller']
-  created_at: string;
+  createdAt: string;
 }

@@ -1,17 +1,41 @@
 import prisma from "../database/prisma";
 
-export const createUser = async (userData: any) => {
+const mapUserToResponse = (user: any) => {
+  if (!user) return null;
+  return {
+    id: user.id,
+    email: user.email,
+    fullName: user.full_name,
+    address: user.address,
+    isVerified: user.is_verified,
+    status: user.status,
+    positiveReviews: user.positive_reviews,
+    negativeReviews: user.negative_reviews,
+    password: user.password,
+    createdAt: user.created_at,
+    updatedAt: user.updated_at,
+  };
+};
+
+export const createUser = async (userData: {
+  full_name: string;
+  email: string;
+  password?: string | null;
+  address?: string | null;
+  is_verified?: boolean;
+  status?: any;
+}) => {
   const user = await prisma.users.create({
-    data: userData,
+    data: userData as any,
   });
-  return user;
+  return mapUserToResponse(user);
 };
 
 export const findByEmail = async (email: string) => {
   const user = await prisma.users.findUnique({
     where: { email },
   });
-  return user;
+  return mapUserToResponse(user);
 };
 
 export const verifyUser = async (userId: number) => {
@@ -19,7 +43,7 @@ export const verifyUser = async (userId: number) => {
     where: { id: userId },
     data: { is_verified: true },
   });
-  return user;
+  return mapUserToResponse(user);
 };
 
 export const findByIdWithOTP = async (userId: number) => {
@@ -33,14 +57,19 @@ export const findByIdWithOTP = async (userId: number) => {
       },
     },
   });
-  return user;
+  return user
+    ? {
+        ...mapUserToResponse(user),
+        otpVerifications: user.otp_verifications,
+      }
+    : null;
 };
 
 export const findById = async (userId: number) => {
   const user = await prisma.users.findUnique({
     where: { id: userId },
   });
-  return user;
+  return mapUserToResponse(user);
 };
 
 export const getPositiveNegativeReviewsById = async (userId: number) => {
@@ -51,7 +80,12 @@ export const getPositiveNegativeReviewsById = async (userId: number) => {
       negative_reviews: true,
     },
   });
-  return user;
+  return user
+    ? {
+        positiveReviews: user.positive_reviews,
+        negativeReviews: user.negative_reviews,
+      }
+    : null;
 };
 
 export const findByIdWithRoles = async (userId: number) => {
@@ -65,7 +99,12 @@ export const findByIdWithRoles = async (userId: number) => {
       },
     },
   });
-  return user;
+  return user
+    ? {
+        ...mapUserToResponse(user),
+        usersRoles: user.users_roles,
+      }
+    : null;
 };
 
 export const updatePassword = async (
@@ -76,5 +115,5 @@ export const updatePassword = async (
     where: { id: userId },
     data: { password: hashedPassword },
   });
-  return user;
+  return mapUserToResponse(user);
 };

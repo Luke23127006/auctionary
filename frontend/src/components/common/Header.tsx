@@ -36,7 +36,7 @@ const Header: React.FC = () => {
             // === 6. ĐÃ ĐĂNG NHẬP ===
             <div className="user-menu">
               <span className="welcome-message">
-                Chào, {user?.full_name || user?.email}
+                Chào, {user?.fullName || user?.email}
               </span>
               <Button
                 variant="secondary"

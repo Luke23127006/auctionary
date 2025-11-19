@@ -1,17 +1,18 @@
 import { Request, Response, NextFunction } from "express";
 import * as formService from "../../services/form.service";
+import { formatResponse } from "../../utils/response.util";
+import { logger } from "../../utils/logger.util";
 
 export const getProductSchema = async (
-    _request: Request,
-    response: Response,
-    next: NextFunction
-) => {
-    try {
-        const result = await formService.getProductSchema();
-
-        response.status(200).json(result);
-    } catch (error) {
-        console.error('[getProductSchemeForm] Error:', error);
-        next(error);
-    }
-}
+  _request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await formService.getProductSchema();
+    formatResponse(response, 200, result);
+  } catch (error) {
+    logger.error("FormController", "Failed to get product schema", error);
+    next(error);
+  }
+};

@@ -14,27 +14,42 @@ import {
 } from "../utils/jwt.util";
 import * as googleService from "./google.service";
 import * as facebookService from "./facebook.service";
+import { BadRequestError, NotFoundError, UnauthorizedError } from "../errors";
+import {
+  SignupData,
+  LoginData,
+  SignupResponse,
+  LoginResponse,
+  VerificationRequiredResponse,
+  UserWithRoles,
+  RefreshTokenResponse,
+} from "../types/auth.types";
+import { OTP_EXPIRY_MINUTES } from "../utils/constant.util";
 
-const OTP_EXPIRY_MINUTES = 15;
+export const signupUser = async (
+  userData: SignupData
+): Promise<SignupResponse> => {
+  const { recaptchaToken, fullName, email, password, address } = userData;
 
-export const signupUser = async (userData: any) => {
-  const { recaptchaToken, ...restUserData } = userData;
-
-  const existingUser = await userRepo.findByEmail(restUserData.email);
+  const existingUser = await userRepo.findByEmail(email);
   if (existingUser) {
-    throw new Error("Email already in use");
+    throw new BadRequestError("Email already in use");
   }
 
-  const hashedPassword = await hashPassword(restUserData.password);
+  const hashedPassword = await hashPassword(password);
   const newUser = {
-    ...restUserData,
+    full_name: fullName,
+    email,
     password: hashedPassword,
-    address: restUserData.address || null,
+    address: address || null,
   };
 
   const user = await userRepo.createUser(newUser);
 
-  // Generate and send OTP
+  if (!user) {
+    throw new BadRequestError("Failed to create user");
+  }
+
   const otp = generateOTP(6);
   await otpRepo.createOTP(
     user.id,
@@ -42,27 +57,27 @@ export const signupUser = async (userData: any) => {
     new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000),
     "signup"
   );
-  await sendOTPEmail(user.email, otp, user.full_name);
+  await sendOTPEmail(user.email, otp, user.fullName);
 
   return {
     id: user.id,
     email: user.email,
-    full_name: user.full_name,
-    is_verified: user.is_verified,
+    fullName: user.fullName,
+    isVerified: user.isVerified,
     message: "OTP sent to your email. Please verify to continue.",
   };
 };
 
 export const loginUser = async (
-  loginData: any,
+  loginData: LoginData,
   deviceInfo?: string,
   ipAddress?: string
-) => {
+): Promise<LoginResponse | VerificationRequiredResponse> => {
   const { email, password } = loginData;
 
   const user = await userRepo.findByEmail(email);
   if (!user) {
-    throw new Error("Invalid email");
+    throw new UnauthorizedError("Invalid email or password");
   }
 
   const isPasswordValid = await comparePassword(
@@ -70,12 +85,10 @@ export const loginUser = async (
     user.password as string
   );
   if (!isPasswordValid) {
-    throw new Error("Invalid password");
+    throw new UnauthorizedError("Invalid email or password");
   }
 
-  // CHANGED: Allow unverified users to "login" but return different response
-  if (!user.is_verified) {
-    // Resend OTP for unverified users
+  if (!user.isVerified) {
     await otpRepo.deleteUserOTPs(user.id);
     const otp = generateOTP(6);
     await otpRepo.createOTP(
@@ -84,16 +97,15 @@ export const loginUser = async (
       new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000),
       "signup"
     );
-    await sendOTPEmail(user.email, otp, user.full_name);
+    await sendOTPEmail(user.email, otp, user.fullName);
 
-    // Return user info without tokens
     return {
       requiresVerification: true,
       user: {
         id: user.id,
         email: user.email,
-        full_name: user.full_name,
-        is_verified: false,
+        fullName: user.fullName,
+        isVerified: false,
       },
       message: "Please verify your email. A new OTP has been sent.",
     };
@@ -104,11 +116,9 @@ export const loginUser = async (
     email: user.email,
   };
 
-  // Generate tokens for verified users
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
 
-  // Hash and save refresh token to database
   const tokenHash = hashToken(refreshToken);
   const expiresAt = getRefreshTokenExpiry();
 
@@ -121,23 +131,23 @@ export const loginUser = async (
   );
 
   return {
-    requiresVerification: false,
-    accessToken,
-    refreshToken,
+    accessToken: accessToken,
+    refreshToken: refreshToken,
     user: {
       id: user.id,
       email: user.email,
-      full_name: user.full_name,
-      is_verified: true,
+      fullName: user.fullName,
+      isVerified: true,
     },
   };
 };
 
-export const requestPasswordReset = async (email: string) => {
+export const requestPasswordReset = async (
+  email: string
+): Promise<{ message: string }> => {
   const user = await userRepo.findByEmail(email);
 
-  // Luôn trả về OK (bảo mật)
-  if (!user || !user.is_verified) {
+  if (!user || !user.isVerified) {
     return {
       message: "If an account with that email exists, an OTP has been sent.",
     };
@@ -146,106 +156,106 @@ export const requestPasswordReset = async (email: string) => {
   const otp = generateOTP(6);
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-  // Gửi OTP với purpose 'reset_password'
   await otpRepo.createOTP(user.id, otp, expiresAt, "reset_password");
-  await sendOTPEmail(user.email, otp, user.full_name);
+  await sendOTPEmail(user.email, otp, user.fullName);
 
   return { message: "An OTP has been sent to your email." };
 };
 
-/**
- * --- HÀM MỚI: RESET MẬT KHẨU BẰNG OTP ---
- */
 export const resetPasswordWithOTP = async (
   email: string,
   otp: string,
   newPassword: string
-) => {
+): Promise<{ message: string }> => {
   const user = await userRepo.findByEmail(email);
-  if (!user) throw new Error("Invalid email.");
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
 
-  // 1. Xác thực OTP với purpose 'reset_password'
   const validToken = await otpRepo.findValidOTP(user.id, otp, "reset_password");
-  if (!validToken) throw new Error("Invalid or expired OTP.");
+  if (!validToken) {
+    throw new BadRequestError("Invalid or expired OTP");
+  }
 
-  // 2. Cập nhật mật khẩu mới
   const hashedPassword = await hashPassword(newPassword);
   await userRepo.updatePassword(user.id, hashedPassword);
 
-  // 3. Reset failed_login_attempts (như flow của bạn yêu cầu)
-  // await userRepo.resetLoginAttempts(user.id); // (Bạn cần tạo hàm này trong repo)
-
-  // 4. Đánh dấu OTP là đã dùng
   await otpRepo.markOTPAsUsed(validToken.otp_id);
 
-  return { message: "Password has been reset successfully." };
+  return { message: "Password has been reset successfully" };
 };
 
-export const refreshAccessToken = async (refreshToken: string) => {
-  try {
-    // Verify the refresh token
-    const decoded = verifyRefreshToken(refreshToken);
+export const refreshAccessToken = async (
+  refreshToken: string
+): Promise<RefreshTokenResponse> => {
+  const decoded = verifyRefreshToken(refreshToken);
 
-    // Check if token exists in database and is valid
-    const tokenHash = hashToken(refreshToken);
-    const storedToken = await tokenRepo.findRefreshToken(tokenHash);
+  const tokenHash = hashToken(refreshToken);
+  const storedToken = await tokenRepo.findRefreshToken(tokenHash);
 
-    if (!storedToken) {
-      throw new Error("Invalid refresh token");
-    }
-
-    // Update last used time
-    await tokenRepo.updateLastUsed(storedToken.token_id);
-
-    // Generate new access token
-    const userPayload = {
-      id: decoded.id,
-      email: decoded.email,
-    };
-
-    const newAccessToken = generateAccessToken(userPayload);
-
-    return {
-      accessToken: newAccessToken,
-      user: storedToken.users,
-    };
-  } catch (error) {
-    throw new Error("Invalid or expired refresh token");
+  if (!storedToken) {
+    throw new UnauthorizedError("Invalid refresh token");
   }
+
+  await tokenRepo.updateLastUsed(storedToken.token_id);
+
+  const userPayload = {
+    id: decoded.id,
+    email: decoded.email,
+  };
+
+  const newAccessToken = generateAccessToken(userPayload);
+
+  return {
+    accessToken: newAccessToken,
+    user: {
+      id: storedToken.users.id,
+      email: storedToken.users.email,
+      fullName: storedToken.users.full_name,
+      isVerified: storedToken.users.is_verified,
+    },
+  };
 };
 
-export const logoutUser = async (refreshToken: string) => {
+export const logoutUser = async (
+  refreshToken: string
+): Promise<{ message: string }> => {
   const tokenHash = hashToken(refreshToken);
   await tokenRepo.deleteRefreshToken(tokenHash);
   return { message: "Logged out successfully" };
 };
 
-export const logoutAllDevices = async (userId: number) => {
+export const logoutAllDevices = async (
+  userId: number
+): Promise<{ message: string }> => {
   await tokenRepo.deleteUserTokens(userId);
   return { message: "Logged out from all devices" };
 };
 
-export const verifyOTP = async (userId: number, otp: string) => {
+export const verifyOTP = async (
+  userId: number,
+  otp: string
+): Promise<LoginResponse> => {
   const otpRecord = await otpRepo.findValidOTP(userId, otp, "signup");
 
   if (!otpRecord) {
-    throw new Error("Invalid OTP code");
+    throw new BadRequestError("Invalid OTP code");
   }
 
   if (!otpRecord.created_at || isOTPExpired(new Date(otpRecord.created_at))) {
-    throw new Error("OTP has expired. Please request a new one.");
+    throw new BadRequestError("OTP has expired. Please request a new one");
   }
 
-  // Mark OTP as used
   await otpRepo.markOTPAsUsed(otpRecord.otp_id);
 
-  // Verify user
   const verifiedUser = await userRepo.verifyUser(userId);
 
-  // Send welcome email
-  await sendWelcomeEmail(verifiedUser.email, verifiedUser.full_name);
+  if (!verifiedUser) {
+    throw new NotFoundError("User not found");
+  }
 
-  // Generate tokens for newly verified user
+  await sendWelcomeEmail(verifiedUser.email, verifiedUser.fullName);
+
   const userPayload = {
     id: verifiedUser.id,
     email: verifiedUser.email,
@@ -254,94 +264,88 @@ export const verifyOTP = async (userId: number, otp: string) => {
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
 
-  // Save refresh token
   const tokenHash = hashToken(refreshToken);
   const expiresAt = getRefreshTokenExpiry();
 
   await tokenRepo.createRefreshToken(verifiedUser.id, tokenHash, expiresAt);
 
   return {
-    accessToken,
-    refreshToken,
+    accessToken: accessToken,
+    refreshToken: refreshToken,
     user: {
       id: verifiedUser.id,
       email: verifiedUser.email,
-      full_name: verifiedUser.full_name,
-      is_verified: true,
+      fullName: verifiedUser.fullName,
+      isVerified: true,
     },
   };
 };
 
-export const resendOTP = async (userId: number) => {
+export const resendOTP = async (
+  userId: number
+): Promise<{ message: string }> => {
   const user = await userRepo.findById(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new NotFoundError("User not found");
   }
 
-  if (user.is_verified) {
-    throw new Error("Email is already verified");
+  if (user.isVerified) {
+    throw new BadRequestError("Email is already verified");
   }
 
-  // Delete old OTPs
   await otpRepo.deleteUserOTPs(userId);
 
-  // Generate and send new OTP
   const otp = generateOTP(6);
   await otpRepo.createOTP(
     userId,
     otp,
-    new Date(Date.now() + 15 * 60 * 1000),
+    new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000),
     "signup"
   );
-  await sendOTPEmail(user.email, otp, user.full_name);
+  await sendOTPEmail(user.email, otp, user.fullName);
 
   return { message: "New OTP sent to your email" };
 };
 
-export const getAuthenticatedUser = async (userId: number) => {
+export const getAuthenticatedUser = async (
+  userId: number
+): Promise<UserWithRoles> => {
   const user = await userRepo.findByIdWithRoles(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new NotFoundError("User not found");
   }
 
-  // Extract role names from the users_roles relation
-  const roles = user.users_roles.map((ur) => ur.roles.name);
+  const roles = user.usersRoles.map((ur: any) => ur.roles.name);
 
   return {
     id: user.id,
     email: user.email,
-    full_name: user.full_name,
+    fullName: user.fullName,
     address: user.address,
-    is_verified: user.is_verified,
+    isVerified: user.isVerified,
     status: user.status,
-    positive_reviews: user.positive_reviews,
-    negative_reviews: user.negative_reviews,
-    roles: roles, // ['bidder', 'seller', 'admin']
-    created_at: user.created_at,
+    positiveReviews: user.positiveReviews,
+    negativeReviews: user.negativeReviews,
+    roles: roles,
+    createdAt: user.createdAt,
   };
 };
-
-/* 
-    OAuth 2.0 
-*/
 
 export const loginWithGoogle = async (
   code: string,
   deviceInfo?: string,
   ipAddress?: string
-) => {
-  // 1. Xác thực token với Google
+): Promise<LoginResponse> => {
   const googlePayload = await googleService.verifyGoogleToken(code);
 
   if (!googlePayload || !googlePayload.email) {
-    throw new Error("Google account invalid or missing email");
+    throw new BadRequestError("Google account invalid or missing email");
   }
 
   const { email, name, picture, sub: googleId } = googlePayload;
 
-  // 2. Tìm hoặc tạo User (Logic DB đã được chuyển sang Repository)
   const user = await socialRepo.findOrCreateUserFromSocial(
     "google",
     googleId,
@@ -350,11 +354,14 @@ export const loginWithGoogle = async (
     picture || null
   );
 
+  if (!user) {
+    throw new BadRequestError("Failed to create user from Google account");
+  }
+
   const userPayload = { id: user.id, email: user.email, roles: [] };
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
 
-  // 4. Lưu refresh token
   await tokenRepo.createRefreshToken(
     user.id,
     hashToken(refreshToken),
@@ -364,14 +371,13 @@ export const loginWithGoogle = async (
   );
 
   return {
-    accessToken,
-    refreshToken,
+    accessToken: accessToken,
+    refreshToken: refreshToken,
     user: {
       id: user.id,
       email: user.email,
-      full_name: user.full_name,
-      avatar: picture, // Hoặc user.avatar nếu bạn lưu avatar vào bảng user
-      is_verified: true,
+      fullName: user.fullName,
+      isVerified: true,
     },
   };
 };
@@ -380,11 +386,11 @@ export const loginWithFacebook = async (
   accessToken: string,
   deviceInfo?: string,
   ipAddress?: string
-) => {
+): Promise<LoginResponse> => {
   const fbPayload = await facebookService.verifyFacebookToken(accessToken);
 
   if (!fbPayload.email) {
-    throw new Error("Facebook account must have an email to sign up.");
+    throw new BadRequestError("Facebook account must have an email to sign up");
   }
 
   const { email, name, picture, sub: facebookId } = fbPayload;
@@ -396,6 +402,10 @@ export const loginWithFacebook = async (
     name || null,
     picture || null
   );
+
+  if (!user) {
+    throw new BadRequestError("Failed to create user from Facebook account");
+  }
 
   const userPayload = { id: user.id, email: user.email, roles: [] };
   const jwtAccessToken = generateAccessToken(userPayload);
@@ -415,9 +425,8 @@ export const loginWithFacebook = async (
     user: {
       id: user.id,
       email: user.email,
-      full_name: user.full_name,
-      avatar: picture,
-      is_verified: true,
+      fullName: user.fullName,
+      isVerified: true,
     },
   };
 };
