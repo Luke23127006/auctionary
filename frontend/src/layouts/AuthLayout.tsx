@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import "./AuthLayout.css"; // We'll create this next
 
 // This layout receives a title and 'children' (which is your form)
@@ -9,9 +8,6 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ title, children }) => {
-  const navigate = useNavigate();
-
-  // General effect: Add 'no-scroll' class to the body
   useEffect(() => {
     document.body.classList.add("no-scroll");
     return () => {
