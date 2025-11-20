@@ -8,8 +8,7 @@ import Input from "../../components/ui/Input";
 import { useAuth } from "../../hooks/useAuth"; // Assuming hook is in contexts/
 import "./AuthForms.css"; // 7. Import common CSS for forms
 import { useGoogleLogin } from "@react-oauth/google";
-// @ts-ignore: module 'react-facebook-login/dist/facebook-login-render-props' has no type declarations
-import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
+import FacebookLogin from "@greatsumini/react-facebook-login";
 
 // 2. Get Site Key from .env (Vite)
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
@@ -194,15 +193,13 @@ export default function LoginPage() {
         {/* NÚT FACEBOOK */}
         <FacebookLogin
           appId={FACEBOOK_APP_ID}
-          autoLoad={false} // Quan trọng: Để false để không tự popup khi vào trang
-          fields="name,email,picture"
-          callback={responseFacebook} // Hàm xử lý kết quả
-          render={(renderProps: any) => (
-            <Button
-              variant="secondary"
-              onClick={renderProps.onClick}
-              disabled={isLoading}
-            >
+          onSuccess={responseFacebook}
+          onFail={(error) => {
+            console.log("FB Login Failed:", error);
+            toast.error("Facebook login failed.");
+          }}
+          render={({ onClick, logout }) => (
+            <Button variant="secondary" onClick={onClick} disabled={isLoading}>
               <img
                 src="/assets/2023_Facebook_icon.svg.png"
                 alt="F"
