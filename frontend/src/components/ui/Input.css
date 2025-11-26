@@ -7,23 +7,23 @@
 
 .input-field {
   width: 100%;
-  background-color: #fafafa;
-  border: 1px solid #dbdbdb;
-  border-radius: 6px;
+  background-color: var(--bg-secondary, #fafafa);
+  border: 1px solid var(--border-color, #dbdbdb);
+  border-radius: var(--radius, 6px);
   padding: 12px;
   padding-right: 40px;
   margin-bottom: 8px;
   font-size: 14px;
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
-  color: #000;
-  font-family: "Verdana", sans-serif;
+  color: var(--text-main, #000);
+  font-family: var(--font-display, "Verdana", sans-serif);
 }
 
 .input-field:focus {
   outline: none;
-  border-color: #a8a8a8;
-  box-shadow: 0 0 0 1px #a8a8a8;
+  border-color: var(--accent-color, #a8a8a8);
+  box-shadow: 0 0 0 1px var(--accent-color, #a8a8a8);
 }
 
 .password-toggle-btn {
@@ -67,11 +67,11 @@
 .input-field:-webkit-autofill:hover,
 .input-field:-webkit-autofill:focus,
 .input-field:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-  -webkit-text-fill-color: #000 !important;
-  caret-color: #000 !important;
-  border-radius: 6px !important;
-  font-family: "Verdana", sans-serif !important;
+  -webkit-box-shadow: 0 0 0 30px var(--bg-secondary, #ffffff) inset !important;
+  -webkit-text-fill-color: var(--text-main, #000) !important;
+  caret-color: var(--text-main, #000) !important;
+  border-radius: var(--radius, 6px) !important;
+  font-family: var(--font-display, "Verdana", sans-serif) !important;
   font-size: 14px !important;
 }
 

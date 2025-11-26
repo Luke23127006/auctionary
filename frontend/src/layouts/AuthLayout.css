@@ -26,7 +26,7 @@
   align-items: center;
   text-align: center;
   margin: 20px;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   padding: 32px 40px;
   border-radius: 12px;
   box-sizing: border-box;

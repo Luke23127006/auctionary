@@ -1,6 +1,7 @@
 import AppRouter from "./routes/AppRouter";
 import { Toaster } from "react-hot-toast";
 import "./App.css";
+// import { ThemeSwitcher } from "./components/ThemeSwitcher";
 
 function App() {
   return (
@@ -11,7 +12,7 @@ function App() {
           duration: 3000,
         }}
       />
-
+      {/* <ThemeSwitcher /> */}
       <AppRouter />
     </>
   );
