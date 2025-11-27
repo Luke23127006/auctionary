@@ -13,5 +13,6 @@
     "**/.vite/**": true
   },
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.check.npmIsTSVersion": true
+  "typescript.check.npmIsTSVersion": true,
+  "css.lint.unknownAtRules": "ignore"
 }

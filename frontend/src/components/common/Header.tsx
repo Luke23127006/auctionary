@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"; // 1. Import hook useAuth
 import "./Header.css";
-import { Button } from "../ui/Button";
+import { Button } from "../ui/button";
 
 const Header: React.FC = () => {
   // 3. Lấy trạng thái xác thực, user, và hàm logout từ Context
@@ -58,7 +58,7 @@ const Header: React.FC = () => {
             <div className="guest-menu">
               <Button
                 variant="default"
-                size="md"
+                size="default"
                 className="header-button"
                 onClick={() => navigate("/login")}
               >
@@ -66,7 +66,7 @@ const Header: React.FC = () => {
               </Button>
               <Button
                 variant="secondary"
-                size="md"
+                size="default"
                 className="header-button"
                 onClick={() => navigate("/signup")}
               >

@@ -2,11 +2,11 @@ export const themes = {
   tactical: {
     name: "Black Market",
 
-    // ... (Giữ nguyên các phần 1, 2, 3, 4, 5, 6 cũ) ...
     // --- 1. Backgrounds ---
     "--bg-primary": "#0b0c10",
     "--bg-secondary": "#15161b",
-    "--bg-tertiary": "#1f2026",
+    "--bg-tertiary": "#1f2128", // Đã update từ #1f2026 sang #1f2128 theo Figma
+    "--bg-input": "#15161b", // Mới
 
     // --- 2. Typography ---
     "--text-main": "#d1d5db",
@@ -15,9 +15,11 @@ export const themes = {
 
     // --- 3. Actions & Accents ---
     "--accent-color": "#ff9900",
-    "--accent-hover": "#e68a00",
+    "--accent-hover": "#ff8800", // Update sáng hơn theo Figma
+    "--accent-light": "#ffaa33", // Mới
+    "--accent-dark": "#cc7a00", // Mới
     "--accent-glow": "rgba(255, 153, 0, 0.15)",
-    "--accent-ring": "rgba(255, 153, 0, 0.5)",
+    "--accent-ring": "#ff9900", // Update từ rgba sang hex solid theo Figma
 
     // --- 4. Borders & Lines ---
     "--border-color": "#333333",
@@ -29,60 +31,37 @@ export const themes = {
     "--status-warning": "#ff9900",
     "--status-info": "#3b82f6",
 
-    // --- 6. Font Settings ---
-    "--font-display": "Open Sans, sans-serif",
+    // --- 6. Charts (MỚI) ---
+    "--chart-1": "#ff9900",
+    "--chart-2": "#ffaa33",
+    "--chart-3": "#cc7a00",
+    "--chart-4": "#666666",
+    "--chart-5": "#999999",
 
-    // --- 7. Component Specifics - Buttons (MỚI THÊM) ---
-    // Secondary
-    "--btn-secondary-bg": "#1F2128",
-    "--btn-secondary-hover": "#334155",
-    "--btn-secondary-text": "#D1D5DB",
+    // --- 7. Sidebar (MỚI) ---
+    "--sidebar-bg": "#0b0c10",
+    "--sidebar-fg": "#d1d5db",
+    "--sidebar-primary": "#ff9900",
+    "--sidebar-primary-fg": "#0b0c10",
+    "--sidebar-accent": "#15161b",
+    "--sidebar-accent-fg": "#d1d5db",
+    "--sidebar-border": "#333333",
+    "--sidebar-ring": "#ff9900",
 
-    // Destructive
+    // --- 8. Component Specifics ---
+    "--font-display": "'Open Sans', sans-serif",
+
+    // Buttons (Cập nhật màu nền theo biến mới)
+    "--btn-secondary-bg": "#1f2128", // Khớp với bg-tertiary
+    "--btn-secondary-hover": "#2d3039", // Sáng hơn xíu
+    "--btn-secondary-text": "#d1d5db",
+
     "--btn-destructive-bg": "#ef4444",
     "--btn-destructive-hover": "#dc2626",
     "--btn-destructive-text": "#ffffff",
 
-    // Outline
-    "--btn-outline-bg": "#0B0C10",
-    "--btn-outline-border-color": "#333333",
-    "--btn-outline-text": "#D1D5DB",
-
-    // Ghost
-    "--btn-ghost-text": "#D1D5DB",
-    "--btn-ghost-hover-bg": "#ff9900",
-    "--btn-ghost-hover-text": "#ffffff",
-
-    // Link
-    "--btn-link-text": "#D1D5DB",
-    "--btn-link-hover-bg": "#ff9900",
-    "--btn-link-hover-text": "#ffffff",
+    "--btn-ghost-hover-bg": "rgba(255, 153, 0, 0.1)",
   },
 } as const;
 
 export type ThemeKey = keyof typeof themes;
-
-// luxury: {
-//   name: "Luxury Gold",
-//   "--bg-primary": "#050505",
-//   "--bg-secondary": "#121212",
-//   "--text-main": "#f3f4f6",
-//   "--text-muted": "#6b7280",
-//   "--accent-color": "#d4af37",
-//   "--accent-hover": "#b5952f",
-//   "--border-color": "#444444",
-//   "--font-display": "Open Sans, sans-serif",
-//   "--radius": "4px",
-// },
-//   cyberpunk: {
-//     name: "Neon City",
-//     "--bg-primary": "#050510",
-//     "--bg-secondary": "#0a0a16",
-//     "--text-main": "#ccfbf1",
-//     "--text-muted": "#5eead4",
-//     "--accent-color": "#00ff9d",
-//     "--accent-hover": "#00cc7d",
-//     "--border-color": "#1a1a3a",
-//     "--font-display": "sans-serif",
-//     "--radius": "0px",
-//   },

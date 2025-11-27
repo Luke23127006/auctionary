@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import * as authService from "../../services/authService";
 import AuthLayout from "../../layouts/AuthLayout";
 import OTPInput from "../../components/ui/OTPInput";
-import { Button } from "../../components/ui/Button";
+import { Button } from "../../components/ui/button";
 import toast from "react-hot-toast";
 import "./VerifyOTPPage.css";
 
@@ -178,17 +178,11 @@ const VerifyOTPPage: React.FC = () => {
           <Button
             type="submit"
             variant="default"
+            isLoading={isVerifying}
             disabled={otp.length !== 6 || isVerifying}
             className="verify-button"
           >
-            {isVerifying ? (
-              <>
-                <span className="spinner"></span>
-                Verifying...
-              </>
-            ) : (
-              "Verify Account"
-            )}
+            {isVerifying ? "Verifying..." : "Verify Account"}
           </Button>
         </form>
 
@@ -197,13 +191,14 @@ const VerifyOTPPage: React.FC = () => {
           <p className="resend-text">Didn't receive the code?</p>
 
           {canResend ? (
-            <button
+            <Button
               onClick={handleResendOTP}
+              isLoading={isResending}
               disabled={isResending}
               className="resend-button"
             >
               {isResending ? "Sending..." : "Resend Code"}
-            </button>
+            </Button>
           ) : (
             <p className="cooldown-text">
               Resend code in{" "}

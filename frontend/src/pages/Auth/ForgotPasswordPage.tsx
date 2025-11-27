@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
-import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import OTPInput from "../../components/ui/OTPInput"; // 1. Import OTPInput
 import "./AuthForms.css";
 import { useAuth } from "../../hooks/useAuth";
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
           />
           {error && <p className="auth-error">{error}</p>}
           <div className="button-group">
-            <Button type="submit" variant="primary" disabled={isLoading}>
+            <Button type="submit" variant="default" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <span className="spinner"></span>
@@ -149,15 +149,8 @@ export default function ForgotPasswordPage() {
 
           {error && <p className="auth-error">{error}</p>}
           <div className="button-group">
-            <Button type="submit" variant="primary" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Resetting...
-                </>
-              ) : (
-                "Reset Password"
-              )}
+            <Button type="submit" variant="default" isLoading={isLoading}>
+              {isLoading ? "Resetting..." : "Reset Password"}
             </Button>
           </div>
         </form>
