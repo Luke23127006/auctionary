@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import OTPInput from "../../components/ui/OTPInput"; // 1. Import OTPInput
-import "./AuthForms.css";
+import InputOTP from "../../components/ui/input-otp"; // 1. Import OTPInput
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 
@@ -85,7 +84,7 @@ export default function ForgotPasswordPage() {
       {/* --- GIAI ĐOẠN 1: YÊU CẦU EMAIL (Bước 1) --- */}
       {step === "request_email" && (
         <form className="auth-form" onSubmit={handleRequestOTP}>
-          <p className="auth-subtext">
+          <p className="text-sm text-center mb-4 text-[var(--text-muted)]">
             Enter your email to receive a 6-digit code.
           </p>
           <Input
@@ -115,22 +114,26 @@ export default function ForgotPasswordPage() {
       {/* --- GIAI ĐOẠN 2: NHẬP OTP VÀ PASS MỚI (Bước 2) --- */}
       {step === "submit_otp" && (
         <form className="auth-form" onSubmit={handleSubmitNewPassword}>
-          <p className="auth-subtext">
+          <p className="text-sm text-center mb-4 text-[var(--text-muted)]">
             An OTP was sent to <strong>{formData.email}</strong>.
           </p>
 
-          <label className="auth-label">Enter 6-Digit OTP</label>
-          <OTPInput
+          <label className="text-sm font-semibold mb-4 block">
+            Enter 6-Digit OTP
+          </label>
+          <InputOTP
             length={6}
             value={formData.otp}
-            onChange={handleOtpChange} // Dùng hàm mới
+            onChange={handleOtpChange}
             disabled={isLoading}
           />
 
-          <label className="auth-label">Enter New Password</label>
+          <label className="text-sm font-semibold mb-4 block">
+            Enter New Password
+          </label>
           <Input
             type="password"
-            name="newPassword" // Sửa name
+            name="newPassword"
             placeholder="New Password (min 8 characters)"
             value={formData.newPassword}
             onChange={handleChange}
@@ -163,7 +166,7 @@ export default function ForgotPasswordPage() {
           else navigate("/login"); // Quay lại trang Login
         }}
         disabled={isLoading}
-        className="switch-auth-button"
+        className="w-full mt-2.5 font-semibold"
       >
         Back to Login
       </Button>

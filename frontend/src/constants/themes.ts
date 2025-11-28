@@ -7,6 +7,7 @@ export const themes = {
     "--bg-secondary": "#15161b",
     "--bg-tertiary": "#1f2128", // Đã update từ #1f2026 sang #1f2128 theo Figma
     "--bg-input": "#15161b", // Mới
+    "--bg-switch": "#333333", // Mới
 
     // --- 2. Typography ---
     "--text-main": "#d1d5db",

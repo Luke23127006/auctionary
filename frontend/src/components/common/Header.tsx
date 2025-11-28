@@ -27,7 +27,7 @@ const Header: React.FC = () => {
                 "https://placehold.co/40x40/007bff/FFF?text=A")
             }
           />
-          <span>Auctionary</span>
+          <span className="text-accent">Auctionary</span>
         </Link>
 
         {/* 5. Điều hướng (bên phải) */}

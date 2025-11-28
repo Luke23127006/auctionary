@@ -1,32 +1,36 @@
 import React, { useEffect } from "react";
-import "./AuthLayout.css"; // We'll create this next
 
-// This layout receives a title and 'children' (which is your form)
 interface AuthLayoutProps {
   title: string;
+
   children: React.ReactNode;
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ title, children }) => {
   useEffect(() => {
     document.body.classList.add("no-scroll");
+
     return () => {
       document.body.classList.remove("no-scroll");
     };
   }, []);
 
   return (
-    <div className="auth-page-container">
-      <main className="auth-main-content">
-        <div className="auth-box">
+    <div className="flex flex-col h-screen w-full items-center justify-center relative box-border mt-0">
+      <main className="flex items-center justify-center w-full">
+        <div className="w-[420px] flex flex-col items-center text-center m-5 bg-[var(--bg-secondary)] p-8 md:px-10 rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.15)] transition-shadow duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
           <img
             src="/assets/auctionary_logo.svg" // Change logo here
             alt="Auctionary Logo"
-            className="auth-logo"
+            className="w-[70px] h-auto mb-4 opacity-90 animate-fade-in-down"
           />
-          <h1 className="auth-title">{title}</h1>
+
+          <h1 className="text-xl font-semibold mt-0 mb-6 animate-fade-in">
+            {title}
+          </h1>
 
           {/* Form content (Login or Signup) will be injected here */}
+
           {children}
         </div>
       </main>

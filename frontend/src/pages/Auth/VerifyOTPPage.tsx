@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as authService from "../../services/authService";
 import AuthLayout from "../../layouts/AuthLayout";
-import OTPInput from "../../components/ui/OTPInput";
+import InputOTP from "../../components/ui/input-otp";
 import { Button } from "../../components/ui/button";
 import toast from "react-hot-toast";
-import "./VerifyOTPPage.css";
 
 interface LocationState {
   email?: string;
@@ -141,24 +140,29 @@ const VerifyOTPPage: React.FC = () => {
 
   return (
     <AuthLayout title="Verify Your Account">
-      <div className="verify-otp-container">
+      <div className="w-full max-w-[400px] mx-auto px-4 sm:px-0">
         {/* Info Message */}
-        <div className="otp-info-message">
+        <div className="text-center mb-8">
           {customMessage ? (
-            <p className="custom-message">{customMessage}</p>
+            <p className="font-semibold text-[var(--accent-color)] mb-2">
+              {customMessage}
+            </p>
           ) : (
-            <p>
-              We've sent a 6-digit verification code to <strong>{email}</strong>
+            <p className="text-sm text-[var(--text-main)] leading-relaxed mb-2">
+              We've sent a 6-digit verification code to{" "}
+              <strong className="font-semibold text-[var(--text-main)]">
+                {email}
+              </strong>
             </p>
           )}
-          <p className="secondary-text">
+          <p className="text-[13px] text-[var(--text-muted)]">
             Please check your inbox and enter the code below.
           </p>
         </div>
 
         {/* OTP Form */}
-        <form onSubmit={handleVerify} className="otp-form">
-          <OTPInput
+        <form onSubmit={handleVerify} className="flex flex-col items-center">
+          <InputOTP
             length={6}
             value={otp}
             onChange={setOtp}
@@ -168,8 +172,8 @@ const VerifyOTPPage: React.FC = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="error-message-box">
-              <span className="error-icon">⚠️</span>
+            <div className="flex items-center gap-2 p-3 bg-[rgba(239,68,68,0.1)] border border-[var(--status-error)] rounded-md text-[var(--status-error)] text-[13px] my-4 w-full box-border">
+              <span className="text-base">⚠️</span>
               <span>{error}</span>
             </div>
           )}
@@ -180,36 +184,44 @@ const VerifyOTPPage: React.FC = () => {
             variant="default"
             isLoading={isVerifying}
             disabled={otp.length !== 6 || isVerifying}
-            className="verify-button"
+            className="mt-6 gap-2 w-full"
           >
             {isVerifying ? "Verifying..." : "Verify Account"}
           </Button>
         </form>
 
         {/* Resend OTP Section */}
-        <div className="resend-section">
-          <p className="resend-text">Didn't receive the code?</p>
+        <div className="text-center mt-8 pt-6 border-t border-[var(--border-color)]">
+          <p className="text-sm text-[var(--text-muted)] mb-3">
+            Didn't receive the code?
+          </p>
 
           {canResend ? (
             <Button
               onClick={handleResendOTP}
               isLoading={isResending}
               disabled={isResending}
-              className="resend-button"
+              variant="ghost"
+              className="text-[var(--accent-color)] font-semibold text-sm cursor-pointer p-2 rounded hover:bg-[rgba(255,153,0,0.1)] disabled:text-[var(--text-muted)] disabled:cursor-not-allowed"
             >
               {isResending ? "Sending..." : "Resend Code"}
             </Button>
           ) : (
-            <p className="cooldown-text">
+            <p className="text-sm text-[var(--text-muted)]">
               Resend code in{" "}
-              <span className="countdown">{cooldownSeconds}s</span>
+              <span className="font-semibold text-[var(--text-main)]">
+                {cooldownSeconds}s
+              </span>
             </p>
           )}
         </div>
 
         {/* Back to Login */}
-        <div className="back-to-login">
-          <button onClick={handleBackToLogin} className="text-button">
+        <div className="text-center mt-6">
+          <button
+            onClick={handleBackToLogin}
+            className="bg-transparent border-none text-[var(--text-muted)] text-sm cursor-pointer p-2 hover:text-[var(--text-main)] transition-colors"
+          >
             ← Back to Login
           </button>
         </div>

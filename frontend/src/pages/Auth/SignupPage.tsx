@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import AuthLayout from "../../layouts/AuthLayout"; // 1. Import layout
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import "./AuthForms.css"; // 7. Import common CSS
 import { useAuth } from "../../hooks/useAuth";
 
 // 2. Get Site Key
@@ -85,7 +84,7 @@ export default function SignupPage() {
   return (
     // 7. Use AuthLayout
     <AuthLayout title="Sign up for Auctionary">
-      <form className="auth-form" onSubmit={handleSignup}>
+      <form className="flex w-full flex-col gap-3" onSubmit={handleSignup}>
         {/* 8. Update fields according to new schema */}
         <Input
           name="fullName"
@@ -130,7 +129,7 @@ export default function SignupPage() {
           disabled={isLoading}
         />
 
-        <div className="recaptcha-container">
+        <div className="mt-2 flex justify-center scale-95 origin-center">
           <ReCAPTCHA
             theme="dark"
             ref={recaptchaRef}
@@ -146,6 +145,7 @@ export default function SignupPage() {
             variant="default"
             size="lg"
             isLoading={isLoading}
+            className="w-full"
           >
             {isLoading ? "Signing up..." : "Sign Up"}
           </Button>
@@ -156,7 +156,7 @@ export default function SignupPage() {
         variant="secondary"
         onClick={() => navigate("/login")}
         size="lg"
-        className="switch-auth-button"
+        className="w-full mt-2.5 font-semibold"
       >
         Already have an account? Log In
       </Button>

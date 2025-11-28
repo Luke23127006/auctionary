@@ -2,19 +2,50 @@
 
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { motion } from "framer-motion"; // 1. Import Framer Motion
 
 import { cn } from "./utils";
 
+// 2. Tạo Context để biết Tab nào đang active
+const TabsContext = React.createContext<{
+  activeTab: string;
+  setActiveTab: (value: string) => void;
+}>({
+  activeTab: "",
+  setActiveTab: () => {},
+});
+
 function Tabs({
   className,
+  value,
+  defaultValue,
+  onValueChange,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  const [activeTab, setActiveTab] = React.useState<string>(
+    value || defaultValue || ""
+  );
+
+  React.useEffect(() => {
+    if (value !== undefined) {
+      setActiveTab(value);
+    }
+  }, [value]);
+
   return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      className={cn("flex flex-col gap-2", className)}
-      {...props}
-    />
+    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
+      <TabsPrimitive.Root
+        data-slot="tabs"
+        value={value}
+        defaultValue={defaultValue}
+        onValueChange={(val) => {
+          setActiveTab(val);
+          onValueChange?.(val);
+        }}
+        className={cn("flex flex-col gap-2", className)}
+        {...props}
+      />
+    </TabsContext.Provider>
   );
 }
 
@@ -26,7 +57,7 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-xl p-[3px] flex",
+        "bg-muted/50 text-muted-foreground inline-flex h-11 w-fit items-center justify-center p-1 rounded-lg",
         className
       )}
       {...props}
@@ -36,17 +67,38 @@ function TabsList({
 
 function TabsTrigger({
   className,
+  value,
+  children,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+  const { activeTab } = React.useContext(TabsContext);
+  const isActive = activeTab === value;
+
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
+      value={value}
       className={cn(
-        "data-[state=active]:bg-card dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-xl border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative inline-flex flex-1 items-center justify-center gap-1.5 p-2 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 rounded-lg",
+        "data-[state=active]:text-foreground text-muted-foreground",
         className
       )}
       {...props}
-    />
+    >
+      {isActive && (
+        <motion.div
+          layoutId="active-tab-indicator"
+          className="absolute inset-0 z-0 bg-background shadow-sm border border-border/50 rounded-md"
+          initial={false}
+          transition={{
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+          }}
+        />
+      )}
+      <span className="relative z-10 flex items-center gap-2">{children}</span>
+    </TabsPrimitive.Trigger>
   );
 }
 
@@ -57,7 +109,7 @@ function TabsContent({
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      className={cn("flex-1 outline-none", className)}
+      className={cn("flex-1 outline-none mt-2", className)}
       {...props}
     />
   );

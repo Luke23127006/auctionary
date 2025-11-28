@@ -1,29 +1,38 @@
 import React from "react";
-import "./StatusPageLayout.css"; // Chúng ta sẽ dùng file CSS chung này
+import { Button } from "../components/ui/button";
+import { useNavigate } from "react-router-dom";
 
-// 1. Định nghĩa props mà layout này sẽ nhận
 interface StatusPageLayoutProps {
-  icon: React.ReactNode; // Có thể nhận emoji (🚧) hoặc icon
+  icon: React.ReactNode;
   title: string;
   message: string;
-  children: React.ReactNode; // 'children' sẽ là nơi chúng ta đặt các nút bấm
 }
 
 export default function StatusPageLayout({
   icon,
   title,
   message,
-  children,
 }: StatusPageLayoutProps) {
-  return (
-    // 2. Sử dụng class chung
-    <div className="status-container">
-      <div className="status-icon">{icon}</div>
-      <h1 className="status-title">{title}</h1>
-      <p className="status-message">{message}</p>
+  const navigate = useNavigate();
+  const handleGoBack = () => navigate(-1);
 
-      {/* 3. Render các nút bấm (children) ở đây */}
-      <div className="status-actions">{children}</div>
+  return (
+    <div className="flex flex-col justify-center items-center min-h-[80vh] text-center font-display text-[var(--text-main)] p-5">
+      <div className="text-[4.5rem] mb-6 animate-bounce">{icon}</div>
+      <h1 className="text-4xl font-semibold text-[var(--text-main)] mb-3">
+        {title}
+      </h1>
+      <p className="text-lg text-[var(--text-muted)] max-w-[400px] leading-relaxed">
+        {message}
+      </p>
+      <Button
+        onClick={handleGoBack}
+        variant="secondary"
+        size="lg"
+        className="mt-4 w-40"
+      >
+        Go Back
+      </Button>
     </div>
   );
 }
