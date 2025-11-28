@@ -31,6 +31,10 @@
   --color-input: var(--bg-input);
   --color-ring: var(--accent-ring);
 
+  --color-success: var(--status-success);
+  --color-warning: var(--status-warning);
+  --color-info: var(--status-info);
+
   --animate-in: enter 150ms ease-out;
   --animate-out: exit 150ms ease-in;
 

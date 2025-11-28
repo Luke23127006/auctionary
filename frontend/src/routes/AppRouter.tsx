@@ -14,7 +14,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 import SignupPage from "../pages/Auth/SignupPage";
 import LoginPage from "../pages/Auth/LoginPage";
 import VerifyOTPPage from "../pages/Auth/VerifyOTPPage"; // Add this
-import HomePage from "../pages/HomePage";
+import HomePage from "../pages/Auction/HomePage";
 import ForgotPasswordPage from "../pages/Auth/ForgotPasswordPage";
 import UIKitPage from "../pages/Dev/UIKitPage";
 
