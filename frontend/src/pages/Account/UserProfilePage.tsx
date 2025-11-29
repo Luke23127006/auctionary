@@ -212,12 +212,12 @@ export default function UserProfilePage() {
       <main className="container mx-auto px-4 py-8">
         {/* Profile Header */}
         <div className="mb-8">
-          <Card className="border-border bg-gradient-to-r from-amber/5 via-transparent to-transparent">
+          <Card className="border-border bg-gradient-to-r from-accent/5 via-transparent to-transparent">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 {/* Avatar & Basic Info */}
                 <div className="flex items-center gap-4">
-                  <Avatar className="h-24 w-24 border-4 border-amber/30">
+                  <Avatar className="h-24 w-24 border-4 border-accent/30">
                     <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" />
                     <AvatarFallback>AH</AvatarFallback>
                   </Avatar>
@@ -230,9 +230,9 @@ export default function UserProfilePage() {
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className="border-amber/50 text-amber"
+                        className="border-accent/50 text-accent"
                       >
-                        <Star className="h-3 w-3 mr-1 fill-amber" />
+                        <Star className="h-3 w-3 mr-1 fill-accent" />
                         Premium Member
                       </Badge>
                       <Badge variant="secondary">Member since 2023</Badge>
@@ -245,8 +245,8 @@ export default function UserProfilePage() {
                   <Card className="border-border">
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-1 mb-1">
-                        <ThumbsUp className="h-4 w-4 text-green-500" />
-                        <span className="text-2xl text-green-500">98%</span>
+                        <ThumbsUp className="h-4 w-4 text-success" />
+                        <span className="text-2xl text-success">98%</span>
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Positive Rating
@@ -257,7 +257,7 @@ export default function UserProfilePage() {
                   <Card className="border-border">
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2 mb-1">
-                        <ThumbsUp className="h-4 w-4 text-green-500" />
+                        <ThumbsUp className="h-4 w-4 text-success" />
                         <span className="text-2xl">247</span>
                       </div>
                       <div className="text-xs text-muted-foreground">Likes</div>
@@ -267,7 +267,7 @@ export default function UserProfilePage() {
                   <Card className="border-border">
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2 mb-1">
-                        <ThumbsDown className="h-4 w-4 text-red-500" />
+                        <ThumbsDown className="h-4 w-4 text-destructive" />
                         <span className="text-2xl">5</span>
                       </div>
                       <div className="text-xs text-muted-foreground">
@@ -279,8 +279,8 @@ export default function UserProfilePage() {
                   <Card className="border-border">
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2 mb-1">
-                        <Trophy className="h-4 w-4 text-amber" />
-                        <span className="text-2xl text-amber">42</span>
+                        <Trophy className="h-4 w-4 text-accent" />
+                        <span className="text-2xl text-accent">42</span>
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Auctions Won
@@ -368,7 +368,7 @@ export default function UserProfilePage() {
                         key={bid.id}
                         className={
                           bid.status === "leading"
-                            ? "bg-amber/5 hover:bg-amber/10"
+                            ? "bg-accent/5 hover:bg-accent/10"
                             : ""
                         }
                       >
@@ -376,7 +376,7 @@ export default function UserProfilePage() {
                           <div className="text-sm">{bid.title}</div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <span className="text-amber">
+                          <span className="text-accent">
                             ${bid.currentBid.toLocaleString()}
                           </span>
                         </TableCell>
@@ -387,7 +387,7 @@ export default function UserProfilePage() {
                         </TableCell>
                         <TableCell>
                           {bid.status === "leading" ? (
-                            <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
+                            <Badge className="bg-success/20 text-success border-success/50">
                               <TrendingUp className="h-3 w-3 mr-1" />
                               Leading
                             </Badge>
@@ -456,7 +456,7 @@ export default function UserProfilePage() {
                           <div className="text-sm">{auction.title}</div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <span className="text-amber">
+                          <span className="text-accent">
                             ${auction.finalPrice.toLocaleString()}
                           </span>
                         </TableCell>
@@ -472,12 +472,12 @@ export default function UserProfilePage() {
                         </TableCell>
                         <TableCell>
                           {auction.status === "Completed" ? (
-                            <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
+                            <Badge className="bg-success/20 text-success border-success/50">
                               <CheckCircle2 className="h-3 w-3 mr-1" />
                               Completed
                             </Badge>
                           ) : (
-                            <Badge className="bg-amber/20 text-amber border-amber/50">
+                            <Badge className="bg-accent/20 text-accent border-accent/50">
                               <Clock className="h-3 w-3 mr-1" />
                               In Progress
                             </Badge>
@@ -534,7 +534,7 @@ export default function UserProfilePage() {
                         key={listing.id}
                         className={
                           listing.status === "Active" && listing.bids > 0
-                            ? "bg-amber/5"
+                            ? "bg-accent/5"
                             : ""
                         }
                       >
@@ -548,7 +548,7 @@ export default function UserProfilePage() {
                         </TableCell>
                         <TableCell className="text-right">
                           {listing.currentBid > 0 ? (
-                            <span className="text-amber">
+                            <span className="text-accent">
                               ${listing.currentBid.toLocaleString()}
                             </span>
                           ) : (
@@ -573,13 +573,13 @@ export default function UserProfilePage() {
                         </TableCell>
                         <TableCell>
                           {listing.status === "Active" ? (
-                            <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
+                            <Badge className="bg-success/20 text-success border-success/50">
                               Active
                             </Badge>
                           ) : (
                             <Badge
                               variant="outline"
-                              className="border-amber/50 text-amber"
+                              className="border-accent/50 text-accent"
                             >
                               <AlertCircle className="h-3 w-3 mr-1" />
                               No Bids
@@ -620,7 +620,7 @@ export default function UserProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5 text-amber" />
+                    <User className="h-5 w-5 text-accent" />
                     Edit Profile
                   </CardTitle>
                   <CardDescription>
@@ -668,7 +668,7 @@ export default function UserProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-amber" />
+                    <Lock className="h-5 w-5 text-accent" />
                     Change Password
                   </CardTitle>
                   <CardDescription>
@@ -722,10 +722,10 @@ export default function UserProfilePage() {
             </div>
 
             {/* Additional Settings */}
-            <Card className="border-amber/30 bg-amber/5">
+            <Card className="border-accent/30 bg-accent/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-amber" />
+                  <Shield className="h-5 w-5 text-accent" />
                   Security & Privacy
                 </CardTitle>
                 <CardDescription>

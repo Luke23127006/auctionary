@@ -45,28 +45,28 @@ const sellerStats = [
     value: "8",
     change: "+2 this week",
     icon: Package,
-    color: "text-amber",
+    color: "text-accent",
   },
   {
     label: "Total Bids",
     value: "247",
     change: "+45 today",
     icon: TrendingUp,
-    color: "text-green-500",
+    color: "text-success",
   },
   {
     label: "Total Revenue",
     value: "$12,450",
     change: "+$2,100 this month",
     icon: DollarSign,
-    color: "text-amber",
+    color: "text-accent",
   },
   {
     label: "Avg. Bid Time",
     value: "2.5 days",
     change: "-0.3 days",
     icon: Clock,
-    color: "text-blue-500",
+    color: "text-info",
   },
 ];
 
@@ -161,19 +161,17 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case "active":
       return (
-        <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
+        <Badge className="bg-success/20 text-success border-success/50">
           Active
         </Badge>
       );
     case "pending":
       return (
-        <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">
-          Pending
-        </Badge>
+        <Badge className="bg-info/20 text-info border-info/50">Pending</Badge>
       );
     case "sold":
       return (
-        <Badge className="bg-amber/20 text-amber border-amber/50">Sold</Badge>
+        <Badge className="bg-accent/20 text-accent border-accent/50">Sold</Badge>
       );
     case "unsold":
       return (
@@ -311,7 +309,7 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       {item.currentBid > 0 ? (
-                        <span className="text-amber">
+                        <span className="text-accent">
                           ${item.currentBid.toLocaleString()}
                         </span>
                       ) : (
@@ -374,10 +372,10 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-3 gap-4">
-        <Card className="border-amber/30 bg-amber/5 cursor-pointer hover:bg-amber/10 transition-colors">
+        <Card className="border-accent/30 bg-accent/5 cursor-pointer hover:bg-accent/10 transition-colors">
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-amber/20">
-              <CheckCircle2 className="h-6 w-6 text-amber" />
+            <div className="p-3 rounded-lg bg-accent/20">
+              <CheckCircle2 className="h-6 w-6 text-accent" />
             </div>
             <div>
               <div className="text-sm mb-1">Pending Actions</div>
@@ -391,7 +389,7 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
         <Card className="border-border cursor-pointer hover:bg-secondary/30 transition-colors">
           <CardContent className="p-6 flex items-center gap-4">
             <div className="p-3 rounded-lg bg-secondary">
-              <TrendingUp className="h-6 w-6 text-green-500" />
+              <TrendingUp className="h-6 w-6 text-success" />
             </div>
             <div>
               <div className="text-sm mb-1">Performance Report</div>

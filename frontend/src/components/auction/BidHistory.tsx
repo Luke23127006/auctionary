@@ -53,7 +53,7 @@ export function BidHistory({ bids }: BidHistoryProps) {
               bids.map((bid, index) => (
                 <TableRow
                   key={bid.id}
-                  className={bid.isTopBid ? "bg-amber/5 hover:bg-amber/10" : ""}
+                  className={bid.isTopBid ? "bg-accent/5 hover:bg-accent/10" : ""}
                 >
                   <TableCell className="text-sm text-muted-foreground">
                     {bid.timestamp}
@@ -64,7 +64,7 @@ export function BidHistory({ bids }: BidHistoryProps) {
                       {bid.isTopBid && (
                         <Badge
                           variant="outline"
-                          className="border-amber text-amber text-xs"
+                          className="border-accent text-accent text-xs"
                         >
                           <Crown className="h-3 w-3 mr-1" />
                           Top Bid
@@ -76,7 +76,7 @@ export function BidHistory({ bids }: BidHistoryProps) {
                     <div className="flex items-center justify-end gap-2">
                       <span
                         className={`${
-                          bid.isTopBid ? "text-amber" : "text-foreground"
+                          bid.isTopBid ? "text-accent" : "text-foreground"
                         }`}
                       >
                         ${bid.amount.toLocaleString()}

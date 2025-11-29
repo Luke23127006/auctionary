@@ -23,7 +23,7 @@ export function WatchlistCard({
   isActive,
 }: WatchlistCardProps) {
   return (
-    <Card className="group overflow-hidden border-border hover:border-amber/50 transition-all duration-300">
+    <Card className="group overflow-hidden border-border hover:border-accent/50 transition-all duration-300">
       <div className="relative aspect-square overflow-hidden bg-secondary">
         <ImageWithFallback
           src={image}
@@ -53,7 +53,7 @@ export function WatchlistCard({
             <span className="text-xs text-muted-foreground">Current Bid</span>
             <div
               className={`text-lg ${
-                isActive ? "text-amber" : "text-muted-foreground"
+                isActive ? "text-accent" : "text-muted-foreground"
               }`}
             >
               ${currentBid.toLocaleString()}

@@ -144,7 +144,7 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <p className="animate-shake text-center text-[13px] text-red-500">
+          <p className="animate-shake text-center text-[13px] text-destructive">
             {error}
           </p>
         )}

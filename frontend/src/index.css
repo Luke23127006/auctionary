@@ -34,6 +34,7 @@
   --color-success: var(--status-success);
   --color-warning: var(--status-warning);
   --color-info: var(--status-info);
+  --color-error: var(--status-error);
 
   --animate-in: enter 150ms ease-out;
   --animate-out: exit 150ms ease-in;

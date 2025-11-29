@@ -218,21 +218,21 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-2 text-sm">
             <a
               href="#"
-              className="text-muted-foreground hover:text-amber transition-colors"
+              className="text-muted-foreground hover:text-accent transition-colors"
             >
               Home
             </a>
             <ChevronLeft className="h-4 w-4 rotate-180 text-muted-foreground" />
             <a
               href="#"
-              className="text-muted-foreground hover:text-amber transition-colors"
+              className="text-muted-foreground hover:text-accent transition-colors"
             >
               Electronics
             </a>
             <ChevronLeft className="h-4 w-4 rotate-180 text-muted-foreground" />
             <a
               href="#"
-              className="text-muted-foreground hover:text-amber transition-colors"
+              className="text-muted-foreground hover:text-accent transition-colors"
             >
               Cameras
             </a>
@@ -262,7 +262,7 @@ export default function ProductDetailPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsWatchlisted(!isWatchlisted)}
-                  className={isWatchlisted ? "text-red-500" : ""}
+                  className={isWatchlisted ? "text-destructive" : ""}
                 >
                   <Heart
                     className={`h-5 w-5 ${isWatchlisted ? "fill-red-500" : ""}`}
@@ -273,9 +273,9 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-4 mb-4">
                 <Badge variant="secondary">Cameras & Photography</Badge>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4 text-amber" />
+                  <Clock className="h-4 w-4 text-accent" />
                   <span>
-                    Ends in <span className="text-amber">{timeLeft}</span>
+                    Ends in <span className="text-accent">{timeLeft}</span>
                   </span>
                 </div>
               </div>
@@ -290,14 +290,14 @@ export default function ProductDetailPage() {
                 </Avatar>
                 <div className="flex-1">
                   <div className="text-sm">
-                    Sold by <span className="text-amber">****Smith</span>
+                    Sold by <span className="text-accent">****Smith</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}
-                          className="h-3.5 w-3.5 fill-amber text-amber"
+                          className="h-3.5 w-3.5 fill-accent text-accent"
                         />
                       ))}
                     </div>
@@ -306,7 +306,7 @@ export default function ProductDetailPage() {
                     </span>
                     <Badge
                       variant="outline"
-                      className="text-xs border-green-500/50 text-green-500"
+                      className="text-xs border-success/50 text-success"
                     >
                       98% Positive
                     </Badge>
@@ -321,7 +321,7 @@ export default function ProductDetailPage() {
             {userOutbid && (
               <Alert
                 variant="destructive"
-                className="border-red-500 bg-red-500/10"
+                className="border-destructive bg-destructive/10"
               >
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>You have been outbid!</AlertTitle>
@@ -334,12 +334,12 @@ export default function ProductDetailPage() {
 
             {/* Bid Placed Success */}
             {bidPlaced && (
-              <Alert className="border-green-500 bg-green-500/10">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <AlertTitle className="text-green-500">
+              <Alert className="border-success bg-success/10">
+                <CheckCircle2 className="h-4 w-4 text-success" />
+                <AlertTitle className="text-success">
                   Bid Placed Successfully!
                 </AlertTitle>
-                <AlertDescription className="text-green-400">
+                <AlertDescription className="text-success/90">
                   Your maximum bid has been recorded. We'll automatically bid
                   for you up to your limit.
                 </AlertDescription>
@@ -347,12 +347,12 @@ export default function ProductDetailPage() {
             )}
 
             {/* Bidding Area */}
-            <Card className="border-amber/30 shadow-lg shadow-amber/10">
+            <Card className="border-accent/30 shadow-lg shadow-accent/10">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
                     <CardDescription>Current Price</CardDescription>
-                    <CardTitle className="text-4xl text-amber mt-1">
+                    <CardTitle className="text-4xl text-accent mt-1">
                       ${currentPrice.toLocaleString()}
                     </CardTitle>
                   </div>
@@ -360,7 +360,7 @@ export default function ProductDetailPage() {
                     <div className="text-sm text-muted-foreground">
                       Watchers
                     </div>
-                    <div className="flex items-center gap-1 text-amber mt-1">
+                    <div className="flex items-center gap-1 text-accent mt-1">
                       <Users className="h-4 w-4" />
                       <span>47</span>
                     </div>
@@ -369,8 +369,8 @@ export default function ProductDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Proxy Bidding Info */}
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-amber/5 border border-amber/20">
-                  <Info className="h-5 w-5 text-amber flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/5 border border-accent/20">
+                  <Info className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="text-sm mb-1">Proxy Bidding Active</div>
                     <p className="text-xs text-muted-foreground">
@@ -421,7 +421,7 @@ export default function ProductDetailPage() {
                     <div className="text-xs text-muted-foreground mb-1">
                       Total Bids
                     </div>
-                    <div className="text-lg text-amber">
+                    <div className="text-lg text-accent">
                       {bidHistoryData.length}
                     </div>
                   </div>
@@ -459,14 +459,14 @@ export default function ProductDetailPage() {
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant="outline"
-                className="border-green-500/50 text-green-500 text-xs"
+                className="border-success/50 text-success text-xs"
               >
                 <CheckCircle2 className="h-3 w-3 mr-1" />
                 Verified Seller
               </Badge>
               <Badge
                 variant="outline"
-                className="border-amber/50 text-amber text-xs"
+                className="border-accent/50 text-accent text-xs"
               >
                 <Shield className="h-3 w-3 mr-1" />
                 Buyer Protection
@@ -534,8 +534,8 @@ export default function ProductDetailPage() {
                   <div className="space-y-3">
                     <div className="p-4 rounded-lg bg-card border border-border">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-md bg-amber/20">
-                          <Info className="h-4 w-4 text-amber" />
+                        <div className="p-2 rounded-md bg-accent/20">
+                          <Info className="h-4 w-4 text-accent" />
                         </div>
                         <div className="flex-1">
                           <div className="text-sm mb-1">
@@ -551,8 +551,8 @@ export default function ProductDetailPage() {
 
                     <div className="p-4 rounded-lg bg-card border border-border">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-md bg-green-500/20">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <div className="p-2 rounded-md bg-success/20">
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         </div>
                         <div className="flex-1">
                           <div className="text-sm mb-1">
@@ -618,11 +618,11 @@ export default function ProductDetailPage() {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
-                        <div className="pl-4 border-l-2 border-amber/30 py-2">
+                        <div className="pl-4 border-l-2 border-accent/30 py-2">
                           <div className="flex items-start gap-2 mb-2">
                             <Badge
                               variant="outline"
-                              className="text-xs border-amber/50 text-amber"
+                              className="text-xs border-accent/50 text-accent"
                             >
                               Seller Response
                             </Badge>
@@ -644,7 +644,7 @@ export default function ProductDetailPage() {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl">Similar Items You May Like</h2>
-            <Button variant="ghost" className="text-amber">
+            <Button variant="ghost" className="text-accent">
               View All
               <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
             </Button>

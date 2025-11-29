@@ -65,8 +65,8 @@ export function ImageGallery({ images }: ImageGalleryProps) {
               onClick={() => setSelectedIndex(index)}
               className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${
                 index === selectedIndex
-                  ? "border-amber ring-2 ring-amber/30"
-                  : "border-border hover:border-amber/50"
+                  ? "border-accent ring-2 ring-accent/30"
+                  : "border-border hover:border-accent/50"
               }`}
             >
               <ImageWithFallback

@@ -215,7 +215,7 @@ export function PostAuctionStep2({
             Step 2 of 2: Pricing & Description
           </p>
         </div>
-        <Badge className="bg-amber/20 text-amber border-amber/50">
+        <Badge className="bg-accent/20 text-accent border-accent/50">
           Step 2/2
         </Badge>
       </div>
@@ -223,16 +223,16 @@ export function PostAuctionStep2({
       {/* Progress Steps */}
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 flex-1">
-          <div className="w-8 h-8 rounded-full bg-amber flex items-center justify-center text-sm">
+          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-sm">
             <Check className="h-4 w-4" />
           </div>
-          <div className="flex-1 h-1 bg-amber" />
+          <div className="flex-1 h-1 bg-accent" />
         </div>
         <div className="flex items-center gap-2 flex-1">
-          <div className="w-8 h-8 rounded-full bg-amber flex items-center justify-center text-sm">
+          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-sm">
             2
           </div>
-          <div className="flex-1 h-1 bg-amber" />
+          <div className="flex-1 h-1 bg-accent" />
         </div>
       </div>
 
@@ -270,8 +270,8 @@ export function PostAuctionStep2({
       <Card className="border-border">
         <CardContent className="p-6 space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-border">
-            <div className="p-2 rounded-lg bg-amber/10">
-              <DollarSign className="h-5 w-5 text-amber" />
+            <div className="p-2 rounded-lg bg-accent/10">
+              <DollarSign className="h-5 w-5 text-accent" />
             </div>
             <h3 className="text-lg">Auction Pricing</h3>
           </div>
@@ -302,7 +302,7 @@ export function PostAuctionStep2({
                   className={`h-11 pl-7 ${
                     errors.startingPrice
                       ? "border-destructive"
-                      : "border-amber/30 focus-visible:ring-amber"
+                      : "border-accent/30 focus-visible:ring-accent"
                   }`}
                 />
               </div>
@@ -322,7 +322,7 @@ export function PostAuctionStep2({
                 htmlFor="bidIncrement"
                 className="text-sm flex items-center gap-2"
               >
-                <TrendingUp className="h-4 w-4 text-amber" />
+                <TrendingUp className="h-4 w-4 text-accent" />
                 Bid Increment <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
@@ -345,7 +345,7 @@ export function PostAuctionStep2({
                   className={`h-11 pl-7 ${
                     errors.bidIncrement
                       ? "border-destructive"
-                      : "border-amber/30 focus-visible:ring-amber"
+                      : "border-accent/30 focus-visible:ring-accent"
                   }`}
                 />
               </div>
@@ -365,7 +365,7 @@ export function PostAuctionStep2({
                 htmlFor="buyNowPrice"
                 className="text-sm flex items-center gap-2"
               >
-                <Zap className="h-4 w-4 text-amber" />
+                <Zap className="h-4 w-4 text-accent" />
                 Buy Now Price (Optional)
               </Label>
               <div className="relative">
@@ -404,7 +404,7 @@ export function PostAuctionStep2({
                 htmlFor="duration"
                 className="text-sm flex items-center gap-2"
               >
-                <Clock className="h-4 w-4 text-amber" />
+                <Clock className="h-4 w-4 text-accent" />
                 Auction Duration <span className="text-destructive">*</span>
               </Label>
               <Select value={duration} onValueChange={setDuration}>
@@ -425,9 +425,9 @@ export function PostAuctionStep2({
             </div>
           </div>
 
-          <Alert className="border-amber/30 bg-amber/5">
-            <Info className="h-4 w-4 text-amber" />
-            <AlertDescription className="text-xs text-amber/90">
+          <Alert className="border-accent/30 bg-accent/5">
+            <Info className="h-4 w-4 text-accent" />
+            <AlertDescription className="text-xs text-accent/90">
               <strong>Pricing Tip:</strong> Research similar items to set
               competitive prices. Consider market demand and item condition.
             </AlertDescription>
@@ -439,8 +439,8 @@ export function PostAuctionStep2({
       <Card className="border-border">
         <CardContent className="p-6 space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-border">
-            <div className="p-2 rounded-lg bg-amber/10">
-              <Bold className="h-5 w-5 text-amber" />
+            <div className="p-2 rounded-lg bg-accent/10">
+              <Bold className="h-5 w-5 text-accent" />
             </div>
             <h3 className="text-lg">Product Description</h3>
           </div>
@@ -489,7 +489,7 @@ export function PostAuctionStep2({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className={isBold ? "bg-amber/20 text-amber" : ""}
+                className={isBold ? "bg-accent/20 text-accent" : ""}
                 onClick={() => applyFormatting("bold")}
               >
                 <Bold className="h-4 w-4" />
@@ -498,7 +498,7 @@ export function PostAuctionStep2({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className={isItalic ? "bg-amber/20 text-amber" : ""}
+                className={isItalic ? "bg-accent/20 text-accent" : ""}
                 onClick={() => applyFormatting("italic")}
               >
                 <Italic className="h-4 w-4" />
@@ -588,16 +588,14 @@ export function PostAuctionStep2({
         bidIncrement &&
         description.length >= 50 &&
         condition && (
-          <Card className="border-green-500/30 bg-green-500/5">
+          <Card className="border-success/30 bg-success/5">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-green-500/20">
-                  <Check className="h-4 w-4 text-green-500" />
+                <div className="p-2 rounded-full bg-success/20">
+                  <Check className="h-4 w-4 text-success" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-green-500 mb-2">
-                    Ready to Publish
-                  </p>
+                  <p className="text-sm text-success mb-2">Ready to Publish</p>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-muted-foreground">
                     <div>
                       Starting: ${parseFloat(startingPrice).toLocaleString()}
@@ -619,10 +617,10 @@ export function PostAuctionStep2({
         )}
 
       {/* Warning */}
-      <Alert className="border-amber/30 bg-amber/5">
-        <AlertCircle className="h-4 w-4 text-amber" />
-        <AlertTitle className="text-amber">Review Before Publishing</AlertTitle>
-        <AlertDescription className="text-xs text-amber/90">
+      <Alert className="border-accent/30 bg-accent/5">
+        <AlertCircle className="h-4 w-4 text-accent" />
+        <AlertTitle className="text-accent">Review Before Publishing</AlertTitle>
+        <AlertDescription className="text-xs text-accent/90">
           Once published, you cannot modify auction pricing or duration. You can
           update the description and images.
         </AlertDescription>

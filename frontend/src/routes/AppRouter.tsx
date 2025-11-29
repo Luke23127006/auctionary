@@ -21,6 +21,8 @@ import ProductListPage from "../pages/Product/ProductListPage";
 import ProductDetailPage from "../pages/Product/ProductDetailPage";
 import UserProfilePage from "../pages/Account/UserProfilePage";
 import SellerDashboardPage from "../pages/Seller/SellerDashboardPage";
+import TransactionRoomPage from "../pages/Product/TransactionRoomPage";
+import AdminDashboardPage from "../pages/Admin/AdminDashboardPage";
 
 const AppRouter = () => {
   return (
@@ -41,6 +43,8 @@ const AppRouter = () => {
       <Route path="/products/:id" element={<ProductDetailPage />} />
       <Route path="/profile" element={<UserProfilePage />} />
       <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
+      <Route path="/transaction-room" element={<TransactionRoomPage />} />
+      <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
 
       {/* ============================================== */}
       {/* TUYẾN ĐƯỜNG CÔNG KHAI (CHỈ CHO KHÁCH) */}

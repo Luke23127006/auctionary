@@ -39,10 +39,10 @@ function CategoryTreeItem({
         {hasChildren && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-0.5 hover:bg-amber/10 rounded transition-colors"
+            className="p-0.5 hover:bg-accent/10 rounded transition-colors"
           >
             {isExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-amber" />
+              <ChevronDown className="h-3.5 w-3.5 text-accent" />
             ) : (
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
             )}

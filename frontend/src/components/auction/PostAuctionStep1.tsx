@@ -143,7 +143,7 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
             Step 1 of 2: Product Information
           </p>
         </div>
-        <Badge className="bg-amber/20 text-amber border-amber/50">
+        <Badge className="bg-accent/20 text-accent border-accent/50">
           Step 1/2
         </Badge>
       </div>
@@ -151,10 +151,10 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
       {/* Progress Steps */}
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 flex-1">
-          <div className="w-8 h-8 rounded-full bg-amber flex items-center justify-center text-sm">
+          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-sm">
             1
           </div>
-          <div className="flex-1 h-1 bg-amber" />
+          <div className="flex-1 h-1 bg-accent" />
         </div>
         <div className="flex items-center gap-2 flex-1">
           <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center text-sm text-muted-foreground">
@@ -168,8 +168,8 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
       <Card className="border-border">
         <CardContent className="p-6 space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-border">
-            <div className="p-2 rounded-lg bg-amber/10">
-              <ImageIcon className="h-5 w-5 text-amber" />
+            <div className="p-2 rounded-lg bg-accent/10">
+              <ImageIcon className="h-5 w-5 text-accent" />
             </div>
             <h3 className="text-lg">Product Details</h3>
           </div>
@@ -239,8 +239,8 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
         <CardContent className="p-6 space-y-6">
           <div className="flex items-center justify-between pb-4 border-b border-border">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-amber/10">
-                <Upload className="h-5 w-5 text-amber" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <Upload className="h-5 w-5 text-accent" />
               </div>
               <h3 className="text-lg">Product Images</h3>
             </div>
@@ -251,10 +251,10 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
           <div
             className={`relative border-2 border-dashed rounded-lg transition-all ${
               dragActive
-                ? "border-amber bg-amber/10"
+                ? "border-accent bg-accent/10"
                 : errors.images
                 ? "border-destructive bg-destructive/5"
-                : "border-border hover:border-amber/50 hover:bg-amber/5"
+                : "border-border hover:border-accent/50 hover:bg-accent/5"
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -276,7 +276,7 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
               </div>
               <p className="mb-2">
                 Drag and drop images here, or{" "}
-                <span className="text-amber">click to browse</span>
+                <span className="text-accent">click to browse</span>
               </p>
               <p className="text-xs text-muted-foreground">
                 PNG, JPG or WEBP (Max 10 images, 5MB each)
@@ -306,7 +306,7 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
                     className="w-full h-full object-cover"
                   />
                   {index === 0 && (
-                    <Badge className="absolute top-2 left-2 bg-amber/90 backdrop-blur border-0 text-xs">
+                    <Badge className="absolute top-2 left-2 bg-accent/90 backdrop-blur border-0 text-xs">
                       Primary
                     </Badge>
                   )}
@@ -322,9 +322,9 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
             </div>
           )}
 
-          <Alert className="border-amber/30 bg-amber/5">
-            <Info className="h-4 w-4 text-amber" />
-            <AlertDescription className="text-xs text-amber/90">
+          <Alert className="border-accent/30 bg-accent/5">
+            <Info className="h-4 w-4 text-accent" />
+            <AlertDescription className="text-xs text-accent/90">
               <strong>Tips for great photos:</strong> Use clear, well-lit images
               from multiple angles. The first image will be used as the primary
               listing photo.
@@ -335,13 +335,13 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
 
       {/* Form Summary */}
       {productName && category && images.length > 0 && (
-        <Card className="border-green-500/30 bg-green-500/5">
+        <Card className="border-success/30 bg-success/5">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-full bg-green-500/20">
-              <Check className="h-4 w-4 text-green-500" />
+            <div className="p-2 rounded-full bg-success/20">
+              <Check className="h-4 w-4 text-success" />
             </div>
             <div className="flex-1 text-sm">
-              <p className="text-green-500 mb-1">Step 1 Complete</p>
+              <p className="text-success mb-1">Step 1 Complete</p>
               <p className="text-xs text-muted-foreground">
                 You're ready to move to pricing and description
               </p>

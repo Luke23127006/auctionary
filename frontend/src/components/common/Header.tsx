@@ -43,8 +43,8 @@ const Header: React.FC = () => {
             to="/"
             className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity text-accent"
           >
-            <div className="p-2 rounded-lg bg-amber/10 border border-amber/30">
-              <BookA className="h-5 w-5 text-amber" />
+            <div className="p-2 rounded-lg bg-accent/10 border border-accent/30">
+              <BookA className="h-5 w-5 text-accent" />
             </div>
             <span className="tracking-tight text-lg">Auctionary</span>
           </Link>
@@ -104,9 +104,9 @@ const Header: React.FC = () => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={handleLogout}
-                        className="group cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50"
+                        className="group cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 dark:focus:bg-destructive/20"
                       >
-                        <LogOut className="h-5 w-5 text-red-600 group-focus:text-red-600" />
+                        <LogOut className="h-5 w-5 text-destructive group-focus:text-destructive" />
                         <span>Log out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>

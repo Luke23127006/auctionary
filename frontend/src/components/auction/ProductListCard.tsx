@@ -30,12 +30,12 @@ export function ProductListCard({
     <Card
       className={`group overflow-hidden bg-card hover:shadow-lg transition-all duration-300 ${
         isNewArrival
-          ? "border-amber shadow-amber/20 glow-amber"
-          : "border-border hover:border-amber/50"
+          ? "border-accent shadow-accent/20 glow-accent"
+          : "border-border hover:border-accent/50"
       }`}
     >
       {isNewArrival && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber to-transparent animate-pulse"></div>
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-accent to-transparent animate-pulse"></div>
       )}
 
       <div className="relative aspect-square overflow-hidden bg-secondary">
@@ -46,7 +46,7 @@ export function ProductListCard({
         />
 
         {isNewArrival && (
-          <Badge className="absolute top-2 left-2 bg-amber text-background border-none animate-pulse">
+          <Badge className="absolute top-2 left-2 bg-accent text-background border-none animate-pulse">
             <Sparkles className="h-3 w-3 mr-1" />
             New Arrival
           </Badge>
@@ -62,7 +62,7 @@ export function ProductListCard({
 
       <CardContent className="p-4 space-y-3">
         <div>
-          <h3 className="text-sm line-clamp-2 mb-2 min-h-[2.5rem] group-hover:text-amber transition-colors">
+          <h3 className="text-sm line-clamp-2 mb-2 min-h-[2.5rem] group-hover:text-accent transition-colors">
             {title}
           </h3>
 
@@ -75,7 +75,7 @@ export function ProductListCard({
         <div className="space-y-2 pt-2 border-t border-border">
           <div className="flex items-baseline justify-between">
             <span className="text-xs text-muted-foreground">Current Bid</span>
-            <div className="text-amber text-lg">
+            <div className="text-accent text-lg">
               ${currentBid.toLocaleString()}
             </div>
           </div>
@@ -83,7 +83,7 @@ export function ProductListCard({
           {buyNowPrice && (
             <div className="flex items-baseline justify-between">
               <span className="text-xs text-muted-foreground">Buy Now</span>
-              <div className="text-green-500 text-sm">
+              <div className="text-success text-sm">
                 ${buyNowPrice.toLocaleString()}
               </div>
             </div>
@@ -102,7 +102,7 @@ export function ProductListCard({
             <Button
               variant="outline"
               size="sm"
-              className="border-green-500/50 text-green-500 hover:bg-green-500/10"
+              className="border-success/50 text-success hover:bg-success/10"
             >
               <ShoppingCart className="h-3.5 w-3.5" />
             </Button>

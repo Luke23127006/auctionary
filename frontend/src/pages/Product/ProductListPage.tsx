@@ -223,7 +223,7 @@ export default function ProductListPage() {
               <Card className="border-border">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <SlidersHorizontal className="h-5 w-5 text-amber" />
+                    <SlidersHorizontal className="h-5 w-5 text-accent" />
                     Filters
                   </CardTitle>
                 </CardHeader>
@@ -244,7 +244,7 @@ export default function ProductListPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm">Price Range</h3>
-                      <span className="text-xs text-amber">
+                      <span className="text-xs text-accent">
                         ${priceRange[0]} - ${priceRange[1]}
                       </span>
                     </div>
@@ -284,15 +284,15 @@ export default function ProductListPage() {
                     <span className="text-muted-foreground">
                       Active Listings
                     </span>
-                    <span className="text-amber">1,247</span>
+                    <span className="text-accent">1,247</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">New Today</span>
-                    <span className="text-green-500">83</span>
+                    <span className="text-success">83</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Ending Soon</span>
-                    <span className="text-red-500">42</span>
+                    <span className="text-destructive">42</span>
                   </div>
                 </CardContent>
               </Card>
@@ -408,7 +408,7 @@ export default function ProductListPage() {
                     variant={currentPage === page ? "default" : "outline"}
                     size="icon"
                     onClick={() => setCurrentPage(page)}
-                    className={currentPage === page ? "border-amber" : ""}
+                    className={currentPage === page ? "border-accent" : ""}
                   >
                     {page}
                   </Button>

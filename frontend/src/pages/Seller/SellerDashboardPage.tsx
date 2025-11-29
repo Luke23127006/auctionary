@@ -57,7 +57,7 @@ export default function SellerDashboardPage() {
             <div className="flex items-center gap-2 text-sm">
               <button
                 onClick={() => setCurrentScreen("seller-dashboard")}
-                className="text-muted-foreground hover:text-amber transition-colors"
+                className="text-muted-foreground hover:text-accent transition-colors"
               >
                 Dashboard
               </button>
@@ -69,7 +69,7 @@ export default function SellerDashboardPage() {
                 <>
                   <button
                     onClick={() => setCurrentScreen("post-auction-step1")}
-                    className="text-muted-foreground hover:text-amber transition-colors"
+                    className="text-muted-foreground hover:text-accent transition-colors"
                   >
                     Create Auction - Step 1
                   </button>

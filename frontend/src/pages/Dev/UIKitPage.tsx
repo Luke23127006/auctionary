@@ -565,32 +565,27 @@ export default function UIKitPage() {
                 </AlertDescription>
               </Alert>
 
-              <Alert className="border-accent bg-accent/10">
-                <Zap className="h-4 w-4 text-accent" />
-                <AlertTitle className="text-accent">
-                  High Activity Detected
-                </AlertTitle>
-                <AlertDescription className="text-accent/90">
-                  Multiple bids have been placed in the last 5 minutes. Act fast
-                  to secure your item.
+              <Alert variant="warning">
+                <Zap className="h-4 w-4" />
+                <AlertTitle>High Activity Detected</AlertTitle>
+                <AlertDescription>
+                  Multiple bids have been placed in the last 5 minutes.
                 </AlertDescription>
               </Alert>
 
-              <Alert className="border-green-500 bg-green-500/10">
-                <CheckCircle2 className="h-4 w-4 text-success" />
-                <AlertTitle className="text-success">Bid Successful</AlertTitle>
-                <AlertDescription className="text-success">
-                  Your bid of $1,500 has been placed successfully. You are
-                  currently the highest bidder.
+              <Alert variant="success">
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertTitle>Bid Successful</AlertTitle>
+                <AlertDescription>
+                  Your bid of $1,500 has been placed successfully.
                 </AlertDescription>
               </Alert>
 
-              <Alert variant="destructive">
+              <Alert variant="error">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Authentication Required</AlertTitle>
                 <AlertDescription>
-                  You must verify your identity before participating in this
-                  auction.
+                  You must verify your identity first.
                 </AlertDescription>
               </Alert>
             </div>
