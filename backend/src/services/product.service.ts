@@ -108,11 +108,9 @@ const mapCommentToResponse = (comment: any) => {
 export const searchProducts = async (query: ProductsSearchQuery): Promise<PaginatedResult<ProductListCardProps>> => {
   const { q, categorySlug, page, limit, sort, excludeCategorySlug } = query;
 
-  const singleCategorySlug = categorySlug && categorySlug.length > 0 ? categorySlug[0] : undefined;
-
   const result = await productRepository.searchProducts(
     q,
-    singleCategorySlug,
+    categorySlug,
     page,
     limit,
     sort,

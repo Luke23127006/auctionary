@@ -3,7 +3,3 @@ export interface CategoryNode {
   name: string;
   children?: CategoryNode[];
 }
-
-export interface CategoryResponse {
-  data: CategoryNode[];
-}

@@ -168,7 +168,7 @@ export const findByCategory = async (
 
 export const searchProducts = async (
   q?: string,
-  categorySlug?: string,
+  categorySlugs?: string[],
   page: number = 1,
   limit: number = 10,
   sort?: SortOption,
@@ -185,12 +185,19 @@ export const searchProducts = async (
     query = query.where("products.name", "ilike", `%${safeQ}%`);
   }
 
-  if (categorySlug) {
-    const slug = toSlug(categorySlug);
-    const categoryIds = await getCategoryIds(slug);
+  if (categorySlugs && categorySlugs.length > 0) {
+    const allCategoryIds: number[] = [];
 
-    if (categoryIds.length > 0) {
-      query = query.whereIn("products.category_id", categoryIds);
+    for (const slug of categorySlugs) {
+      const normalizedSlug = toSlug(slug);
+      const categoryIds = await getCategoryIds(normalizedSlug);
+      allCategoryIds.push(...categoryIds);
+    }
+
+    if (allCategoryIds.length > 0) {
+      // Remove duplicates
+      const uniqueCategoryIds = [...new Set(allCategoryIds)];
+      query = query.whereIn("products.category_id", uniqueCategoryIds);
     }
   }
 

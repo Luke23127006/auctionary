@@ -34,6 +34,13 @@ const Header: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = React.useState("");
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
       <div className="container mx-auto px-4 py-4">
@@ -50,7 +57,7 @@ const Header: React.FC = () => {
           </Link>
 
           {/* Global Search Bar */}
-          <div className="flex-1 max-w-2xl">
+          <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
@@ -58,10 +65,15 @@ const Header: React.FC = () => {
                 placeholder="Search for auctions, categories, or items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch(e);
+                  }
+                }}
                 className="pl-10 h-11 bg-card border-border"
               />
             </div>
-          </div>
+          </form>
 
           {/* Navigation & Auth */}
           <div className="flex items-center gap-4 flex-shrink-0">
