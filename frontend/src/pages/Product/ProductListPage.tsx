@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import { Button } from "../../components/ui/button";
-import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
-import { Badge } from "../../components/ui/badge";
+import type { CategoryNode } from "../../types/category";
+import type { Product } from "../../types/product";
+import * as categoryService from "../../services/categoryService";
+import * as productService from "../../services/productService";
+import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ActiveFilters } from "../../components/auction/ActiveFilters";
 import {
   Select,
   SelectContent,
@@ -21,204 +26,171 @@ import { CategoryFilter } from "../../components/auction/CategoryFilter";
 import { Separator } from "../../components/ui/separator";
 import { Slider } from "../../components/ui/slider";
 
-// Category tree structure
-const categories = [
-  {
-    id: "electronics",
-    name: "Electronics",
-    children: [
-      { id: "laptops", name: "Laptops" },
-      { id: "phones", name: "Phones" },
-      { id: "tablets", name: "Tablets" },
-      { id: "cameras", name: "Cameras" },
-    ],
-  },
-  {
-    id: "collectibles",
-    name: "Collectibles",
-    children: [
-      { id: "vintage", name: "Vintage Items" },
-      { id: "art", name: "Art & Prints" },
-      { id: "memorabilia", name: "Memorabilia" },
-    ],
-  },
-  {
-    id: "fashion",
-    name: "Fashion",
-    children: [
-      { id: "watches", name: "Watches" },
-      { id: "sneakers", name: "Sneakers" },
-      { id: "accessories", name: "Accessories" },
-    ],
-  },
-  {
-    id: "home",
-    name: "Home & Garden",
-    children: [
-      { id: "furniture", name: "Furniture" },
-      { id: "appliances", name: "Appliances" },
-      { id: "decor", name: "Decor" },
-    ],
-  },
-];
-
-// Mock product data
-const products = [
-  {
-    id: "1",
-    title: "Apple iPhone 15 Pro Max 256GB - Titanium Blue",
-    image:
-      "https://images.unsplash.com/photo-1741061963569-9d0ef54d10d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWFydHBob25lJTIwbW9iaWxlfGVufDF8fHx8MTc2NDA5NzYyN3ww&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 950,
-    buyNowPrice: 1299,
-    topBidder: "****Huy",
-    timeLeft: "2h 15m",
-    bidCount: 23,
-    isNewArrival: true,
-    listedAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
-  },
-  {
-    id: "2",
-    title: 'iPad Pro 12.9" M2 Chip 512GB Space Gray',
-    image:
-      "https://images.unsplash.com/photo-1714071803623-9594e3b77862?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0YWJsZXQlMjBkZXZpY2V8ZW58MXx8fHwxNzY0MDgzODA4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 780,
-    buyNowPrice: 1099,
-    topBidder: "****Mar",
-    timeLeft: "5h 42m",
-    bidCount: 18,
-    isNewArrival: false,
-    listedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: "3",
-    title: "Sony Alpha A7 IV Mirrorless Camera Body",
-    image:
-      "https://images.unsplash.com/photo-1603208234872-619ffa1209cb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaWdpdGFsJTIwY2FtZXJhfGVufDF8fHx8MTc2NDEzODk4NXww&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 2100,
-    topBidder: "****Chen",
-    timeLeft: "1d 3h",
-    bidCount: 31,
-    isNewArrival: false,
-    listedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-  },
-  {
-    id: "4",
-    title: "Apple Watch Ultra 2 GPS + Cellular 49mm",
-    image:
-      "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWFydCUyMHdhdGNofGVufDF8fHx8MTc2NDEzOTkxM3ww&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 650,
-    buyNowPrice: 849,
-    topBidder: "****Kim",
-    timeLeft: "8h 20m",
-    bidCount: 42,
-    isNewArrival: true,
-    listedAt: new Date(Date.now() - 8 * 60 * 1000), // 8 minutes ago
-  },
-  {
-    id: "5",
-    title: "AirPods Pro 2nd Gen with MagSafe Charging",
-    image:
-      "https://images.unsplash.com/photo-1627989580309-bfaf3e58af6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aXJlbGVzcyUyMGVhcmJ1ZHN8ZW58MXx8fHwxNzY0MTY1MTk1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 180,
-    buyNowPrice: 249,
-    topBidder: "****Lee",
-    timeLeft: "12h 5m",
-    bidCount: 15,
-    isNewArrival: false,
-    listedAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
-  },
-  {
-    id: "6",
-    title: "PlayStation 5 Console Disc Version + Controller",
-    image:
-      "https://images.unsplash.com/photo-1604846887565-640d2f52d564?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBjb25zb2xlfGVufDF8fHx8MTc2NDA1NzI0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 420,
-    buyNowPrice: 549,
-    topBidder: "****Park",
-    timeLeft: "3h 30m",
-    bidCount: 27,
-    isNewArrival: true,
-    listedAt: new Date(Date.now() - 3 * 60 * 1000), // 3 minutes ago
-  },
-  {
-    id: "7",
-    title: 'MacBook Pro 16" M3 Max 1TB SSD Silver',
-    image:
-      "https://images.unsplash.com/photo-1640955014216-75201056c829?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBsYXB0b3B8ZW58MXx8fHwxNzY0MTUzNzI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 2800,
-    topBidder: "****Wong",
-    timeLeft: "2d 5h",
-    bidCount: 38,
-    isNewArrival: false,
-    listedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  },
-  {
-    id: "8",
-    title: "Samsung Galaxy S24 Ultra 512GB Titanium",
-    image:
-      "https://images.unsplash.com/photo-1741061963569-9d0ef54d10d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWFydHBob25lJTIwbW9iaWxlfGVufDF8fHx8MTc2NDA5NzYyN3ww&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 880,
-    buyNowPrice: 1199,
-    topBidder: "****Tran",
-    timeLeft: "6h 45m",
-    bidCount: 19,
-    isNewArrival: false,
-    listedAt: new Date(Date.now() - 15 * 60 * 60 * 1000),
-  },
-  {
-    id: "9",
-    title: "Canon EOS R6 Mark II Camera + 24-105mm Lens",
-    image:
-      "https://images.unsplash.com/photo-1603208234872-619ffa1209cb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaWdpdGFsJTIwY2FtZXJhfGVufDF8fHx8MTc2NDEzODk4NXww&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 2400,
-    topBidder: "****Minh",
-    timeLeft: "1d 8h",
-    bidCount: 25,
-    isNewArrival: true,
-    listedAt: new Date(Date.now() - 7 * 60 * 1000), // 7 minutes ago
-  },
-];
-
 export default function ProductListPage() {
-  const [searchTags, setSearchTags] = useState(["iPhone", "Smartphones"]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([
-    "phones",
-  ]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [categories, setCategories] = useState<CategoryNode[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 9,
+    total: 0,
+    totalPages: 0,
+  });
   const [priceRange, setPriceRange] = useState([0, 5000]);
-  const [sortBy, setSortBy] = useState("time-desc");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
 
-  const handleCategoryChange = (categoryId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedCategories([...selectedCategories, categoryId]);
-    } else {
-      setSelectedCategories(
-        selectedCategories.filter((id) => id !== categoryId)
-      );
+  const searchQuery = searchParams.get("q") || "";
+  const categorySlugs = searchParams.getAll("categorySlug");
+  const currentPage = parseInt(searchParams.get("page") || "1");
+  const sortParam = searchParams.get("sort") || "endTime:asc";
+
+  useEffect(() => {
+    if (!searchParams.has("sort")) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("sort", "endTime:asc");
+      setSearchParams(newParams, { replace: true });
     }
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const mappedCategories = await categoryService.getCategories();
+        setCategories(mappedCategories);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setProductsLoading(true);
+        const result = await productService.searchProducts({
+          q: searchQuery || undefined,
+          categorySlug: categorySlugs.length > 0 ? categorySlugs : undefined,
+          page: currentPage,
+          limit: 9,
+          sort: sortParam,
+        });
+        setProducts(result.data);
+        setPagination(result.pagination);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, categorySlugs.join(","), currentPage, sortParam]);
+
+  const handleCategoryChange = (categoryIds: string[], checked: boolean) => {
+    const newParams = new URLSearchParams(searchParams);
+    
+    // Remove all existing categorySlug params first
+    newParams.delete("categorySlug");
+    
+    let updatedSlugs: string[];
+    if (checked) {
+      // Add the new category IDs to existing ones
+      updatedSlugs = [...new Set([...categorySlugs, ...categoryIds])];
+    } else {
+      // Remove the unchecked category IDs
+      updatedSlugs = categorySlugs.filter(slug => !categoryIds.includes(slug));
+    }
+    
+    // Append all updated slugs
+    updatedSlugs.forEach(slug => newParams.append("categorySlug", slug));
+    
+    newParams.set("page", "1");
+    setSearchParams(newParams);
   };
 
-  const removeSearchTag = (tag: string) => {
-    setSearchTags(searchTags.filter((t) => t !== tag));
+  const handleRemoveSearch = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("q");
+    newParams.set("page", "1");
+    setSearchParams(newParams);
   };
 
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const displayedProducts = products.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const handleRemoveCategory = (categoryId: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("categorySlug");
+    const remaining = categorySlugs.filter(slug => slug !== categoryId);
+    remaining.forEach(slug => newParams.append("categorySlug", slug));
+    newParams.set("page", "1");
+    setSearchParams(newParams);
+  };
+
+  const handleClearAllFilters = () => {
+    const newParams = new URLSearchParams();
+    newParams.set("sort", sortParam);
+    setSearchParams(newParams);
+  };
+
+  const handleSortChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("sort", value);
+    setSearchParams(newParams);
+  };
+
+  const handlePageChange = (page: number) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("page", page.toString());
+    setSearchParams(newParams);
+  };
+
+  const getSelectedCategoriesWithNames = () => {
+    const selected: Array<{ id: string; name: string }> = [];
+    
+    const findCategory = (cats: CategoryNode[], slug: string): CategoryNode | null => {
+      for (const cat of cats) {
+        if (cat.id === slug) return cat;
+        if (cat.children) {
+          const found = findCategory(cat.children, slug);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    categorySlugs.forEach(slug => {
+      const cat = findCategory(categories, slug);
+      if (cat) {
+        selected.push({ id: cat.id, name: cat.name });
+      }
+    });
+    
+    return selected;
+  };
 
   return (
     <MainLayout>
+      {/* Loading Overlay */}
+      {productsLoading && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-accent border-t-transparent"></div>
+            <p className="text-sm text-muted-foreground">Loading products...</p>
+          </div>
+        </div>
+      )}
+
       {/* Main Layout */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-6">
           {/* Sidebar */}
           <aside className="w-72 flex-shrink-0 hidden lg:block">
-            <div className="sticky top-24 space-y-6">
+            <div className="sticky top-24 space-y-6" style={{ pointerEvents: productsLoading ? 'none' : 'auto', opacity: productsLoading ? 0.6 : 1 }}>
               {/* Filters Card */}
               <Card className="border-border">
                 <CardHeader className="pb-4">
@@ -231,11 +203,15 @@ export default function ProductListPage() {
                   {/* Categories */}
                   <div>
                     <h3 className="text-sm mb-3">Categories</h3>
-                    <CategoryFilter
-                      categories={categories}
-                      selectedCategories={selectedCategories}
-                      onCategoryChange={handleCategoryChange}
-                    />
+                    {categoriesLoading ? (
+                      <div className="text-sm text-muted-foreground">Loading categories...</div>
+                    ) : (
+                      <CategoryFilter
+                        categories={categories}
+                        selectedCategories={categorySlugs}
+                        onCategoryChange={handleCategoryChange}
+                      />
+                    )}
                   </div>
 
                   <Separator />
@@ -268,7 +244,10 @@ export default function ProductListPage() {
                     variant="outline"
                     className="w-full"
                     onClick={() => {
-                      setSelectedCategories([]);
+                      const newParams = new URLSearchParams(searchParams);
+                      newParams.delete("categorySlug");
+                      newParams.set("page", "1");
+                      setSearchParams(newParams);
                       setPriceRange([0, 5000]);
                     }}
                   >
@@ -303,63 +282,40 @@ export default function ProductListPage() {
           <main className="flex-1">
             {/* Top Bar */}
             <div className="mb-6 space-y-4">
-              {/* Search Tags & Sort */}
+              {/* Active Filters & Sort */}
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  {searchTags.length > 0 && (
-                    <>
-                      <span className="text-sm text-muted-foreground">
-                        Active Filters:
-                      </span>
-                      {searchTags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="pl-2 pr-1 gap-1"
-                        >
-                          {tag}
-                          <button
-                            onClick={() => removeSearchTag(tag)}
-                            className="ml-1 hover:bg-destructive/20 rounded-sm p-0.5 transition-colors"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSearchTags([])}
-                        className="text-xs h-7"
-                      >
-                        Clear All
-                      </Button>
-                    </>
-                  )}
-                </div>
+                {(searchQuery || categorySlugs.length > 0) && (
+                  <ActiveFilters
+                    searchQuery={searchQuery}
+                    selectedCategories={getSelectedCategoriesWithNames()}
+                    onRemoveSearch={handleRemoveSearch}
+                    onRemoveCategory={handleRemoveCategory}
+                    onClearAll={handleClearAllFilters}
+                  />
+                )}
 
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">
                     Sort by:
                   </span>
-                  <Select value={sortBy} onValueChange={setSortBy}>
+                  <Select value={sortParam} onValueChange={handleSortChange} disabled={productsLoading}>
                     <SelectTrigger className="w-[180px] h-9">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="time-desc">
+                      <SelectItem value="endTime:asc">
                         Time: Ending Soon
                       </SelectItem>
-                      <SelectItem value="time-asc">
+                      <SelectItem value="createdAt:desc">
                         Time: Newly Listed
                       </SelectItem>
-                      <SelectItem value="price-asc">
+                      <SelectItem value="currentBid:asc">
                         Price: Low to High
                       </SelectItem>
-                      <SelectItem value="price-desc">
+                      <SelectItem value="currentBid:desc">
                         Price: High to Low
                       </SelectItem>
-                      <SelectItem value="bids-desc">Most Bids</SelectItem>
+                      <SelectItem value="bidCount:desc">Most Bids</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -370,10 +326,10 @@ export default function ProductListPage() {
                 <p className="text-sm text-muted-foreground">
                   Showing{" "}
                   <span className="text-foreground">
-                    {startIndex + 1}-
-                    {Math.min(startIndex + itemsPerPage, products.length)}
+                    {(currentPage - 1) * 9 + 1}-
+                    {Math.min(currentPage * 9, pagination.total)}
                   </span>{" "}
-                  of <span className="text-foreground">{products.length}</span>{" "}
+                  of <span className="text-foreground">{pagination.total}</span>{" "}
                   results
                 </p>
                 <Button variant="ghost" size="sm" className="lg:hidden">
@@ -384,30 +340,38 @@ export default function ProductListPage() {
             </div>
 
             {/* Product Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-              {displayedProducts.map((product) => (
-                <ProductListCard key={product.id} {...product} />
-              ))}
-            </div>
+            {productsLoading ? (
+              <div className="text-center py-12">Loading products...</div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                No products found
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                {products.map((product) => (
+                  <ProductListCard key={product.id} {...product} />
+                ))}
+              </div>
+            )}
 
             {/* Pagination */}
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2" style={{ pointerEvents: productsLoading ? 'none' : 'auto', opacity: productsLoading ? 0.6 : 1 }}>
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(
                 (page) => (
                   <Button
                     key={page}
                     variant={currentPage === page ? "default" : "outline"}
                     size="icon"
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => handlePageChange(page)}
                     className={currentPage === page ? "border-accent" : ""}
                   >
                     {page}
@@ -419,9 +383,9 @@ export default function ProductListPage() {
                 variant="outline"
                 size="icon"
                 onClick={() =>
-                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  handlePageChange(Math.min(pagination.totalPages, currentPage + 1))
                 }
-                disabled={currentPage === totalPages}
+                disabled={currentPage === pagination.totalPages}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
