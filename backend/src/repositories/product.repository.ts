@@ -223,7 +223,9 @@ export const searchProducts = async (
             ? "products.current_price"
             : item.field === "bidCount"
               ? "products.bid_count"
-              : "products.created_at";
+              : item.field === "createdAt"
+                ? "products.created_at"
+                : "products.created_at";
       query = query.orderBy(dbField, item.direction);
     });
   } else {

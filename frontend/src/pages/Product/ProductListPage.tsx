@@ -73,6 +73,12 @@ export default function ProductListPage() {
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
+        console.log("Fetching products with params:", {
+          q: searchQuery,
+          categorySlug: categorySlugs,
+          page: currentPage,
+          sort: sortParam,
+        });
         const result = await productService.searchProducts({
           q: searchQuery || undefined,
           categorySlug: categorySlugs.length > 0 ? categorySlugs : undefined,
@@ -80,6 +86,7 @@ export default function ProductListPage() {
           limit: 9,
           sort: sortParam,
         });
+        console.log("Fetched products:", result);
         setProducts(result.data);
         setPagination(result.pagination);
       } catch (error) {
@@ -284,17 +291,19 @@ export default function ProductListPage() {
             <div className="mb-6 space-y-4">
               {/* Active Filters & Sort */}
               <div className="flex flex-wrap items-center justify-between gap-4">
-                {(searchQuery || categorySlugs.length > 0) && (
-                  <ActiveFilters
-                    searchQuery={searchQuery}
-                    selectedCategories={getSelectedCategoriesWithNames()}
-                    onRemoveSearch={handleRemoveSearch}
-                    onRemoveCategory={handleRemoveCategory}
-                    onClearAll={handleClearAllFilters}
-                  />
-                )}
+                <div className="flex-1">
+                  {(searchQuery || categorySlugs.length > 0) && (
+                    <ActiveFilters
+                      searchQuery={searchQuery}
+                      selectedCategories={getSelectedCategoriesWithNames()}
+                      onRemoveSearch={handleRemoveSearch}
+                      onRemoveCategory={handleRemoveCategory}
+                      onClearAll={handleClearAllFilters}
+                    />
+                  )}
+                </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-sm text-muted-foreground">
                     Sort by:
                   </span>
@@ -309,10 +318,10 @@ export default function ProductListPage() {
                       <SelectItem value="createdAt:desc">
                         Time: Newly Listed
                       </SelectItem>
-                      <SelectItem value="currentBid:asc">
+                      <SelectItem value="price:asc">
                         Price: Low to High
                       </SelectItem>
-                      <SelectItem value="currentBid:desc">
+                      <SelectItem value="price:desc">
                         Price: High to Low
                       </SelectItem>
                       <SelectItem value="bidCount:desc">Most Bids</SelectItem>
