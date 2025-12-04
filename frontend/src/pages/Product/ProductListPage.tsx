@@ -9,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { ProductListCard } from "./components/ProductListCard";
 import { ProductFilters } from "./components/ProductFilters";
+import { ProductGrid } from "./components/ProductGrid";
 import { ProductPagination } from "./components/ProductPagination";
 import { useProducts } from "../../hooks/useProducts";
 import { useCategories } from "../../hooks/useCategories";
@@ -142,19 +142,7 @@ export default function ProductListPage() {
             </div>
 
             {/* Product Grid */}
-            {productsLoading ? (
-              <div className="text-center py-12">Loading products...</div>
-            ) : products.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                No products found
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-                {products.map((product) => (
-                  <ProductListCard key={product.id} {...product} />
-                ))}
-              </div>
-            )}
+            <ProductGrid products={products} loading={productsLoading} />
 
             {/* Pagination */}
             <ProductPagination

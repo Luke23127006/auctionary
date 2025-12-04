@@ -7,6 +7,7 @@ export const useProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 9,
@@ -51,6 +52,7 @@ export const useProducts = () => {
         setPagination(result.pagination);
       } catch (error) {
         console.error("Failed to fetch products:", error);
+        setError("Failed to load products");
       } finally {
         setLoading(false);
       }
@@ -121,6 +123,7 @@ export const useProducts = () => {
   return {
     products,
     loading,
+    error,
     pagination,
     priceRange,
     setPriceRange,
