@@ -11,5 +11,6 @@ export interface User {
   positiveReviews: number;
   negativeReviews: number;
   roles: UserRole[]; // Array of roles like ['bidder', 'seller']
+  permissions: string[]; // Array of permissions like ['create_auction', 'update_auction']
   createdAt: string;
 }

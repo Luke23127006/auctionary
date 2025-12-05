@@ -21,7 +21,6 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  hasRole: (role: string) => boolean;
 
   login: (
     email: string,
@@ -163,16 +162,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return authService.resetPasswordWithOTP(email, otp, newPassword);
   };
 
-  const hasRole = (role: string): boolean => {
-    return user?.roles?.includes(role as any) || false;
-  };
-
   const value: AuthContextType = useMemo(
     () => ({
       user,
       isAuthenticated: !!user,
       isLoading,
-      hasRole,
       login,
       signup,
       forgotPassword,

@@ -12,6 +12,22 @@ import {
 } from "../dtos/requests/auth.schema";
 import { envConfig } from "../../configs/env.config";
 
+const REFRESH_TOKEN_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: envConfig.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
+  path: "/",
+};
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number | string;
+    roles?: string[];
+    permissions?: string[];
+  };
+}
+
 export const signup = async (
   request: Request,
   response: Response,
@@ -21,10 +37,7 @@ export const signup = async (
     const body = request.body as SignupSchema;
     const result = await authService.signupUser(body);
 
-    response
-      .status(201)
-      .message("User created successfully")
-      .json(result);
+    response.status(201).message("User created successfully").json(result);
   } catch (error) {
     logger.error("AuthController", "Failed to signup user", error);
     next(error);
@@ -38,14 +51,11 @@ export const login = async (
 ): Promise<void> => {
   try {
     const deviceInfo = request.headers["user-agent"] || "Unknown";
-    const ipAddress = request.ip || request.socket.remoteAddress || "Unknown";
+    const ipAddress =
+      (request.headers["x-forwarded-for"] as string) || request.ip || "Unknown";
     const body = request.body as LoginSchema;
 
-    const result = await authService.loginUser(
-      body,
-      deviceInfo,
-      ipAddress
-    );
+    const result = await authService.loginUser(body, deviceInfo, ipAddress);
 
     if ("requiresVerification" in result) {
       response
@@ -58,20 +68,16 @@ export const login = async (
       return;
     }
 
-    response.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: envConfig.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
-    });
+    response.cookie(
+      "refreshToken",
+      result.refreshToken,
+      REFRESH_TOKEN_COOKIE_OPTIONS
+    );
 
-    response
-      .status(200)
-      .message("Login successful")
-      .json({
-        accessToken: result.accessToken,
-        user: result.user,
-      });
+    response.status(200).message("Login successful").json({
+      accessToken: result.accessToken,
+      user: result.user,
+    });
   } catch (error) {
     logger.error("AuthController", "Failed to login user", error);
     next(error);
@@ -88,19 +94,13 @@ export const refreshToken = async (
       request.cookies.refreshToken || request.body.refreshToken;
 
     if (!refreshToken) {
-      response
-        .status(401)
-        .message("Refresh token not provided")
-        .json(null);
+      response.status(401).message("Refresh token not provided").json(null);
       return;
     }
 
     const result = await authService.refreshAccessToken(refreshToken);
 
-    response
-      .status(200)
-      .message("Token refreshed successfully")
-      .json(result);
+    response.status(200).message("Token refreshed successfully").json(result);
   } catch (error) {
     logger.error("AuthController", "Failed to refresh token", error);
     next(error);
@@ -120,12 +120,14 @@ export const logout = async (
       await authService.logoutUser(refreshToken);
     }
 
-    response.clearCookie("refreshToken");
+    response.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: envConfig.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
 
-    response
-      .status(200)
-      .message("Logged out successfully")
-      .json(null);
+    response.status(200).message("Logged out successfully").json(null);
   } catch (error) {
     logger.error("AuthController", "Failed to logout user", error);
     next(error);
@@ -138,11 +140,21 @@ export const logoutAll = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = (request as any).user.id;
+    const req = request as AuthenticatedRequest;
 
-    await authService.logoutAllDevices(userId);
+    if (!req.user || !req.user.id) {
+      response.status(401).message("Unauthorized").json(null);
+      return;
+    }
 
-    response.clearCookie("refreshToken");
+    await authService.logoutAllDevices(req.user.id as any);
+
+    response.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: envConfig.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
 
     response
       .status(200)
@@ -160,13 +172,16 @@ export const getMe = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = (request as any).user.id;
-    const user = await authService.getAuthenticatedUser(userId);
+    const req = request as AuthenticatedRequest;
 
-    response
-      .status(200)
-      .message("User data retrieved successfully")
-      .json(user);
+    if (!req.user || !req.user.id) {
+      response.status(401).message("Unauthorized").json(null);
+      return;
+    }
+
+    const user = await authService.getAuthenticatedUser(req.user.id as any);
+
+    response.status(200).message("User data retrieved successfully").json(user);
   } catch (error) {
     logger.error("AuthController", "Failed to get user data", error);
     next(error);
@@ -182,10 +197,7 @@ export const forgotPassword = async (
     const body = request.body as ForgotPasswordSchema;
     const result = await authService.requestPasswordReset(body);
 
-    response
-      .status(200)
-      .message(result.message)
-      .json(null);
+    response.status(200).message(result.message).json(null);
   } catch (error) {
     logger.error("AuthController", "Failed to process forgot password", error);
     next(error);
@@ -201,10 +213,7 @@ export const resetPassword = async (
     const body = request.body as ResetPasswordSchema;
     const result = await authService.resetPasswordWithOTP(body);
 
-    response
-      .status(200)
-      .message(result.message)
-      .json(null);
+    response.status(200).message(result.message).json(null);
   } catch (error) {
     logger.error("AuthController", "Failed to reset password", error);
     next(error);
@@ -224,20 +233,16 @@ export const googleLogin = async (
       request.ip
     );
 
-    response.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: envConfig.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
-    });
+    response.cookie(
+      "refreshToken",
+      result.refreshToken,
+      REFRESH_TOKEN_COOKIE_OPTIONS
+    );
 
-    response
-      .status(200)
-      .message("Google login successful")
-      .json({
-        accessToken: result.accessToken,
-        user: result.user,
-      });
+    response.status(200).message("Google login successful").json({
+      accessToken: result.accessToken,
+      user: result.user,
+    });
   } catch (error) {
     logger.error("AuthController", "Failed to login with Google", error);
     next(error);
@@ -257,20 +262,16 @@ export const facebookLogin = async (
       request.ip
     );
 
-    response.cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      secure: envConfig.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
-    });
+    response.cookie(
+      "refreshToken",
+      result.refreshToken,
+      REFRESH_TOKEN_COOKIE_OPTIONS
+    );
 
-    response
-      .status(200)
-      .message("Facebook login successful")
-      .json({
-        accessToken: result.accessToken,
-        user: result.user,
-      });
+    response.status(200).message("Facebook login successful").json({
+      accessToken: result.accessToken,
+      user: result.user,
+    });
   } catch (error) {
     logger.error("AuthController", "Failed to login with Facebook", error);
     next(error);

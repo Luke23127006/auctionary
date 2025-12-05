@@ -15,6 +15,7 @@ import {
 import { ChevronRight } from "lucide-react";
 import { AuctionCard } from "../../components/auction/AuctionCard";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermission } from "../../hooks/usePermission";
 import { useNavigate } from "react-router-dom";
 
 // Mock auction data
@@ -169,7 +170,8 @@ const highestPriceAuctions = [
 ];
 
 export default function HomePage() {
-  const { isAuthenticated, hasRole } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const { hasRole } = usePermission();
   const navigate = useNavigate();
   return (
     <MainLayout>

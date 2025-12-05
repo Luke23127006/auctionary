@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { usePermission } from "../../hooks/usePermission";
 import { useTheme } from "../../hooks/useTheme";
 import {
   LogIn,
@@ -28,7 +29,8 @@ import {
 } from "../ui/dropdown-menu";
 
 const Header: React.FC = () => {
-  const { isAuthenticated, user, logout, hasRole } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
+  const { hasRole } = usePermission();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 

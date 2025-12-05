@@ -12,6 +12,7 @@ export interface User {
 
 export interface UserWithRoles extends User {
   roles: string[];
+  permissions: string[];
 }
 
 export interface SignupData {
@@ -38,6 +39,8 @@ export interface UserResponse {
   email: string;
   fullName: string;
   isVerified: boolean;
+  roles?: string[];
+  permissions?: string[];
 }
 
 export interface LoginResponse {

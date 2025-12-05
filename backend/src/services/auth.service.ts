@@ -33,7 +33,21 @@ import {
 } from "../api/dtos/requests/auth.schema";
 import { mapUserToResponse } from "../mappers/auth.mapper";
 
-export const signupUser = async (userData: SignupSchema): Promise<SignupResponse> => {
+// Helper function to create standardized user payload for JWT
+const createUserPayload = async (userId: number, email: string) => {
+  const roles = await userRepo.getUserRoles(userId);
+  const permissions = await userRepo.getUserPermissions(userId);
+  return {
+    id: userId,
+    email,
+    roles,
+    permissions,
+  };
+};
+
+export const signupUser = async (
+  userData: SignupSchema
+): Promise<SignupResponse> => {
   const { fullName, email, password, address } = userData;
 
   const existingUser = await userRepo.findByEmail(email);
@@ -114,13 +128,18 @@ export const loginUser = async (
         email: mappedUser.email,
         fullName: mappedUser.fullName,
         isVerified: false,
+        // Chưa verified thì chưa cần role/permission
       },
     };
   }
 
+  const roles = await userRepo.getUserRoles(mappedUser.id);
+  const permissions = await userRepo.getUserPermissions(mappedUser.id);
   const userPayload = {
     id: mappedUser.id,
     email: mappedUser.email,
+    roles: roles,
+    permissions: permissions,
   };
 
   const accessToken = generateAccessToken(userPayload);
@@ -145,6 +164,8 @@ export const loginUser = async (
       email: mappedUser.email,
       fullName: mappedUser.fullName,
       isVerified: true,
+      roles: roles,
+      permissions: permissions,
     },
   };
 };
@@ -208,10 +229,11 @@ export const refreshAccessToken = async (
 
   await tokenRepo.updateLastUsed(storedToken.token_id);
 
-  const userPayload = {
-    id: decoded.id,
-    email: decoded.email,
-  };
+  // Fetch fresh roles and permissions from database
+  const userPayload = await createUserPayload(
+    decoded.id as number,
+    decoded.email as string
+  );
 
   const newAccessToken = generateAccessToken(userPayload);
 
@@ -267,10 +289,7 @@ export const verifyOTP = async (
 
   await sendWelcomeEmail(mappedUser.email, mappedUser.fullName);
 
-  const userPayload = {
-    id: mappedUser.id,
-    email: mappedUser.email,
-  };
+  const userPayload = await createUserPayload(mappedUser.id, mappedUser.email);
 
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
@@ -333,6 +352,10 @@ export const getAuthenticatedUser = async (
   const mappedUser = mapUserToResponse(user)!;
   // @ts-ignore
   const roles = user.usersRoles.map((ur: any) => ur.roles.name);
+  // @ts-ignore
+  const permissions = user.usersPermissions.map(
+    (up: any) => up.permissions.name
+  );
 
   return {
     id: mappedUser.id,
@@ -344,6 +367,7 @@ export const getAuthenticatedUser = async (
     positiveReviews: mappedUser.positiveReviews,
     negativeReviews: mappedUser.negativeReviews,
     roles: roles,
+    permissions: permissions,
     createdAt: mappedUser.createdAt,
   };
 };
@@ -376,7 +400,7 @@ export const loginWithGoogle = async (
 
   const mappedUser = mapUserToResponse(user)!;
 
-  const userPayload = { id: mappedUser.id, email: mappedUser.email, roles: [] };
+  const userPayload = await createUserPayload(mappedUser.id, mappedUser.email);
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
 
@@ -428,7 +452,7 @@ export const loginWithFacebook = async (
 
   const mappedUser = mapUserToResponse(user)!;
 
-  const userPayload = { id: mappedUser.id, email: mappedUser.email, roles: [] };
+  const userPayload = await createUserPayload(mappedUser.id, mappedUser.email);
   const jwtAccessToken = generateAccessToken(userPayload);
   const jwtRefreshToken = generateRefreshToken(userPayload);
 
