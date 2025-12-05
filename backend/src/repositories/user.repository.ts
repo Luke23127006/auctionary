@@ -69,7 +69,7 @@ export const findByIdWithRoles = async (userId: number) => {
   if (!user) return null;
 
   const roles = await db("users_roles")
-    .join("roles", "users_roles.role_id", "roles.id")
+    .join("roles", "users_roles.role_id", "roles.role_id")
     .where({ user_id: userId })
     .select("roles.name");
 
@@ -82,9 +82,9 @@ export const findByIdWithRoles = async (userId: number) => {
 export const getUserPermissions = async (userId: number): Promise<string[]> => {
   const result = await db("users")
     .join("users_roles", "users.id", "users_roles.user_id")
-    .join("roles", "users_roles.role_id", "roles.id")
-    .join("roles_permissions", "roles.id", "roles_permissions.role_id")
-    .join("permissions", "roles_permissions.permission_id", "permissions.id")
+    .join("roles", "users_roles.role_id", "roles.role_id")
+    .join("roles_permissions", "roles.role_id", "roles_permissions.role_id")
+    .join("permissions", "roles_permissions.permission_id", "permissions.permission_id")
     .where("users.id", userId)
     .select("permissions.name as permission")
     .distinct();
@@ -94,7 +94,7 @@ export const getUserPermissions = async (userId: number): Promise<string[]> => {
 
 export const getUserRoles = async (userId: number): Promise<string[]> => {
   const result = await db("users_roles")
-    .join("roles", "users_roles.role_id", "roles.id")
+    .join("roles", "users_roles.role_id", "roles.role_id")
     .where("users_roles.user_id", userId)
     .select("roles.name");
 
