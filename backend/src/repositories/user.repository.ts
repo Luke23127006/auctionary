@@ -84,7 +84,11 @@ export const getUserPermissions = async (userId: number): Promise<string[]> => {
     .join("users_roles", "users.id", "users_roles.user_id")
     .join("roles", "users_roles.role_id", "roles.role_id")
     .join("roles_permissions", "roles.role_id", "roles_permissions.role_id")
-    .join("permissions", "roles_permissions.permission_id", "permissions.permission_id")
+    .join(
+      "permissions",
+      "roles_permissions.permission_id",
+      "permissions.permission_id"
+    )
     .where("users.id", userId)
     .select("permissions.name as permission")
     .distinct();
@@ -99,4 +103,59 @@ export const getUserRoles = async (userId: number): Promise<string[]> => {
     .select("roles.name");
 
   return result.map((row) => row.name);
+};
+
+export const countWonAuctions = async (userId: number): Promise<number> => {
+  const result = (await db("orders")
+    .where({ winner_id: userId })
+    .count("order_id as count")
+    .first()) as any;
+  return Number(result?.count || 0);
+};
+
+export const getWatchlist = async (userId: number) => {
+  return await db("watchlist")
+    .join("products", "watchlist.product_id", "products.product_id")
+    .where("watchlist.user_id", userId)
+    .select("products.*");
+};
+
+export const getActiveBids = async (userId: number) => {
+  // Get latest bid for each product this user bid on
+  const subquery = db("bids")
+    .select("product_id")
+    .max("amount as my_max_bid")
+    .where("bidder_id", userId)
+    .groupBy("product_id")
+    .as("my_bids");
+
+  return await db("products")
+    .join(subquery, "products.product_id", "my_bids.product_id")
+    .select(
+      "products.*",
+      "my_bids.my_max_bid",
+      db.raw(
+        "(SELECT MAX(amount) FROM bids WHERE product_id = products.product_id) as current_highest_bid"
+      ),
+      db.raw(
+        "(SELECT bidder_id FROM bids WHERE product_id = products.product_id ORDER BY amount DESC LIMIT 1) as highest_bidder_id"
+      )
+    );
+};
+
+export const getWonAuctions = async (userId: number) => {
+  return await db("orders")
+    .join("products", "orders.product_id", "products.product_id")
+    .where("orders.winner_id", userId)
+    .select(
+      "orders.*",
+      "products.name as product_name",
+      "products.thumbnail_url"
+    );
+};
+
+export const getMyListings = async (userId: number) => {
+  return await db("products")
+    .where("seller_id", userId)
+    .orderBy("created_at", "desc");
 };

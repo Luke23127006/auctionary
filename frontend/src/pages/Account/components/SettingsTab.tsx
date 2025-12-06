@@ -1,0 +1,175 @@
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "../../../components/ui/card";
+import { Label } from "../../../components/ui/label";
+import { Input } from "../../../components/ui/input";
+import { Separator } from "../../../components/ui/separator";
+import { Button } from "../../../components/ui/button";
+import { CheckCircle2, Lock, Shield, User } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "../../../hooks/useAuth";
+
+export const SettingsTab = () => {
+  const { user } = useAuth(); // Ideally useSettings hook if logic is complex
+  const [displayName, setDisplayName] = useState(user?.fullName || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [emailConfirmPassword, setEmailConfirmPassword] = useState(""); // For email change
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl mb-1">Account Settings</h2>
+        <p className="text-sm text-muted-foreground">
+          Manage your account information and security
+        </p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Edit Profile */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5 text-accent" />
+              Edit Profile
+            </CardTitle>
+            <CardDescription>Update your personal information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Display Name</Label>
+              <Input
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            {email !== user?.email && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                <Label htmlFor="emailConfirmPassword">
+                  Confirm Password to Change Email
+                </Label>
+                <Input
+                  id="emailConfirmPassword"
+                  type="password"
+                  value={emailConfirmPassword}
+                  onChange={(e) => setEmailConfirmPassword(e.target.value)}
+                  placeholder="Required for email change"
+                />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                defaultValue={user?.address || ""}
+                placeholder="Your shipping address"
+              />
+            </div>
+
+            <Separator />
+
+            <Button className="w-full">
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Save Changes
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Change Password */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-accent" />
+              Change Password
+            </CardTitle>
+            <CardDescription>Update your account password</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+            </div>
+
+            <Separator />
+
+            <Button className="w-full">
+              <Lock className="mr-2 h-4 w-4" />
+              Update Password
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Additional Settings */}
+      <Card className="border-accent/30 bg-accent/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-accent" />
+            Security & Privacy
+          </CardTitle>
+          <CardDescription>
+            Additional security options and privacy settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
+            <div>
+              <div className="text-sm mb-1">Two-Factor Authentication</div>
+              <div className="text-xs text-muted-foreground">
+                Add an extra layer of security to your account
+              </div>
+            </div>
+            <Button variant="outline">Enable</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

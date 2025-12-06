@@ -1,5 +1,4 @@
-import type { UserRole } from "../constants/roles"; // 1. Import kiểu UserRole
-// 1. Import kiểu UserRole
+import type { UserRole } from "../constants/roles";
 
 export interface User {
   id: number;
@@ -10,7 +9,18 @@ export interface User {
   status: "pending_verification" | "active" | "pending_upgrade" | "suspended";
   positiveReviews: number;
   negativeReviews: number;
-  roles: UserRole[]; // Array of roles like ['bidder', 'seller']
-  permissions: string[]; // Array of permissions like ['create_auction', 'update_auction']
+  roles: UserRole[];
+  permissions: string[];
   createdAt: string;
+}
+
+export interface UserStats {
+  rating: number;
+  likes: number;
+  dislikes: number;
+  auctionsWon: number;
+}
+
+export interface UserStatsResponse {
+  stats: UserStats;
 }

@@ -2,12 +2,12 @@ import apiClient from "./apiClient";
 import type {
   Product,
   SearchProductsParams,
-  PaginatedResponse,
+  PaginatedResult,
 } from "../types/product";
 
 export const searchProducts = async (
   params: SearchProductsParams
-): Promise<PaginatedResponse<Product>> => {
+): Promise<PaginatedResult<Product>> => {
   const queryParams = new URLSearchParams();
 
   if (params.q) {
@@ -39,5 +39,5 @@ export const searchProducts = async (
   const queryString = queryParams.toString();
   const endpoint = `/products${queryString ? `?${queryString}` : ""}`;
 
-  return apiClient.get<PaginatedResponse<Product>>(endpoint);
+  return apiClient.get<PaginatedResult<Product>>(endpoint);
 };

@@ -343,19 +343,15 @@ export const resendOTP = async (
 export const getAuthenticatedUser = async (
   userId: number
 ): Promise<UserWithRoles> => {
-  const user = await userRepo.findByIdWithRoles(userId);
+  const user = await userRepo.findById(userId);
 
   if (!user) {
     throw new NotFoundError("User not found");
   }
 
   const mappedUser = mapUserToResponse(user)!;
-  // @ts-ignore
-  const roles = user.usersRoles.map((ur: any) => ur.roles.name);
-  // @ts-ignore
-  const permissions = user.usersPermissions.map(
-    (up: any) => up.permissions.name
-  );
+  const roles = await userRepo.getUserRoles(userId);
+  const permissions = await userRepo.getUserPermissions(userId);
 
   return {
     id: mappedUser.id,
