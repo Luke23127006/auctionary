@@ -1,6 +1,6 @@
 export const mapUserToResponse = (user: any) => {
   if (!user) return null;
-  
+
   return {
     id: user.id,
     email: user.email,
@@ -11,6 +11,7 @@ export const mapUserToResponse = (user: any) => {
     positiveReviews: user.positive_reviews,
     negativeReviews: user.negative_reviews,
     password: user.password,
+    hasPassword: !!user.password,
     createdAt: user.created_at,
     updatedAt: user.updated_at,
   };

@@ -10,6 +10,7 @@ import {
   Trophy,
 } from "lucide-react";
 import type { User, UserStats } from "../../../types/user";
+import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 
 interface ProfileHeaderProps {
   user: User | null;
@@ -39,9 +40,11 @@ export const ProfileHeader = ({ user, stats }: ProfileHeaderProps) => {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             {/* Avatar Replacement & Basic Info */}
             <div className="flex items-center gap-4">
-              <div className="h-24 w-24 flex items-center justify-center rounded-full border-4 border-accent/30 bg-background">
-                <CircleUserRound className="h-16 w-16 text-muted-foreground" />
-              </div>
+              <Avatar className="h-24 w-24 border-4 border-accent/30 bg-background">
+                <AvatarFallback className="bg-transparent">
+                  <CircleUserRound className="h-full w-full text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
 
               <div>
                 <h1 className="text-2xl mb-1">{user.fullName}</h1>

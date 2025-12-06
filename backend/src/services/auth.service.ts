@@ -166,6 +166,7 @@ export const loginUser = async (
       isVerified: true,
       roles: roles,
       permissions: permissions,
+      hasPassword: mappedUser.hasPassword,
     },
   };
 };
@@ -365,6 +366,7 @@ export const getAuthenticatedUser = async (
     roles: roles,
     permissions: permissions,
     createdAt: mappedUser.createdAt,
+    hasPassword: mappedUser.hasPassword,
   };
 };
 

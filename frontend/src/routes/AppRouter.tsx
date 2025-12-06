@@ -40,11 +40,9 @@ const AppRouter = () => {
       {/* ============================================== */}
       <Route path="/dev/ui-kit" element={<UIKitPage />} />
       <Route path="/products" element={<ProductListPage />} />
-      <Route path="/products" element={<ProductListPage />} />
       {/* Support both /product/:id and /product/:slug-id formats */}
       <Route path="/product/:id" element={<ProductDetailPage />} />
       <Route path="/products/:id" element={<ProductDetailPage />} />
-      <Route path="/profile" element={<UserProfilePage />} />
       <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
       <Route path="/transaction-room" element={<TransactionRoomPage />} />
       <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
@@ -70,7 +68,7 @@ const AppRouter = () => {
           />
         }
       >
-        <Route path="/profile" element={<UnderDevelopmentPage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
       </Route>
 
       <Route

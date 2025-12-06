@@ -3,6 +3,9 @@ import type {
   Product,
   SearchProductsParams,
   PaginatedResult,
+  ProductDetailResponse,
+  BidHistoryResponse,
+  QuestionsResponse,
 } from "../types/product";
 
 export const searchProducts = async (
@@ -40,4 +43,24 @@ export const searchProducts = async (
   const endpoint = `/products${queryString ? `?${queryString}` : ""}`;
 
   return apiClient.get<PaginatedResult<Product>>(endpoint);
+};
+
+export const getProductDetail = async (
+  id: string
+): Promise<ProductDetailResponse> => {
+  return apiClient.get(`/products/${id}`);
+};
+
+export const getProductBids = async (
+  id: string,
+  page: number = 1
+): Promise<BidHistoryResponse> => {
+  return apiClient.get(`/products/${id}/bids?page=${page}`);
+};
+
+export const getProductQuestions = async (
+  id: string,
+  page: number = 1
+): Promise<QuestionsResponse> => {
+  return apiClient.get(`/products/${id}/questions?page=${page}`);
 };

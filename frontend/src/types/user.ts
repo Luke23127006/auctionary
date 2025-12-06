@@ -12,6 +12,7 @@ export interface User {
   roles: UserRole[];
   permissions: string[];
   createdAt: string;
+  hasPassword?: boolean;
 }
 
 export interface UserStats {

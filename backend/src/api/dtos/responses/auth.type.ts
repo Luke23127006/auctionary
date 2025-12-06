@@ -8,6 +8,7 @@ export interface User {
   positiveReviews: number;
   negativeReviews: number;
   createdAt: Date;
+  hasPassword?: boolean;
 }
 
 export interface UserWithRoles extends User {
@@ -41,6 +42,7 @@ export interface UserResponse {
   isVerified: boolean;
   roles?: string[];
   permissions?: string[];
+  hasPassword?: boolean;
 }
 
 export interface LoginResponse {

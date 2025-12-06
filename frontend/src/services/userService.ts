@@ -1,5 +1,5 @@
 import apiClient from "./apiClient";
-import type { UserStatsResponse } from "../types/user";
+import type { UserStatsResponse, User } from "../types/user";
 
 export const getStats = async (): Promise<UserStatsResponse> => {
   return apiClient.get("/users/me/stats", true);
@@ -19,4 +19,32 @@ export const getWonAuctions = async () => {
 
 export const getMyListings = async () => {
   return apiClient.get("/users/me/listings", true);
+};
+
+export const updateProfile = async (data: {
+  fullName?: string;
+  address?: string;
+}): Promise<User> => {
+  return apiClient.patch("/users/me/profile", data, true);
+};
+
+export const updateEmail = async (
+  email: string,
+  password: string
+): Promise<User> => {
+  return apiClient.patch("/users/me/email", { email, password }, true);
+};
+
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string
+): Promise<User> => {
+  return apiClient.patch(
+    "/users/me/password",
+    {
+      currentPassword,
+      newPassword,
+    },
+    true
+  );
 };

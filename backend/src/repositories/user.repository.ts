@@ -54,12 +54,18 @@ export const getPositiveNegativeReviewsById = async (userId: number) => {
 };
 
 export const updatePassword = async (
-  userId: number,
+  _userId: number,
   hashedPassword: string
 ) => {
+  return await db("users")
+    .where({ id: _userId })
+    .update({ password: hashedPassword });
+};
+
+export const updateUser = async (userId: number, data: any) => {
   const [user] = await db("users")
     .where({ id: userId })
-    .update({ password: hashedPassword })
+    .update(data)
     .returning("*");
   return user;
 };

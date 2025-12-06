@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import * as productService from "../services/product.service";
+import * as productService from "../services/productService";
 import { extractIdFromSlug } from "../utils/url";
 import type {
   ProductDetailResponse,
