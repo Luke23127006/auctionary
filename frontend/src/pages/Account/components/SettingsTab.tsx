@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import * as userService from "../../../services/userService";
-import toast from "react-hot-toast";
+import { notify } from "../../../utils/toast";
 
 export const SettingsTab = () => {
   const navigate = useNavigate();
@@ -43,17 +43,16 @@ export const SettingsTab = () => {
       // 2. Check if email changed
       if (email !== user?.email) {
         if (!emailConfirmPassword && hasPassword) {
-          toast.error("Password required to change email");
+          notify.error("Password required to change email");
           setIsProfileLoading(false);
           return;
         }
         await userService.updateEmail(email, emailConfirmPassword);
       }
 
-      toast.success("Profile updated successfully");
-      window.location.reload();
+      notify.success("Profile updated successfully");
     } catch (error: any) {
-      toast.error("Error updating profile");
+      notify.error("Error updating profile");
     } finally {
       setIsProfileLoading(false);
     }
@@ -61,24 +60,24 @@ export const SettingsTab = () => {
 
   const handleUpdatePassword = async () => {
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
+      notify.error("Passwords do not match");
       return;
     }
     try {
       setIsPasswordLoading(true);
       if (hasPassword) {
         await userService.changePassword(currentPassword, newPassword);
-        toast.success("Password updated successfully");
+        notify.success("Password updated successfully");
       } else {
         await userService.changePassword("", newPassword);
-        toast.success("Password set successfully");
+        notify.success("Password set successfully");
       }
 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Error updating password");
+      notify.error(error.response?.data?.message || "Error updating password");
     } finally {
       setIsPasswordLoading(false);
     }
@@ -161,7 +160,7 @@ export const SettingsTab = () => {
             <Button
               className="w-full"
               onClick={handleSaveProfile}
-              disabled={isProfileLoading}
+              isLoading={isProfileLoading}
             >
               {isProfileLoading && (
                 <CheckCircle2 className="mr-2 h-4 w-4 animate-spin" />
@@ -229,7 +228,7 @@ export const SettingsTab = () => {
             <Button
               className="w-full"
               onClick={handleUpdatePassword}
-              disabled={isPasswordLoading}
+              isLoading={isPasswordLoading}
             >
               <Lock className="mr-2 h-4 w-4" />
               {hasPassword ? "Update Password" : "Set Password"}

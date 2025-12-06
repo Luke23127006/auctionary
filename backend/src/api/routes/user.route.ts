@@ -1,6 +1,12 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/require-auth.middleware";
 import * as userController from "../controllers/user.controller";
+import { validate } from "../middlewares/validate.middleware";
+import {
+  updateProfileSchema,
+  updateEmailSchema,
+  changePasswordSchema,
+} from "../dtos/requests/user.schema";
 
 const router = Router();
 
@@ -10,8 +16,23 @@ router.get("/me/bids", requireAuth, userController.getActiveBids);
 router.get("/me/won-auctions", requireAuth, userController.getWonAuctions);
 router.get("/me/listings", requireAuth, userController.getMyListings);
 
-router.patch("/me/profile", requireAuth, userController.updateProfile);
-router.patch("/me/email", requireAuth, userController.updateEmail);
-router.patch("/me/password", requireAuth, userController.changePassword);
+router.patch(
+  "/me/profile",
+  requireAuth,
+  validate(updateProfileSchema),
+  userController.updateProfile
+);
+router.patch(
+  "/me/email",
+  requireAuth,
+  validate(updateEmailSchema),
+  userController.updateEmail
+);
+router.patch(
+  "/me/password",
+  requireAuth,
+  validate(changePasswordSchema),
+  userController.changePassword
+);
 
 export default router;

@@ -1,7 +1,7 @@
 import * as userRepository from "../repositories/user.repository";
 import { UserStatsResponse } from "../api/dtos/responses/user.type";
 import { NotFoundError } from "../errors";
-import { hashPassword } from "../utils/hash.util";
+import { hashPassword, comparePassword } from "../utils/hash.util";
 
 export const getStats = async (userId: number): Promise<UserStatsResponse> => {
   const reviews = await userRepository.getPositiveNegativeReviewsById(userId);
@@ -70,9 +70,11 @@ export const updateEmail = async (
     throw new NotFoundError("User not found");
   }
 
-  if (user.password && user.password !== passwordForauth) {
-    // Note: In real app, compare hashed password using bcrypt (e.g. authService.verifyPassword)
-    throw new Error("Invalid password");
+  if (user.password) {
+    const isMatch = await comparePassword(passwordForauth, user.password);
+    if (!isMatch) {
+      throw new Error("Invalid password");
+    }
   }
 
   // 2. Check if email taken
@@ -95,12 +97,16 @@ export const changePassword = async (
   }
 
   // If user has a password, verify it
-  if (user.password && user.password !== currentPassword) {
-    // Again, hashing needed.
-    throw new Error("Invalid current password");
+  if (user.password) {
+    const isMatch = await comparePassword(currentPassword, user.password);
+    if (!isMatch) {
+      throw new Error("Invalid current password");
+    }
   }
 
+  const hashedNewPassword = await hashPassword(newPassword);
+
   return userRepository.updateUser(userId, {
-    password: hashPassword(newPassword),
+    password: hashedNewPassword,
   });
 };

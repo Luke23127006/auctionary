@@ -23,8 +23,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 export const ActiveBidsTab = () => {
+  const navigate = useNavigate();
   const { bids, isLoading } = useMyBids();
 
   if (isLoading) return <div>Loading active bids...</div>;
@@ -124,7 +126,11 @@ export const ActiveBidsTab = () => {
                               Increase Bid
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate(`/products/${bid.product_id}`)
+                            }
+                          >
                             <Eye className="h-4 w-4 mr-2 focus:text-accent-foreground" />
                             View Detail
                           </DropdownMenuItem>

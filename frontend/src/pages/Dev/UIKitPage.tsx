@@ -45,6 +45,7 @@ import {
   Menu,
   Shield,
 } from "lucide-react";
+import { notify } from "../../utils/toast";
 
 export default function UIKitPage() {
   const [progress] = useState(65);
@@ -598,6 +599,20 @@ export default function UIKitPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => notify.success("Success message")}
+                  >
+                    Success
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => notify.error("Error message")}
+                  >
+                    Error
+                  </Button>
+                </div>
                 <div className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card">
                   <div className="p-2 rounded-md bg-accent/20">
                     <DollarSign className="h-4 w-4 text-accent" />

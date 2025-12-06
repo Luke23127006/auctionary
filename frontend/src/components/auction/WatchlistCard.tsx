@@ -3,6 +3,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { ImageWithFallback } from "../ImageWithFallback";
 import { Heart, Clock, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface WatchlistCardProps {
   id: string;
@@ -15,6 +16,7 @@ interface WatchlistCardProps {
 }
 
 export function WatchlistCard({
+  id,
   title,
   image,
   currentBid,
@@ -25,11 +27,13 @@ export function WatchlistCard({
   return (
     <Card className="group overflow-hidden border-border hover:border-accent/50 transition-all duration-300">
       <div className="relative aspect-square overflow-hidden bg-secondary">
-        <ImageWithFallback
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-        />
+        <Link to={`/products/${id}`}>
+          <ImageWithFallback
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+        </Link>
         <Button
           variant="ghost"
           size="icon"
