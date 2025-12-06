@@ -308,6 +308,9 @@ export const verifyOTP = async (
       email: mappedUser.email,
       fullName: mappedUser.fullName,
       isVerified: true,
+      roles: userPayload.roles,
+      permissions: userPayload.permissions,
+      hasPassword: mappedUser.hasPassword,
     },
   };
 };
@@ -418,6 +421,9 @@ export const loginWithGoogle = async (
       email: mappedUser.email,
       fullName: mappedUser.fullName,
       isVerified: true,
+      roles: userPayload.roles,
+      permissions: userPayload.permissions,
+      hasPassword: mappedUser.hasPassword,
     },
   };
 };
@@ -469,6 +475,9 @@ export const loginWithFacebook = async (
       email: mappedUser.email,
       fullName: mappedUser.fullName,
       isVerified: true,
+      roles: userPayload.roles,
+      permissions: userPayload.permissions,
+      hasPassword: mappedUser.hasPassword,
     },
   };
 };
