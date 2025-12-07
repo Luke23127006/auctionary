@@ -1,22 +1,87 @@
-import { useState, useEffect } from "react";
-import * as userService from "../services/userService";
+import { useState, useEffect, useCallback } from "react";
+import { notify } from "../utils/toast";
+import * as watchlistService from "../services/watchlistService";
 import { useAuth } from "./useAuth";
+import type { WatchlistProduct } from "../types/watchlist";
 
 export const useWatchlist = () => {
   const { user } = useAuth();
-  const [watchlist, setWatchlist] = useState<any[]>([]);
+  const [watchlist, setWatchlist] = useState<WatchlistProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
+  const refreshWatchlist = useCallback(async () => {
+    if (!user) {
+      setWatchlist([]);
+      return;
+    }
+
+    try {
       setIsLoading(true);
-      userService
-        .getWatchlist()
-        .then((data) => setWatchlist(data))
-        .catch((err) => console.error(err))
-        .finally(() => setIsLoading(false));
+      const data = await watchlistService.getWatchlist();
+      setWatchlist(data.products || []);
+    } catch (err) {
+      console.error("Failed to fetch watchlist:", err);
+    } finally {
+      setIsLoading(false);
     }
   }, [user]);
 
-  return { watchlist, isLoading };
+  useEffect(() => {
+    refreshWatchlist();
+  }, [refreshWatchlist]);
+
+  const isWatched = useCallback(
+    (productId: string) => {
+      return watchlist.some((item) => item.id === productId);
+    },
+    [watchlist]
+  );
+
+  const addToWatchlist = async (product: WatchlistProduct) => {
+    if (!user) {
+      notify.error("Please login to use watchlist");
+      return;
+    }
+
+    if (isWatched(product.id)) return;
+
+    const previousList = [...watchlist];
+    setWatchlist((prev) => [...prev, product]);
+
+    try {
+      await watchlistService.addProductToWatchlist({
+        productId: Number(product.id),
+      });
+      notify.success("Added to watchlist");
+    } catch (error) {
+      setWatchlist(previousList);
+      notify.error("Failed to add to watchlist");
+      console.error(error);
+    }
+  };
+
+  const removeFromWatchlist = async (productId: string) => {
+    if (!user) return;
+
+    const previousList = [...watchlist];
+    setWatchlist((prev) => prev.filter((item) => item.id !== productId));
+
+    try {
+      await watchlistService.removeProductFromWatchlist(Number(productId));
+      notify.success("Removed from watchlist");
+    } catch (error) {
+      setWatchlist(previousList);
+      notify.error("Failed to remove from watchlist");
+      console.error(error);
+    }
+  };
+
+  return {
+    watchlist,
+    isLoading,
+    isWatched,
+    addToWatchlist,
+    removeFromWatchlist,
+    refreshWatchlist,
+  };
 };

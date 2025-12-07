@@ -31,14 +31,14 @@ export const WatchlistTab = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {watchlist.map((item) => (
             <WatchlistCard
-              key={item.product_id}
-              id={item.product_id}
-              title={item.name}
-              image={item.thumbnail_url}
-              currentBid={Number(item.current_price)}
-              timeLeft={new Date(item.end_time).toLocaleDateString()} // Simple formatting
-              bidCount={item.bid_count}
-              isActive={item.status === "active"}
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              image={item.image}
+              currentBid={Number(item.currentBid)}
+              timeLeft={item.timeLeft}
+              bidCount={item.bidCount}
+              isActive={!(item.timeLeft === "Ended")}
             />
           ))}
         </div>

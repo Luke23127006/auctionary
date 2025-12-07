@@ -18,6 +18,7 @@ import authRouter from "./api/routes/auth.route";
 import categoryRouter from "./api/routes/category.route";
 import productRouter from "./api/routes/product.route";
 import userRouter from "./api/routes/user.route";
+import watchlistRouter from "./api/routes/watchlist.route";
 
 const app: Application = express();
 const PORT: number = envConfig.PORT;
@@ -40,9 +41,7 @@ app.use("/auth", authRouter);
 app.use("/categories", categoryRouter);
 app.use("/products", productRouter);
 app.use("/users", userRouter);
-app.get("/", (_req, res) => {
-  res.send("Online Auction API is running");
-});
+app.use("/watchlist", watchlistRouter);
 
 // Error Handling
 app.use(notFoundHandler);

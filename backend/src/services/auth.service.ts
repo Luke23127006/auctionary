@@ -148,6 +148,7 @@ export const loginUser = async (
   const tokenHash = hashToken(refreshToken);
   const expiresAt = getRefreshTokenExpiry();
 
+  console.log(accessToken);
   await tokenRepo.createRefreshToken(
     mappedUser.id,
     tokenHash,

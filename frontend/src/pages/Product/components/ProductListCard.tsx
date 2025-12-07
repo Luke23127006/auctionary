@@ -2,9 +2,11 @@ import { Card, CardContent } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
-import { Clock, Sparkles, ShoppingCart } from "lucide-react";
+import { Clock, Sparkles, ShoppingCart, Heart } from "lucide-react";
 import { cn } from "../../../components/ui/utils";
 import { Link } from "react-router-dom";
+import { useWatchlist } from "../../../hooks/useWatchlist";
+import type { WatchlistProduct } from "../../../types/watchlist";
 
 interface ProductListCardProps {
   id: string;
@@ -32,6 +34,30 @@ export function ProductListCard({
   bidCount,
 }: ProductListCardProps) {
   const productUrl = slug ? `/product/${slug}-${id}` : `/product/${id}`;
+  const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
+
+  const productIdNumber = id;
+  const isLove = isWatched(productIdNumber);
+
+  const handleToggleWatchlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isLove) {
+      removeFromWatchlist(productIdNumber);
+    } else {
+      addToWatchlist({
+        id: productIdNumber,
+        title: title,
+        image: image,
+        currentBid: currentBid,
+        topBidder: topBidder,
+        timeLeft: timeLeft,
+        bidCount: bidCount,
+        isNewArrival: isNewArrival,
+      } as WatchlistProduct);
+    }
+  };
 
   return (
     <Card
@@ -45,30 +71,45 @@ export function ProductListCard({
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-accent to-transparent animate-pulse"></div>
       )}
 
-      <Link
-        to={productUrl}
-        className="block relative aspect-square overflow-hidden bg-secondary"
-      >
-        <ImageWithFallback
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
+      <div className="relative aspect-square overflow-hidden bg-secondary">
+        <Link to={productUrl} className="block w-full h-full">
+          <ImageWithFallback
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </Link>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleToggleWatchlist}
+          className="absolute top-2 right-2 z-10 h-8 w-8 rounded-full bg-background/60 backdrop-blur-sm hover:bg-background/90 transition-all"
+        >
+          <Heart
+            className={cn(
+              "h-5 w-5 transition-colors duration-300",
+              isLove
+                ? "fill-red-500 text-red-500"
+                : "text-foreground/70 hover:text-red-500"
+            )}
+          />
+        </Button>
 
         {isNewArrival && (
-          <Badge className="absolute top-2 left-2 bg-accent text-background border-none animate-pulse">
+          <Badge className="absolute top-2 left-2 bg-accent text-background border-none animate-pulse pointer-events-none">
             <Sparkles className="h-3 w-3 mr-1" />
             New Arrival
           </Badge>
         )}
 
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 via-background/60 to-transparent p-3">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 via-background/60 to-transparent p-3 pointer-events-none">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Clock className="h-3.5 w-3.5" />
             <span>{timeLeft}</span>
           </div>
         </div>
-      </Link>
+      </div>
 
       <CardContent className="p-4 space-y-3">
         <div>

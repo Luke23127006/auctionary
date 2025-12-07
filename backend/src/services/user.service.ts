@@ -30,10 +30,6 @@ export const getStats = async (userId: number): Promise<UserStatsResponse> => {
   };
 };
 
-export const getWatchlist = async (userId: number) => {
-  return userRepository.getWatchlist(userId);
-};
-
 export const getActiveBids = async (userId: number) => {
   return userRepository.getActiveBids(userId);
 };

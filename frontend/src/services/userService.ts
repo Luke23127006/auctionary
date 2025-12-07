@@ -5,10 +5,6 @@ export const getStats = async (): Promise<UserStatsResponse> => {
   return apiClient.get("/users/me/stats", true);
 };
 
-export const getWatchlist = async () => {
-  return apiClient.get("/users/me/watchlist", true);
-};
-
 export const getActiveBids = async () => {
   return apiClient.get("/users/me/bids", true);
 };

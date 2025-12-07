@@ -15,20 +15,6 @@ export const getStats = async (
   }
 };
 
-export const getWatchlist = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = (req as any).user?.id;
-    const watchlist = await userService.getWatchlist(userId);
-    res.message("Watchlist retrieved successfully").json(watchlist);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getActiveBids = async (
   req: Request,
   res: Response,

@@ -119,13 +119,6 @@ export const countWonAuctions = async (userId: number): Promise<number> => {
   return Number(result?.count || 0);
 };
 
-export const getWatchlist = async (userId: number) => {
-  return await db("watchlist")
-    .join("products", "watchlist.product_id", "products.product_id")
-    .where("watchlist.user_id", userId)
-    .select("products.*");
-};
-
 export const getActiveBids = async (userId: number) => {
   // Get latest bid for each product this user bid on
   const subquery = db("bids")
