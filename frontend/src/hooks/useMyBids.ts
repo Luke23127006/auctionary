@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import * as userService from "../services/userService";
 import { useAuth } from "./useAuth";
+import type { MyBid } from "../types/user";
 
 export const useMyBids = () => {
   const { user } = useAuth();
-  const [bids, setBids] = useState<any[]>([]);
+  const [bids, setBids] = useState<MyBid[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {

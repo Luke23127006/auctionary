@@ -110,7 +110,8 @@ export const ActiveBidsTab = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-right text-sm text-muted-foreground">
-                      {bid.bid_count}
+                      {/* Bid count not currently in MyBid type, maybe irrelevant or needs backend update if needed */}
+                      -
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -128,7 +129,7 @@ export const ActiveBidsTab = () => {
                           )}
                           <DropdownMenuItem
                             onClick={() =>
-                              navigate(`/products/${bid.product_id}`)
+                              navigate(`/product/${bid.slug}-${bid.product_id}`)
                             }
                           >
                             <Eye className="h-4 w-4 mr-2 focus:text-accent-foreground" />

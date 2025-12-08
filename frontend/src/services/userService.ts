@@ -1,15 +1,15 @@
 import apiClient from "./apiClient";
-import type { UserStatsResponse, User } from "../types/user";
+import type { UserStatsResponse, User, MyBid, WonAuction } from "../types/user";
 
 export const getStats = async (): Promise<UserStatsResponse> => {
   return apiClient.get("/users/me/stats", true);
 };
 
-export const getActiveBids = async () => {
+export const getActiveBids = async (): Promise<MyBid[]> => {
   return apiClient.get("/users/me/bids", true);
 };
 
-export const getWonAuctions = async () => {
+export const getWonAuctions = async (): Promise<WonAuction[]> => {
   return apiClient.get("/users/me/won-auctions", true);
 };
 

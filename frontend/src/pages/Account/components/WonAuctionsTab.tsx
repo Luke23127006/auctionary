@@ -49,7 +49,7 @@ export const WonAuctionsTab = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <span className="text-accent">
-                      ${Number(auction.final_price).toLocaleString()}
+                      ${Number(auction.amount).toLocaleString()}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -63,7 +63,7 @@ export const WonAuctionsTab = () => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {auction.status === "completed" ? (
+                    {auction.payment_status === "completed" ? (
                       <Badge className="bg-success/20 text-success border-success/50">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Completed
@@ -71,7 +71,7 @@ export const WonAuctionsTab = () => {
                     ) : (
                       <Badge className="bg-accent/20 text-accent border-accent/50">
                         <Clock className="h-3 w-3 mr-1" />
-                        {auction.status}
+                        {auction.payment_status}
                       </Badge>
                     )}
                   </TableCell>
