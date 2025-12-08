@@ -23,6 +23,7 @@ export default function ProductDetailPage() {
     questions,
     loading,
     error,
+    placeBid,
   } = useProductDetail();
 
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
@@ -78,11 +79,6 @@ export default function ProductDetailPage() {
 
       addToWatchlist(itemToAdd);
     }
-  };
-
-  const handlePlaceBid = (amount: number) => {
-    // TODO: Implement place bid logic
-    console.log("Place bid:", amount);
   };
 
   return (
@@ -158,7 +154,7 @@ export default function ProductDetailPage() {
             <ProductBidding
               auction={auction}
               userStatus={userStatus}
-              onPlaceBid={handlePlaceBid}
+              onPlaceBid={placeBid}
               onToggleWatchlist={handleToggleWatchlist}
               isWatchlisted={isCurrentlyWatchlisted}
             />
