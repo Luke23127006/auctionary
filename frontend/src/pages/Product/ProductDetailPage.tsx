@@ -10,6 +10,7 @@ import { ProductBidding } from "./components/ProductBidding";
 import { SellerCard } from "./components/SellerCard";
 import { ProductTabs } from "./components/ProductTabs";
 import { Link } from "react-router-dom";
+import { formatTimeLeft } from "../../utils/time";
 
 export default function ProductDetailPage() {
   const {
@@ -50,9 +51,9 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Calculate time left (mock logic for now, should use auction.endTime)
-  // In a real app, use a countdown hook
-  const timeLeft = "2d 5h";
+  const endTimeMs = new Date(auction.endTime).getTime();
+  const timeLeftMs = Math.max(0, endTimeMs - Date.now());
+  const timeLeft = formatTimeLeft(timeLeftMs);
 
   const handleToggleWatchlist = () => {
     // TODO: Implement watchlist toggle logic
