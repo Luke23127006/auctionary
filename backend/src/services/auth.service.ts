@@ -351,11 +351,11 @@ export const getAuthenticatedUser = async (
 
   const mappedUser = mapUserToResponse(user)!;
   // @ts-ignore
-  const roles = user.usersRoles.map((ur: any) => ur.roles.name);
+  const roles = user.usersRoles?.map((ur: any) => ur.roles.name) || [];
   // @ts-ignore
-  const permissions = user.usersPermissions.map(
+  const permissions = user.usersPermissions?.map(
     (up: any) => up.permissions.name
-  );
+  ) || [];
 
   return {
     id: mappedUser.id,

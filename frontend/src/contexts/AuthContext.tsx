@@ -49,6 +49,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
+  // Listen for auth-error events (triggered by 401 responses in apiClient)
+  useEffect(() => {
+    const handleAuthError = () => {
+      console.log("🔴 Auth error event received - clearing user state");
+      setUser(null);
+      // Token already removed by apiClient
+    };
+
+    window.addEventListener("auth-error", handleAuthError);
+    return () => window.removeEventListener("auth-error", handleAuthError);
+  }, []);
+
   useEffect(() => {
     const verifyUser = async () => {
       const token = localStorage.getItem("token");
@@ -56,9 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const user = await authService.getMe();
           setUser(user);
-        } catch (error) {
+        } catch (error: any) {
           console.error("Token verification failed:", error);
-          authService.logout();
+          // Token already removed by apiClient if it was a 401
+          // Just clear user state
           setUser(null);
         }
       }
@@ -88,9 +101,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const user = await authService.getMe();
           setUser(user);
-        } catch (error) {
+        } catch (error: any) {
           console.error("Failed to fetch user data after login:", error);
-          authService.logout();
+          // If getMe fails, token might be invalid or server error
+          // Either way, clear user state (token already handled by apiClient)
           setUser(null);
           throw new Error("Login succeeded but failed to verify user.");
         }

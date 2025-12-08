@@ -3,13 +3,22 @@ const API_URL = import.meta.env.VITE_API_URL as string;
 const getToken = (): string | null => localStorage.getItem("token");
 
 const handleResponse = async (response: Response): Promise<any> => {
-  if (
-    response.status === 401 &&
-    response.statusText === "Invalid email or password"
-  ) {
+  // Handle all 401 responses (authentication errors)
+  if (response.status === 401) {
+    let errorData: any;
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      // Can't parse JSON, use statusText
+    }
+
+    const errorMessage = errorData?.message || response.statusText || "Unauthorized";
+
+    // Remove token and dispatch event for auth errors
+    // This will trigger logout in AuthContext via event listener
     localStorage.removeItem("token");
     window.dispatchEvent(new Event("auth-error"));
-    throw new Error(response.statusText);
+    throw new Error(errorMessage);
   }
 
   if (!response.ok) {
@@ -21,8 +30,11 @@ const handleResponse = async (response: Response): Promise<any> => {
         response.statusText || `HTTP error! status: ${response.status}`
       );
     }
+
+    // Backend error format: { success: false, error: "ERROR_CODE", message: "..." }
+    // Use 'message' field for human-readable error, not 'error' (which is error code)
     throw new Error(
-      errorData?.error || errorData?.message || "API request failed"
+      errorData?.message || errorData?.error || "API request failed"
     );
   }
 
@@ -33,13 +45,24 @@ const handleResponse = async (response: Response): Promise<any> => {
   try {
     const jsonResponse = await response.json();
 
-    // Unwrap the new API response format { success: true, data: {...}, message?: string }
+    // Check if it's an error response that wasn't caught above (shouldn't happen, but safety check)
+    if (jsonResponse && typeof jsonResponse === 'object' && 'success' in jsonResponse && !jsonResponse.success) {
+      // Error response: { success: false, error: "...", message: "..." }
+      throw new Error(jsonResponse.message || jsonResponse.error || "API request failed");
+    }
+
+    // Unwrap the success response format { success: true, data: {...}, message?: string }
     if (jsonResponse && typeof jsonResponse === 'object' && 'success' in jsonResponse && jsonResponse.success) {
       return jsonResponse.data;
     }
 
+    // Fallback for responses without wrapper (shouldn't happen with new backend format)
     return jsonResponse;
-  } catch (e) {
+  } catch (e: any) {
+    // If it's already our thrown error, re-throw it
+    if (e.message && !e.message.includes("JSON")) {
+      throw e;
+    }
     throw new Error("Invalid JSON response from server");
   }
 };
