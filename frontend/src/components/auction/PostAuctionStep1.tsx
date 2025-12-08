@@ -30,33 +30,37 @@ interface PostAuctionStep1Props {
 export interface Step1Data {
   productName: string;
   category: string;
+  subCategory: string;
   images: File[];
 }
 
-const categories = [
-  "Electronics",
-  "Watches",
-  "Cameras",
-  "Furniture",
-  "Fashion",
-  "Jewelry",
-  "Gaming",
-  "Art",
-  "Collectibles",
-  "Home & Garden",
-  "Sports",
-  "Musical Instruments",
-];
+const CATEGORY_DATA: Record<string, string[]> = {
+  Electronics: ["Computers", "Smartphones", "Audio", "Accessories"],
+  Watches: ["Luxury", "Vintage", "Smartwatches", "Parts"],
+  Cameras: ["DSLR", "Mirrorless", "Lenses", "Film"],
+  Furniture: ["Living Room", "Bedroom", "Office", "Antique"],
+  Fashion: ["Men", "Women", "Kids", "Accessories"],
+  Jewelry: ["Rings", "Necklaces", "Earrings", "Bracelets"],
+  Gaming: ["Consoles", "Video Games", "Accessories", "Merchandise"],
+  Art: ["Paintings", "Prints", "Sculptures", "Digital"],
+  Collectibles: ["Coins", "Stamps", "Comics", "Cards"],
+  "Home & Garden": ["Tools", "Decor", "Appliances", "Gardening"],
+  Sports: ["Equipment", "Memorabilia", "Apparel", "Footwear"],
+  "Musical Instruments": ["Guitars", "Keyboards", "Drums", "Pro Audio"],
+};
 
 const MIN_CHAR = 3;
 
 export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dragActive, setDragActive] = useState(false);
+
+  const subCategories = category ? CATEGORY_DATA[category] || [] : [];
 
   const handleImageUpload = (files: FileList | null) => {
     if (!files) return;
@@ -120,6 +124,10 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
       newErrors.category = "Please select a category";
     }
 
+    if (!subCategory) {
+      newErrors.subCategory = "Please select a sub-category";
+    }
+
     if (images.length < 3) {
       newErrors.images = "Please upload at least 3 product images";
     }
@@ -131,11 +139,16 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("Form submitted", { productName, category, images });
+    console.log("Form submitted", {
+      productName,
+      category,
+      subCategory,
+      images,
+    });
 
     if (validateForm()) {
       console.log("Validation passed, calling onNext");
-      onNext({ productName, category, images });
+      onNext({ productName, category, subCategory, images });
     } else {
       console.log("Validation failed", errors);
     }
@@ -208,36 +221,72 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
             )}
           </div>
 
-          {/* Category */}
-          <div className="space-y-2">
-            <Label htmlFor="category" className="text-sm">
-              Category <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={category}
-              onValueChange={(value) => {
-                setCategory(value);
-                setErrors((prev) => ({ ...prev, category: "" }));
-              }}
-            >
-              <SelectTrigger
-                className={`h-11 ${
-                  errors.category ? "border-destructive" : ""
-                }`}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Parent Category */}
+            <div className="space-y-2">
+              <Label htmlFor="category" className="text-sm">
+                Category <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={category}
+                onValueChange={(value) => {
+                  setCategory(value);
+                  setSubCategory("");
+                  setErrors((prev) => ({ ...prev, category: "" }));
+                }}
               >
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.category && (
-              <p className="text-xs text-destructive">{errors.category}</p>
-            )}
+                <SelectTrigger
+                  className={`h-11 ${
+                    errors.category ? "border-destructive" : ""
+                  }`}
+                >
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(CATEGORY_DATA).map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.category && (
+                <p className="text-xs text-destructive">{errors.category}</p>
+              )}
+            </div>
+
+            {/* Sub Category */}
+            <div className="space-y-2">
+              <Label htmlFor="subCategory" className="text-sm">
+                Sub-Category <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={subCategory}
+                onValueChange={(value) => {
+                  setSubCategory(value);
+                  setErrors((prev) => ({ ...prev, subCategory: "" }));
+                }}
+                disabled={!category}
+              >
+                <SelectTrigger
+                  className={`h-11 ${
+                    errors.subCategory ? "border-destructive" : ""
+                  }`}
+                >
+                  <SelectValue placeholder="Select a sub-category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subCategories.map((sub) => (
+                    <SelectItem key={sub} value={sub}>
+                      {sub}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.subCategory && (
+                <p className="text-xs text-destructive">{errors.subCategory}</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -342,7 +391,7 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
       </Card>
 
       {/* Form Summary */}
-      {productName && category && images.length >= 3 && (
+      {productName && category && subCategory && images.length >= 3 && (
         <Card className="border-success/30 bg-success/5">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-full bg-success/20">
