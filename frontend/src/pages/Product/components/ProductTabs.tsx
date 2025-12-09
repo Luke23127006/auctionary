@@ -17,14 +17,24 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../../../components/ui/accordion";
+import { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Plus, Check, X } from "lucide-react";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import { BidHistory } from "../../../components/auction/BidHistory";
+import { usePermission } from "../../../hooks/usePermission";
 import type {
   BidHistoryResponse,
   QuestionsResponse,
 } from "../../../types/product";
+
+interface AdditionalInfo {
+  id: string;
+  content: string;
+  createdAt: string;
+}
 
 interface ProductTabsProps {
   description: string;
@@ -37,6 +47,36 @@ export function ProductTabs({
   bids,
   questions,
 }: ProductTabsProps) {
+  const { hasRole } = usePermission();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editorContent, setEditorContent] = useState("");
+  // Temporary state to manage appended descriptions
+  const [additionalInfos, setAdditionalInfos] = useState<AdditionalInfo[]>([]);
+
+  const handleSave = () => {
+    if (!editorContent.trim()) return;
+
+    const newInfo: AdditionalInfo = {
+      id: Date.now().toString(),
+      content: editorContent,
+      createdAt: new Date().toISOString(),
+    };
+
+    setAdditionalInfos((prev) => [...prev, newInfo]);
+    setEditorContent("");
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditorContent("");
+    setIsEditing(false);
+  };
+
+  const handleAddInfoClick = () => {
+    setEditorContent("");
+    setIsEditing(true);
+  };
+
   return (
     <Tabs defaultValue="description" className="mb-12">
       <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
@@ -50,11 +90,85 @@ export function ProductTabs({
       {/* Description Tab */}
       <TabsContent value="description" className="space-y-6 mt-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Product Description</CardTitle>
+            {hasRole("seller") && !isEditing && (
+              <Button variant="outline" size="sm" onClick={handleAddInfoClick}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Information
+              </Button>
+            )}
+            {isEditing && (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={handleCancel}>
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+                <Button variant="default" size="sm" onClick={handleSave}>
+                  <Check className="mr-2 h-4 w-4" />
+                  Save
+                </Button>
+              </div>
+            )}
           </CardHeader>
-          <CardContent className="prose prose-invert max-w-none space-y-4">
-            <div dangerouslySetInnerHTML={{ __html: description }} />
+          <CardContent className="space-y-6">
+            {/* Original Description */}
+            <div className="prose prose-invert max-w-none">
+              <div dangerouslySetInnerHTML={{ __html: description }} />
+            </div>
+
+            {/* Additional Information List */}
+            {additionalInfos.length > 0 && (
+              <div className="space-y-4 pt-4 border-t border-border">
+                <h4 className="text-lg font-medium">Updates</h4>
+                {additionalInfos.map((info) => (
+                  <div
+                    key={info.id}
+                    className="bg-secondary/20 p-4 rounded-lg border border-border"
+                  >
+                    <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] h-5">
+                        Update
+                      </Badge>
+                      {new Date(info.createdAt).toLocaleString()}
+                    </div>
+                    <div
+                      className="prose prose-invert max-w-none text-sm"
+                      dangerouslySetInnerHTML={{ __html: info.content }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Editor for New Information */}
+            {isEditing && (
+              <div className="pt-4 border-t border-border animate-in fade-in zoom-in-95 duration-200">
+                <h4 className="text-sm font-medium mb-2">New Information</h4>
+                <div className="h-64 mb-12">
+                  <ReactQuill
+                    theme="snow"
+                    value={editorContent}
+                    onChange={setEditorContent}
+                    className="h-full"
+                    modules={{
+                      toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ["bold", "italic", "underline", "strike", "blockquote"],
+                        [
+                          { list: "ordered" },
+                          { list: "bullet" },
+                          { indent: "-1" },
+                          { indent: "+1" },
+                        ],
+                        ["link", "image"],
+                        ["clean"],
+                      ],
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
