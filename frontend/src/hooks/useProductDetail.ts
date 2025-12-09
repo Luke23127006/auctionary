@@ -122,6 +122,14 @@ export const useProductDetail = () => {
         setBidsData(bids);
       }
       return result;
+    },
+    appendDescription: async (content: string) => {
+      if (!productId || !productData?.seller.id) return;
+      await productService.appendDescription(productId, content, productData.seller.id);
+
+      // Refresh product details to show new description
+      const data = await productService.getProductDetail(productId);
+      setProductData(data);
     }
   };
 };

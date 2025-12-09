@@ -43,12 +43,14 @@ interface ProductTabsProps {
   }[];
   bids?: BidHistoryResponse | null;
   questions?: QuestionsResponse | null;
+  onAppendDescription?: (content: string) => Promise<void>;
 }
 
 export function ProductTabs({
   descriptions = [],
   bids,
   questions,
+  onAppendDescription,
 }: ProductTabsProps) {
   const { hasRole } = usePermission();
   const [isEditing, setIsEditing] = useState(false);
@@ -56,8 +58,12 @@ export function ProductTabs({
   // Temporary state to manage appended descriptions
   const [additionalInfos, setAdditionalInfos] = useState<AdditionalInfo[]>([]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editorContent.trim()) return;
+
+    if (onAppendDescription) {
+      await onAppendDescription(editorContent);
+    }
 
     const newInfo: AdditionalInfo = {
       id: Date.now().toString(),

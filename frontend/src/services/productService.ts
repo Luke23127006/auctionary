@@ -72,3 +72,10 @@ export const placeBid = async (
 ): Promise<PlaceBidResponse> => {
   return apiClient.post(`/products/${id}/bid`, { amount }, true);
 };
+export const appendDescription = async (
+  id: string,
+  content: string,
+  sellerId: number
+): Promise<void> => {
+  return apiClient.post(`/products/${id}/descriptions`, { content, sellerId }, true);
+};

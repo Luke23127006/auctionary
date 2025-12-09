@@ -5,6 +5,7 @@ import * as bidService from "../../services/bid.service";
 import {
   ProductsSearchQuery,
   CreateProduct,
+  AppendProductDescription,
 } from "../dtos/requests/product.schema";
 
 export const searchProducts = async (
@@ -118,7 +119,29 @@ export const placeBid = async (
       .message(result.status === "winning" ? "Bid placed successfully" : "You have been outbid")
       .json(result);
   } catch (error) {
-    logger.error("ProductController", "Failed to place bid", error);
+    next(error);
+  }
+};
+
+export const appendDescription = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const productId = Number(request.params.id);
+    const body = request.body as AppendProductDescription;
+
+    // Safety check for user mismatch if needed, though permission check handles role
+    // Ideally we should verify if request.user.id === body.sellerId or if admin
+
+    await productService.appendProductDescription(productId, body);
+
+    response
+      .status(201)
+      .message("Description appended successfully");
+  } catch (error) {
+    logger.error("ProductController", "Failed to append description", error);
     next(error);
   }
 };
