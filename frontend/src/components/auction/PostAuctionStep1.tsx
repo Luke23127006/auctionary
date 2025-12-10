@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -21,6 +21,7 @@ import {
   Info,
   Check,
 } from "lucide-react";
+import { useCategories } from "../../hooks/useCategories";
 
 interface PostAuctionStep1Props {
   onNext: (data: Step1Data) => void;
@@ -30,58 +31,58 @@ interface PostAuctionStep1Props {
 export interface Step1Data {
   productName: string;
   category: string;
+  categoryId: string;
   subCategory: string;
+  subCategoryId: string;
   images: File[];
 }
-
-const CATEGORY_DATA: Record<string, string[]> = {
-  Electronics: ["Computers", "Smartphones", "Audio", "Accessories"],
-  Watches: ["Luxury", "Vintage", "Smartwatches", "Parts"],
-  Cameras: ["DSLR", "Mirrorless", "Lenses", "Film"],
-  Furniture: ["Living Room", "Bedroom", "Office", "Antique"],
-  Fashion: ["Men", "Women", "Kids", "Accessories"],
-  Jewelry: ["Rings", "Necklaces", "Earrings", "Bracelets"],
-  Gaming: ["Consoles", "Video Games", "Accessories", "Merchandise"],
-  Art: ["Paintings", "Prints", "Sculptures", "Digital"],
-  Collectibles: ["Coins", "Stamps", "Comics", "Cards"],
-  "Home & Garden": ["Tools", "Decor", "Appliances", "Gardening"],
-  Sports: ["Equipment", "Memorabilia", "Apparel", "Footwear"],
-  "Musical Instruments": ["Guitars", "Keyboards", "Drums", "Pro Audio"],
-};
 
 const MIN_CHAR = 3;
 
 export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
   const [productName, setProductName] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(""); // Stores name for display
+  const [categoryId, setCategoryId] = useState(""); // Stores ID for backend
   const [subCategory, setSubCategory] = useState("");
+  const [subCategoryId, setSubCategoryId] = useState("");
+  /* eslint-enable @typescript-eslint/no-unused-vars */
   const [images, setImages] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dragActive, setDragActive] = useState(false);
 
-  const subCategories = category ? CATEGORY_DATA[category] || [] : [];
+  const { categories, loading: loadingCategories } = useCategories();
+
+  const subCategories = useMemo(() => {
+    if (!categoryId) return [];
+    const parent = categories.find((c) => c.id === categoryId);
+    return parent?.children || [];
+  }, [categoryId, categories]);
 
   const handleImageUpload = (files: FileList | null) => {
     if (!files) return;
 
-    const newFiles = Array.from(files).filter(
-      (file) => file.type.startsWith("image/") && images.length + 1 <= 10
+    if (!productName || !category || !subCategory) {
+      setErrors((prev) => ({
+        ...prev,
+        images:
+          "Please fill in Product Name, Category, and Sub-category first.",
+      }));
+      return;
+    }
+
+    const newFiles = Array.from(files).filter((file) =>
+      file.type.startsWith("image/")
     );
 
     if (newFiles.length === 0) return;
 
-    setImages((prev) => [...prev, ...newFiles].slice(0, 10));
+    if (images.length + newFiles.length > 10) {
+      setErrors((prev) => ({ ...prev, images: "Maximum 10 images allowed" }));
+      return;
+    }
 
-    // Create preview URLs
-    newFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrls((prev) => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
-
+    // LOCAL PREVIEW LOGIC: Just add files to state
+    setImages((prev) => [...prev, ...newFiles]);
     setErrors((prev) => ({ ...prev, images: "" }));
   };
 
@@ -107,7 +108,6 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
 
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
-    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const validateForm = () => {
@@ -120,11 +120,11 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
         "Product name must be at least " + String(MIN_CHAR) + " characters";
     }
 
-    if (!category) {
+    if (!category || !categoryId) {
       newErrors.category = "Please select a category";
     }
 
-    if (!subCategory) {
+    if (!subCategory || !subCategoryId) {
       newErrors.subCategory = "Please select a sub-category";
     }
 
@@ -139,18 +139,15 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("Form submitted", {
-      productName,
-      category,
-      subCategory,
-      images,
-    });
-
     if (validateForm()) {
-      console.log("Validation passed, calling onNext");
-      onNext({ productName, category, subCategory, images });
-    } else {
-      console.log("Validation failed", errors);
+      onNext({
+        productName,
+        category,
+        categoryId,
+        subCategory,
+        subCategoryId,
+        images,
+      });
     }
   };
 
@@ -228,9 +225,12 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
                 Category <span className="text-destructive">*</span>
               </Label>
               <Select
-                value={category}
+                value={categoryId}
                 onValueChange={(value) => {
-                  setCategory(value);
+                  const selected = categories.find((c) => c.id === value);
+                  setCategoryId(value);
+                  setCategory(selected?.name || "");
+                  setSubCategoryId("");
                   setSubCategory("");
                   setErrors((prev) => ({ ...prev, category: "" }));
                 }}
@@ -239,13 +239,20 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
                   className={`h-11 ${
                     errors.category ? "border-destructive" : ""
                   }`}
+                  disabled={loadingCategories}
                 >
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue
+                    placeholder={
+                      loadingCategories ? "Loading..." : "Select a category"
+                    }
+                  >
+                    {category || "Select a category"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.keys(CATEGORY_DATA).map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -261,24 +268,28 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
                 Sub-Category <span className="text-destructive">*</span>
               </Label>
               <Select
-                value={subCategory}
+                value={subCategoryId}
                 onValueChange={(value) => {
-                  setSubCategory(value);
+                  const selected = subCategories.find((c) => c.id === value);
+                  setSubCategoryId(value);
+                  setSubCategory(selected?.name || "");
                   setErrors((prev) => ({ ...prev, subCategory: "" }));
                 }}
-                disabled={!category}
+                disabled={!categoryId}
               >
                 <SelectTrigger
                   className={`h-11 ${
                     errors.subCategory ? "border-destructive" : ""
                   }`}
                 >
-                  <SelectValue placeholder="Select a sub-category" />
+                  <SelectValue placeholder="Select a sub-category">
+                    {subCategory || "Select a sub-category"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {subCategories.map((sub) => (
-                    <SelectItem key={sub} value={sub}>
-                      {sub}
+                    <SelectItem key={sub.id} value={sub.id}>
+                      {sub.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -325,7 +336,9 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
               accept="image/*"
               onChange={(e) => handleImageUpload(e.target.files)}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              disabled={images.length >= 10}
+              disabled={
+                images.length >= 10 || !productName || !category || !subCategory
+              }
             />
             <div className="p-12 text-center">
               <div className="p-4 rounded-full bg-secondary/50 w-fit mx-auto mb-4">
@@ -338,6 +351,11 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
               <p className="text-xs text-muted-foreground">
                 PNG, JPG or WEBP (Min 3, Max 10 images, 5MB each)
               </p>
+              {!(productName && category && subCategory) && (
+                <p className="text-xs text-destructive mt-2 font-medium">
+                  Enter Details & Category to Enable Upload
+                </p>
+              )}
             </div>
           </div>
 
@@ -350,16 +368,17 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
           )}
 
           {/* Image Previews */}
-          {previewUrls.length > 0 && (
+          {images.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {previewUrls.map((url, index) => (
+              {images.map((file, index) => (
                 <div
                   key={index}
                   className="relative aspect-square rounded-lg overflow-hidden border-2 border-border group"
                 >
                   <img
-                    src={url}
+                    src={URL.createObjectURL(file)}
                     alt={`Preview ${index + 1}`}
+                    onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)} // Clean up memory after load
                     className="w-full h-full object-cover"
                   />
                   {index === 0 && (

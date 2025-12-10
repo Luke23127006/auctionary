@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import MainLayout from "../../layouts/MainLayout";
 import { Breadcrumb } from "../../components/common/Breadcrumb";
+import { useProductUpload } from "../../hooks/useProductUpload";
 
 type Step = "step1" | "step2";
 
@@ -34,21 +35,30 @@ export default function CreateAuctionPage() {
     navigate("/seller/dashboard");
   };
 
-  const handleAuctionSubmit = (data: AuctionData) => {
-    console.log("Auction Data:", data);
+  const { createAuction, isCreating } = useProductUpload();
 
-    // TODO: Call API to create auction
-    // await productService.createAuction(data);
+  const handleAuctionSubmit = async (data: AuctionData) => {
+    if (isCreating) return;
 
-    // Show success toast
-    toast.success("Auction Published!", {
-      description: "Your auction is now live and accepting bids.",
-    });
+    try {
+      console.log("Auction Data:", data);
+      await createAuction(data);
 
-    // Reset and go back to dashboard
-    setStep1Data(null);
-    setCurrentStep("step1");
-    navigate("/seller/dashboard");
+      // Show success toast
+      toast.success("Auction Published!", {
+        description: "Your auction is now live and accepting bids.",
+      });
+
+      // Reset and go back to dashboard
+      setStep1Data(null);
+      setCurrentStep("step1");
+      navigate("/seller/dashboard");
+    } catch (error) {
+      console.error("Failed to create auction", error);
+      toast.error("Failed to publish auction", {
+        description: "Please try again later.",
+      });
+    }
   };
 
   return (

@@ -163,6 +163,7 @@ export function PostAuctionStep2({
                   src={URL.createObjectURL(step1Data.images[0])}
                   alt="Product"
                   className="w-full h-full object-cover rounded-lg"
+                  onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)}
                 />
               ) : (
                 <Sparkles className="h-6 w-6 text-muted-foreground" />
