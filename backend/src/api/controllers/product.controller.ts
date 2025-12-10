@@ -2,10 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import * as productService from "../../services/product.service";
 import { logger } from "../../utils/logger.util";
 import * as bidService from "../../services/bid.service";
-import {
-  ProductsSearchQuery,
-  CreateProduct,
-} from "../dtos/requests/product.schema";
+import { ProductsSearchQuery } from "../dtos/requests/product.schema";
+import * as storageService from "../../services/storage.service";
 
 export const searchProducts = async (
   request: Request,
@@ -24,20 +22,25 @@ export const searchProducts = async (
 };
 
 export const createProduct = async (
-  request: Request,
-  response: Response,
+  req: Request,
+  res: Response,
   next: NextFunction
 ) => {
   try {
-    const body = request.body as CreateProduct;
-    const result = await productService.createProduct(body);
+    const files = req.files as Express.Multer.File[];
 
-    response
-      .status(201)
-      .message("Product created successfully")
-      .json(result);
+    const imageUrls = await storageService.uploadFiles(
+      "product_images",
+      files,
+      "products"
+    );
+
+    const productData = { ...req.body, images: imageUrls };
+
+    const result = await productService.createProduct(productData);
+
+    res.status(201).json(result);
   } catch (error) {
-    logger.error("ProductController", "Failed to create product", error);
     next(error);
   }
 };
@@ -49,7 +52,9 @@ export const getProductDetail = async (
 ) => {
   try {
     const productId = Number(request.params.id);
-    const userId = request.query.userId ? Number(request.query.userId) : undefined;
+    const userId = request.query.userId
+      ? Number(request.query.userId)
+      : undefined;
 
     const result = await productService.getProductDetail(productId, userId);
     response.status(200).json(result);
@@ -69,7 +74,11 @@ export const getProductBidHistory = async (
     const page = Number(request.query.page) || 1;
     const limit = Number(request.query.limit) || 20;
 
-    const result = await productService.getProductBidHistory(productId, page, limit);
+    const result = await productService.getProductBidHistory(
+      productId,
+      page,
+      limit
+    );
     response.status(200).json(result);
   } catch (error) {
     logger.error("ProductController", "Failed to get bid history", error);
@@ -87,7 +96,11 @@ export const getProductQuestions = async (
     const page = Number(request.query.page) || 1;
     const limit = Number(request.query.limit) || 10;
 
-    const result = await productService.getProductQuestions(productId, page, limit);
+    const result = await productService.getProductQuestions(
+      productId,
+      page,
+      limit
+    );
     response.status(200).json(result);
   } catch (error) {
     logger.error("ProductController", "Failed to get product questions", error);
@@ -115,7 +128,11 @@ export const placeBid = async (
     // Using generic success message format as per guide
     response
       .status(200)
-      .message(result.status === "winning" ? "Bid placed successfully" : "You have been outbid")
+      .message(
+        result.status === "winning"
+          ? "Bid placed successfully"
+          : "You have been outbid"
+      )
       .json(result);
   } catch (error) {
     logger.error("ProductController", "Failed to place bid", error);

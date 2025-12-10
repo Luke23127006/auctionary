@@ -9,7 +9,9 @@ export const sortOptionSchema = z
       const [field, direction] = pair.split(":");
 
       if (
-        !ALLOWED_SORT_FIELDS.includes(field as (typeof ALLOWED_SORT_FIELDS)[number])
+        !ALLOWED_SORT_FIELDS.includes(
+          field as (typeof ALLOWED_SORT_FIELDS)[number]
+        )
       ) {
         throw new Error(`Invalid sort field: ${field}`);
       }
@@ -24,28 +26,27 @@ export const sortOptionSchema = z
   })
   .optional();
 
-export const searchProductsSchema = z
-  .object({
-    q: z.string().optional(),
-    categorySlug: stringOrArray,
-    page: z.coerce.number().int().min(1).optional().default(1),
-    limit: z.coerce.number().int().min(1).max(100).optional().default(20),
-    sort: sortOptionSchema,
-    excludeCategorySlug: stringOrArray,
-  });
+export const searchProductsSchema = z.object({
+  q: z.string().optional(),
+  categorySlug: stringOrArray,
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+  sort: sortOptionSchema,
+  excludeCategorySlug: stringOrArray,
+});
 
 export const createProductSchema = z.object({
   name: z.string().min(1).max(500),
   categoryId: z.number().int().positive(),
   sellerId: z.number().int().positive(),
-  thumbnail: z.string().min(1),
-  images: z.array(z.string()).min(2),
+  thumbnailUrl: z.string().min(1),
+  imageUrls: z.array(z.string()).min(2),
   startPrice: z.number().positive(),
   stepPrice: z.number().positive(),
   buyNowPrice: z.number().positive().optional(),
   description: z.string().min(1),
   endTime: z.coerce.date(),
-  autoExtend: z.enum(["yes", "no"]),
+  autoExtend: z.boolean(),
 });
 
 export const appendProductDescriptionSchema = z.object({

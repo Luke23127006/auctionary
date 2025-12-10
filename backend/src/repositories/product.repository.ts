@@ -67,17 +67,24 @@ export const searchProducts = async (
   }
 
   // Count total before pagination
-  const countQuery = query.clone().count("products.product_id as total").first();
+  const countQuery = query
+    .clone()
+    .count("products.product_id as total")
+    .first();
 
   // Apply sorting
   if (sort && Array.isArray(sort) && sort.length > 0) {
     sort.forEach((item) => {
       const dbField =
-        item.field === "endTime" ? "products.end_time" :
-          item.field === "price" ? "products.current_price" :
-            item.field === "bidCount" ? "products.bid_count" :
-              item.field === "createdAt" ? "products.created_at" :
-                "products.created_at";
+        item.field === "endTime"
+          ? "products.end_time"
+          : item.field === "price"
+          ? "products.current_price"
+          : item.field === "bidCount"
+          ? "products.bid_count"
+          : item.field === "createdAt"
+          ? "products.created_at"
+          : "products.created_at";
       query = query.orderBy(dbField, item.direction);
     });
   } else {
@@ -120,8 +127,8 @@ export const createProduct = async (data: {
   end_time: Date;
   auto_extend: boolean;
   description: string;
-  thumbnail: string;
-  images: string[];
+  thumbnail_url: string;
+  image_urls: string[];
 }) => {
   return await db.transaction(async (tx) => {
     const [product] = await tx("products")
@@ -135,7 +142,7 @@ export const createProduct = async (data: {
         buy_now_price: data.buy_now_price,
         end_time: data.end_time,
         auto_extend: data.auto_extend,
-        thumbnail_url: data.thumbnail,
+        thumbnail_url: data.thumbnail_url,
         status: "active",
       })
       .returning("*");
@@ -148,9 +155,9 @@ export const createProduct = async (data: {
       version: 1,
     });
 
-    if (data.images.length > 0) {
+    if (data.image_urls.length > 0) {
       await tx("product_images").insert(
-        data.images.map((image_url) => ({
+        data.image_urls.map((image_url) => ({
           product_id: product.product_id,
           image_url,
         }))
@@ -161,23 +168,14 @@ export const createProduct = async (data: {
   });
 };
 
-export const findDetailById = async (
-  productId: number
-) => {
-  const product = await db("products")
-    .where({ product_id: productId })
-    .first();
+export const findDetailById = async (productId: number) => {
+  const product = await db("products").where({ product_id: productId }).first();
 
   if (!product) {
     return null;
   }
 
-  const [
-    images,
-    seller,
-    description,
-    category
-  ] = await Promise.all([
+  const [images, seller, description, category] = await Promise.all([
     db("product_images")
       .where({ product_id: productId })
       .orderBy("image_id", "asc")
@@ -191,9 +189,7 @@ export const findDetailById = async (
       .orderBy("version", "desc")
       .select("content")
       .first(),
-    db("categories")
-      .where({ category_id: product.category_id })
-      .first()
+    db("categories").where({ category_id: product.category_id }).first(),
   ]);
 
   let parentCategory = null;
@@ -229,11 +225,7 @@ export const findCommentsById = async (
       "product_comments.product_id": productId,
       "product_comments.parent_id": null,
     })
-    .select(
-      "product_comments.*",
-      "users.id as user_id",
-      "users.full_name"
-    )
+    .select("product_comments.*", "users.id as user_id", "users.full_name")
     .orderBy("product_comments.created_at", "desc")
     .limit(limit)
     .offset(offset);
@@ -253,11 +245,7 @@ export const findCommentsById = async (
   const replies = await db("product_comments")
     .join("users", "product_comments.user_id", "users.id")
     .whereIn("product_comments.parent_id", commentIds)
-    .select(
-      "product_comments.*",
-      "users.id as user_id",
-      "users.full_name"
-    )
+    .select("product_comments.*", "users.id as user_id", "users.full_name")
     .orderBy("product_comments.created_at", "asc");
 
   const repliesMap = new Map<number, any[]>();
@@ -270,7 +258,7 @@ export const findCommentsById = async (
 
   const data = parentComments.map((comment) => ({
     ...comment,
-    replies: (repliesMap.get(comment.comment_id) || []),
+    replies: repliesMap.get(comment.comment_id) || [],
   }));
 
   return {
@@ -337,21 +325,14 @@ export const appendProductDescription = async (
     author_id: sellerId,
     content: content,
     version: newVersion,
-    lang: "vi"
+    lang: "vi",
   });
 };
 
-export const getProductBidInfo = async (
-  productId: number
-) => {
+export const getProductBidInfo = async (productId: number) => {
   const product = await db("products")
     .where({ product_id: productId })
-    .select(
-      "step_price",
-      "start_price",
-      "current_price",
-      "highest_bidder_id"
-    )
+    .select("step_price", "start_price", "current_price", "highest_bidder_id")
     .first();
 
   if (!product) {
@@ -401,7 +382,8 @@ export const getProductDescription = async (productId: number) => {
 };
 
 export const getCategoryWithParents = async (categoryId: number) => {
-  const categories = await db.raw(`
+  const categories = await db.raw(
+    `
     WITH RECURSIVE category_path AS (
       SELECT category_id, name, slug, parent_id, 0 as level
       FROM categories 
@@ -414,7 +396,9 @@ export const getCategoryWithParents = async (categoryId: number) => {
       INNER JOIN category_path cp ON c.category_id = cp.parent_id
     )
     SELECT * FROM category_path ORDER BY level DESC
-  `, [categoryId]);
+  `,
+    [categoryId]
+  );
 
   return categories.rows || [];
 };
@@ -449,11 +433,17 @@ export const getUserBidStatus = async (userId: number, productId: number) => {
 
   return {
     hasPlacedBid: !!(manualBid || autoBid),
-    currentUserMaxBid: autoBid?.max_amount ? parseFloat(autoBid.max_amount) : undefined,
+    currentUserMaxBid: autoBid?.max_amount
+      ? parseFloat(autoBid.max_amount)
+      : undefined,
   };
 };
 
-export const getProductQuestions = async (productId: number, page: number = 1, limit: number = 10) => {
+export const getProductQuestions = async (
+  productId: number,
+  page: number = 1,
+  limit: number = 10
+) => {
   const offset = (page - 1) * limit;
 
   // Get parent comments (questions) with user info
@@ -474,7 +464,7 @@ export const getProductQuestions = async (productId: number, page: number = 1, l
     .offset(offset);
 
   // Get first reply (answer) for each question
-  const questionIds = questions.map(q => q.comment_id);
+  const questionIds = questions.map((q) => q.comment_id);
   const answers = await db("product_comments as reply")
     .leftJoin("users as answerer", "reply.user_id", "answerer.id")
     .whereIn("reply.parent_id", questionIds)
@@ -488,7 +478,7 @@ export const getProductQuestions = async (productId: number, page: number = 1, l
 
   // Map answers to questions (first answer only)
   const answerMap = new Map();
-  answers.forEach(a => {
+  answers.forEach((a) => {
     if (!answerMap.has(a.parent_id)) {
       answerMap.set(a.parent_id, a);
     }
@@ -503,7 +493,7 @@ export const getProductQuestions = async (productId: number, page: number = 1, l
   const total = totalResult ? parseInt(totalResult.total as string) : 0;
 
   return {
-    questions: questions.map(q => ({
+    questions: questions.map((q) => ({
       ...q,
       answer: answerMap.get(q.comment_id) || null,
     })),
@@ -511,7 +501,11 @@ export const getProductQuestions = async (productId: number, page: number = 1, l
   };
 };
 
-export const getProductBidHistory = async (productId: number, page: number = 1, limit: number = 20) => {
+export const getProductBidHistory = async (
+  productId: number,
+  page: number = 1,
+  limit: number = 20
+) => {
   const offset = (page - 1) * limit;
 
   const bids = await db("bids")

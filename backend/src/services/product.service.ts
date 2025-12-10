@@ -16,10 +16,12 @@ import {
 import {
   mapToProductListCard,
   maskBidderName,
-  calculateSellerRating
+  calculateSellerRating,
 } from "../mappers/product.mapper";
 
-export const searchProducts = async (query: ProductsSearchQuery): Promise<PaginatedResult<ProductListCardProps>> => {
+export const searchProducts = async (
+  query: ProductsSearchQuery
+): Promise<PaginatedResult<ProductListCardProps>> => {
   const { q, categorySlug, page, limit, sort, excludeCategorySlug } = query;
 
   const result = await productRepository.searchProducts(
@@ -42,7 +44,9 @@ export const searchProducts = async (query: ProductsSearchQuery): Promise<Pagina
   };
 };
 
-export const createProduct = async (data: CreateProduct): Promise<CreateProductResponse> => {
+export const createProduct = async (
+  data: CreateProduct
+): Promise<CreateProductResponse> => {
   const product = await productRepository.createProduct({
     name: data.name,
     category_id: data.categoryId,
@@ -51,10 +55,10 @@ export const createProduct = async (data: CreateProduct): Promise<CreateProductR
     step_price: data.stepPrice,
     buy_now_price: data.buyNowPrice,
     end_time: data.endTime,
-    auto_extend: data.autoExtend === "yes",
+    auto_extend: data.autoExtend,
     description: data.description,
-    thumbnail: data.thumbnail,
-    images: data.images,
+    thumbnail_url: data.thumbnailUrl,
+    image_urls: data.imageUrls,
   });
 
   return {
@@ -89,12 +93,14 @@ export const getProductDetail = async (
   }
 
   // Fetch related data in parallel
-  const [images, description, categoryPath, watchlistCount] = await Promise.all([
-    productRepository.getProductImages(productId),
-    productRepository.getProductDescription(productId),
-    productRepository.getCategoryWithParents(product.category_id),
-    productRepository.getWatchlistCount(productId),
-  ]);
+  const [images, description, categoryPath, watchlistCount] = await Promise.all(
+    [
+      productRepository.getProductImages(productId),
+      productRepository.getProductDescription(productId),
+      productRepository.getCategoryWithParents(product.category_id),
+      productRepository.getWatchlistCount(productId),
+    ]
+  );
 
   // User-specific data
   let userProductStatus = undefined;
@@ -152,7 +158,8 @@ export const getProductDetail = async (
         id: product.category_id,
         name: product.category_name,
         slug: product.category_slug,
-        parent: breadcrumb.length > 1 ? breadcrumb[breadcrumb.length - 2] : null,
+        parent:
+          breadcrumb.length > 1 ? breadcrumb[breadcrumb.length - 2] : null,
       },
       breadcrumb,
       relatedProducts: relatedProducts.data.map(mapToProductListCard),
@@ -165,7 +172,9 @@ export const getProductDetail = async (
     auction: {
       startPrice: toNum(product.start_price),
       currentPrice: toNum(product.current_price),
-      buyNowPrice: product.buy_now_price ? toNum(product.buy_now_price) : undefined,
+      buyNowPrice: product.buy_now_price
+        ? toNum(product.buy_now_price)
+        : undefined,
       stepPrice: toNum(product.step_price),
       bidCount: product.bid_count || 0,
       watchlistCount,
@@ -228,11 +237,13 @@ export const getProductQuestions = async (
       question: q.question,
       askedBy: q.asker_name,
       askedAt: q.created_at,
-      answer: q.answer ? {
-        answer: q.answer.answer,
-        answeredBy: q.answer.answerer_name,
-        answeredAt: q.answer.answered_at,
-      } : null,
+      answer: q.answer
+        ? {
+            answer: q.answer.answer,
+            answeredBy: q.answer.answerer_name,
+            answeredAt: q.answer.answered_at,
+          }
+        : null,
     })),
     pagination: {
       page,
