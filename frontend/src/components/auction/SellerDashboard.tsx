@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
+import { Checkbox } from "../ui/checkbox";
 import {
   Table,
   TableBody,
@@ -35,6 +36,10 @@ import {
   AlertTriangle,
   CheckCircle2,
   Eye,
+  X,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import type { ProductStatus } from "../../types/seller";
 
@@ -81,6 +86,28 @@ const getStatusBadge = (status: ProductStatus) => {
 
 export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatuses, setSelectedStatuses] = useState<ProductStatus[]>([
+    "active",
+    "sold",
+    "expired",
+    "removed",
+  ]); // All selected by default
+
+  // Sort state
+  type SortColumn =
+    | "id"
+    | "title"
+    | "category"
+    | "startPrice"
+    | "currentPrice"
+    | "bidCount"
+    | "endTime"
+    | "createdAt"
+    | null;
+  type SortDirection = "asc" | "desc" | null;
+  const [sortColumn, setSortColumn] = useState<SortColumn>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
   const { data, loading, error } = useSellerDashboard();
 
   // Transform stats data for UI display
@@ -114,14 +141,156 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
     ];
   }, [data]);
 
-  // Filter listings based on search query
+  // Available statuses with labels
+  const statuses: { value: ProductStatus; label: string; count: number }[] =
+    useMemo(() => {
+      if (!data?.listings) return [];
+      return [
+        {
+          value: "active",
+          label: "Active",
+          count: data.listings.filter((item) => item.status === "active")
+            .length,
+        },
+        {
+          value: "sold",
+          label: "Sold",
+          count: data.listings.filter((item) => item.status === "sold").length,
+        },
+        {
+          value: "expired",
+          label: "Expired",
+          count: data.listings.filter((item) => item.status === "expired")
+            .length,
+        },
+        {
+          value: "removed",
+          label: "Removed",
+          count: data.listings.filter((item) => item.status === "removed")
+            .length,
+        },
+      ];
+    }, [data]);
+
+  // Handle status toggle
+  const toggleStatus = (status: ProductStatus) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  // Handle select/clear all
+  const selectAllStatuses = () => {
+    setSelectedStatuses(statuses.map((s) => s.value));
+  };
+
+  const clearAllStatuses = () => {
+    setSelectedStatuses([]);
+  };
+
+  // Remove individual status filter
+  const removeStatusFilter = (status: ProductStatus) => {
+    setSelectedStatuses((prev) => prev.filter((s) => s !== status));
+  };
+
+  // Filter listings based on search query and selected statuses
   const filteredListings = useMemo(() => {
     if (!data?.listings) return [];
-    if (!searchQuery) return data.listings;
-    return data.listings.filter((item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [data, searchQuery]);
+    return data.listings.filter((item) => {
+      // Status filter
+      const matchesStatus =
+        selectedStatuses.length === 0 || selectedStatuses.includes(item.status);
+      // Search filter
+      const matchesSearch =
+        !searchQuery ||
+        item.title.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesStatus && matchesSearch;
+    });
+  }, [data, searchQuery, selectedStatuses]);
+
+  // Handle column sort click (3-state cycle: asc → desc → default)
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      // Cycle through: asc → desc → null (default)
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
+      } else if (sortDirection === "desc") {
+        setSortColumn(null);
+        setSortDirection(null);
+      }
+    } else {
+      // New column, start with ascending
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  // Sort filtered listings
+  const sortedListings = useMemo(() => {
+    if (!sortColumn || !sortDirection) {
+      // Default sort by ID
+      return [...filteredListings].sort((a, b) => a.id - b.id);
+    }
+
+    return [...filteredListings].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortColumn) {
+        case "id":
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case "title":
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case "category":
+          aValue = a.categoryName.toLowerCase();
+          bValue = b.categoryName.toLowerCase();
+          break;
+        case "startPrice":
+          aValue = a.startPrice;
+          bValue = b.startPrice;
+          break;
+        case "currentPrice":
+          aValue = a.currentPrice;
+          bValue = b.currentPrice;
+          break;
+        case "bidCount":
+          aValue = a.bidCount;
+          bValue = b.bidCount;
+          break;
+        case "endTime":
+          aValue = new Date(a.endTime).getTime();
+          bValue = new Date(b.endTime).getTime();
+          break;
+        case "createdAt":
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filteredListings, sortColumn, sortDirection]);
+
+  // Helper to render sort icon
+  const renderSortIcon = (column: SortColumn) => {
+    if (sortColumn !== column) {
+      return <ArrowUpDown className="ml-1 h-3 w-3 text-muted-foreground/50" />;
+    }
+    if (sortDirection === "asc") {
+      return <ArrowUp className="ml-1 h-3 w-3" />;
+    }
+    return <ArrowDown className="ml-1 h-3 w-3" />;
+  };
 
   if (loading) {
     return (
@@ -198,35 +367,210 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                   className="pl-9 h-9"
                 />
               </div>
-              <Button variant="outline" size="sm">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
+
+              {/* Status Filter Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Status
+                    {selectedStatuses.length > 0 &&
+                      selectedStatuses.length < 4 && (
+                        <Badge
+                          variant="secondary"
+                          className="ml-2 h-5 min-w-5 px-1"
+                        >
+                          {selectedStatuses.length}
+                        </Badge>
+                      )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5 text-sm font-semibold">
+                    Filter by Status
+                  </div>
+                  <div className="px-2 py-1 space-y-1">
+                    {statuses.map((status) => (
+                      <div
+                        key={status.value}
+                        className="flex items-center space-x-2 py-1.5 px-2 rounded-sm hover:bg-accent/20 cursor-pointer"
+                        onClick={() => toggleStatus(status.value)}
+                      >
+                        <Checkbox
+                          checked={selectedStatuses.includes(status.value)}
+                          onCheckedChange={() => toggleStatus(status.value)}
+                        />
+                        <label className="flex-1 text-sm cursor-pointer">
+                          {status.label}
+                          <span className="ml-1 text-muted-foreground">
+                            ({status.count})
+                          </span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t px-2 py-2 flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs flex-1"
+                      onClick={selectAllStatuses}
+                    >
+                      Select All
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs flex-1"
+                      onClick={clearAllStatuses}
+                    >
+                      Clear All
+                    </Button>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button variant="outline" size="sm">
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>
             </div>
           </div>
+
+          {/* Active Filters Pills */}
+          {selectedStatuses.length > 0 && selectedStatuses.length < 4 && (
+            <div className="flex items-center gap-2 mt-4">
+              <span className="text-sm text-muted-foreground">
+                Active filters:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {selectedStatuses.map((status) => (
+                  <Badge
+                    key={status}
+                    variant="secondary"
+                    className="pl-2 pr-1 py-1 flex items-center gap-1"
+                  >
+                    {statuses.find((s) => s.value === status)?.label}
+                    <button
+                      onClick={() => removeStatusFilter(status)}
+                      className="ml-1 rounded-sm hover:bg-secondary-foreground/20 p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                <button
+                  onClick={clearAllStatuses}
+                  className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">
-                  <TableHead className="w-[80px]">ID</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Start Price</TableHead>
-                  <TableHead className="text-right">Current Bid</TableHead>
-                  <TableHead className="text-center">Bids</TableHead>
-                  <TableHead>Time Left</TableHead>
+                  <TableHead
+                    className={`w-[80px] cursor-pointer select-none transition-colors ${
+                      sortColumn === "id"
+                        ? "bg-accent/30 font-semibold"
+                        : "hover:bg-accent/20"
+                    }`}
+                    onClick={() => handleSort("id")}
+                  >
+                    <div className="flex items-center">
+                      ID
+                      {renderSortIcon("id")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className={`cursor-pointer select-none transition-colors ${
+                      sortColumn === "title"
+                        ? "bg-accent/30 font-semibold"
+                        : "hover:bg-accent/20"
+                    }`}
+                    onClick={() => handleSort("title")}
+                  >
+                    <div className="flex items-center">
+                      Product
+                      {renderSortIcon("title")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className={`cursor-pointer select-none transition-colors ${
+                      sortColumn === "category"
+                        ? "bg-accent/30 font-semibold"
+                        : "hover:bg-accent/20"
+                    }`}
+                    onClick={() => handleSort("category")}
+                  >
+                    <div className="flex items-center">
+                      Category
+                      {renderSortIcon("category")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className={`text-right cursor-pointer select-none transition-colors ${
+                      sortColumn === "startPrice"
+                        ? "bg-accent/30 font-semibold"
+                        : "hover:bg-accent/20"
+                    }`}
+                    onClick={() => handleSort("startPrice")}
+                  >
+                    <div className="flex items-center justify-end">
+                      Start Price
+                      {renderSortIcon("startPrice")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className={`text-right cursor-pointer select-none transition-colors ${
+                      sortColumn === "currentPrice"
+                        ? "bg-accent/30 font-semibold"
+                        : "hover:bg-accent/20"
+                    }`}
+                    onClick={() => handleSort("currentPrice")}
+                  >
+                    <div className="flex items-center justify-end">
+                      Current Bid
+                      {renderSortIcon("currentPrice")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className={`text-center cursor-pointer select-none transition-colors ${
+                      sortColumn === "bidCount"
+                        ? "bg-accent/30 font-semibold"
+                        : "hover:bg-accent/20"
+                    }`}
+                    onClick={() => handleSort("bidCount")}
+                  >
+                    <div className="flex items-center justify-center">
+                      Bids
+                      {renderSortIcon("bidCount")}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className={`cursor-pointer select-none transition-colors ${
+                      sortColumn === "endTime"
+                        ? "bg-accent/30 font-semibold"
+                        : "hover:bg-accent/20"
+                    }`}
+                    onClick={() => handleSort("endTime")}
+                  >
+                    <div className="flex items-center">
+                      Time Left
+                      {renderSortIcon("endTime")}
+                    </div>
+                  </TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredListings.map((item) => (
+                {sortedListings.map((item) => (
                   <TableRow
                     key={item.id}
                     className="border-border hover:bg-secondary/30"
