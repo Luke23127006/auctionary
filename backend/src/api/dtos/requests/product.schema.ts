@@ -58,6 +58,12 @@ export const appendProductQuestionSchema = z.object({
   content: z.string().min(1),
 });
 
+export const appendProductAnswerSchema = z.object({
+  questionId: z.number().int().positive(),
+  answererId: z.number().int().positive(),
+  content: z.string().min(1),
+});
+
 export type ProductsSearchQuery = z.infer<typeof searchProductsSchema>;
 export type SortOption = z.infer<typeof sortOptionSchema>;
 export type CreateProduct = z.infer<typeof createProductSchema>;
@@ -67,3 +73,4 @@ export type AppendProductDescription = z.infer<
 export type AppendProductQuestion = z.infer<
   typeof appendProductQuestionSchema
 >;
+export type AppendProductAnswer = z.infer<typeof appendProductAnswerSchema>;

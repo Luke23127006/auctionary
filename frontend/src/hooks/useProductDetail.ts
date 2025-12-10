@@ -134,7 +134,12 @@ export const useProductDetail = () => {
     appendQuestion: async (content: string, askBy: number | undefined) => {
       if (!productId || !productData?.seller.id) return;
       await productService.appendQuestion(productId, content, askBy);
-
+      const questionsData = await productService.getProductQuestions(productId);
+      setQuestionsData(questionsData);
+    },
+    appendAnswer: async (content: string, questionId: number | undefined, answerBy: number | undefined) => {
+      if (!productId || !productData?.seller.id) return;
+      await productService.appendAnswer(productId, questionId, content, answerBy);
       const questionsData = await productService.getProductQuestions(productId);
       setQuestionsData(questionsData);
     }

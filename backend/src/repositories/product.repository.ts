@@ -353,6 +353,20 @@ export const appendProductQuestion = async (
   });
 }
 
+export const appendProductAnswer = async (
+  productId: number,
+  questionId: number,
+  answererId: number,
+  content: string
+): Promise<void> => {
+  await db("product_comments").insert({
+    product_id: productId,
+    user_id: answererId,
+    content: content,
+    parent_id: questionId
+  });
+}
+
 export const getProductBidInfo = async (
   productId: number
 ) => {

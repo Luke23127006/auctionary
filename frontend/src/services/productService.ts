@@ -86,3 +86,11 @@ export const appendQuestion = async (
 ): Promise<void> => {
   return apiClient.post(`/products/${id}/questions`, { content, questionerId }, true)
 }
+export const appendAnswer = async (
+  id: string,
+  questionId: number | undefined,
+  content: string,
+  answererId: number | undefined
+): Promise<void> => {
+  return apiClient.post(`/products/${id}/answers`, { content, questionId, answererId }, true)
+}

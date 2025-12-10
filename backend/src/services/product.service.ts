@@ -3,7 +3,8 @@ import {
   ProductsSearchQuery,
   CreateProduct,
   AppendProductDescription,
-  AppendProductQuestion
+  AppendProductQuestion,
+  AppendProductAnswer
 } from "../api/dtos/requests/product.schema";
 import { toNum } from "../utils/number.util";
 import {
@@ -83,6 +84,14 @@ export const appendProductQuestion = async (
 ): Promise<void> => {
   const { questionerId, content } = body;
   await productRepository.appendProductQuestion(productId, questionerId, content);
+}
+
+export const appendProductAnswer = async (
+  productId: number,
+  body: AppendProductAnswer
+): Promise<void> => {
+  const { questionId, answererId, content } = body;
+  await productRepository.appendProductAnswer(productId, questionId, answererId, content);
 }
 
 // Product Detail Page
