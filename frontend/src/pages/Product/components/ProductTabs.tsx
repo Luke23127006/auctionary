@@ -17,10 +17,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../../../components/ui/accordion";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../../components/ui/avatar";
+import { Textarea } from "../../../components/ui/textarea";
 import { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import { MessageCircle, Plus, Check, X } from "lucide-react";
+import { Plus, Check, X, User } from "lucide-react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { BidHistory } from "../../../components/auction/BidHistory";
@@ -34,6 +40,14 @@ interface AdditionalInfo {
   id: string;
   content: string;
   createdAt: string;
+}
+
+interface LocalQuestion {
+  questionId: string;
+  question: string;
+  askedBy: string;
+  askedAt: string;
+  answer: null;
 }
 
 interface ProductTabsProps {
@@ -57,6 +71,29 @@ export function ProductTabs({
   const [editorContent, setEditorContent] = useState("");
   // Temporary state to manage appended descriptions
   const [additionalInfos, setAdditionalInfos] = useState<AdditionalInfo[]>([]);
+
+  // Q&A State
+  const [questionText, setQuestionText] = useState("");
+  const [isQuestionFocused, setIsQuestionFocused] = useState(false);
+  const [localQuestions, setLocalQuestions] = useState<LocalQuestion[]>([]);
+
+  const handleAskQuestion = () => {
+    if (!questionText.trim()) return;
+
+    const newQuestion: LocalQuestion = {
+      questionId: `local-${Date.now()}`,
+      question: questionText,
+      askedBy: "You", // Placeholder for current user
+      askedAt: new Date().toISOString(),
+      answer: null,
+    };
+
+    setLocalQuestions((prev) => [newQuestion, ...prev]);
+
+    // Reset state
+    setQuestionText("");
+    setIsQuestionFocused(false);
+  };
 
   const handleSave = async () => {
     if (!editorContent.trim()) return;
@@ -246,52 +283,90 @@ export function ProductTabs({
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Ask Question */}
+            {/* Ask Question Input */}
             <div className="p-4 rounded-lg border border-border bg-card/50">
-              <Button className="w-full" variant="outline">
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Ask a Question
-              </Button>
+              <div className="flex gap-4">
+                <Avatar className="h-10 w-10 shrink-0">
+                  <AvatarImage src="/placeholder-user.jpg" alt="@user" />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-2">
+                  <Textarea
+                    placeholder="Ask a question about this product..."
+                    value={questionText}
+                    onChange={(e) => setQuestionText(e.target.value)}
+                    onFocus={() => setIsQuestionFocused(true)}
+                    className="min-h-[60px] resize-none bg-background border-border/50 focus-visible:ring-1 focus-visible:ring-primary/50 transition-all"
+                  />
+
+                  {(isQuestionFocused || questionText.length > 0) && (
+                    <div className="flex justify-end gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setIsQuestionFocused(false);
+                          setQuestionText("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={!questionText.trim()}
+                        onClick={handleAskQuestion}
+                      >
+                        Post Question
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Q&A List */}
             <Accordion type="multiple" className="w-full">
-              {(questions?.questions || []).map((qa) => (
-                <AccordionItem
-                  key={qa.questionId}
-                  value={qa.questionId.toString()}
-                >
-                  <AccordionTrigger className="text-left">
-                    <div className="flex-1">
-                      <div className="text-sm pr-4">{qa.question}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Asked by {qa.askedBy} •{" "}
-                        {new Date(qa.askedAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    {qa.answer ? (
-                      <div className="pl-4 border-l-2 border-accent/30 py-2">
-                        <div className="flex items-start gap-2 mb-2">
-                          <Badge
-                            variant="outline"
-                            className="text-xs border-accent/50 text-accent"
-                          >
-                            Seller Response
-                          </Badge>
+              {[...localQuestions, ...(questions?.questions || [])].map(
+                (qa) => (
+                  <AccordionItem
+                    key={qa.questionId}
+                    value={qa.questionId.toString()}
+                  >
+                    <AccordionTrigger className="text-left">
+                      <div className="flex-1">
+                        <div className="text-sm pr-4">{qa.question}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Asked by {qa.askedBy} •{" "}
+                          {new Date(qa.askedAt).toLocaleDateString()}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {qa.answer.answer}
-                        </p>
                       </div>
-                    ) : (
-                      <div className="pl-4 py-2 text-sm text-muted-foreground italic">
-                        No answer yet.
-                      </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {qa.answer ? (
+                        <div className="pl-4 border-l-2 border-accent/30 py-2">
+                          <div className="flex items-start gap-2 mb-2">
+                            <Badge
+                              variant="outline"
+                              className="text-xs border-accent/50 text-accent"
+                            >
+                              Seller Response
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {qa.answer.answer}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="pl-4 py-2 text-sm text-muted-foreground italic">
+                          No answer yet.
+                        </div>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+                )
+              )}
             </Accordion>
           </CardContent>
         </Card>
