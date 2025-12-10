@@ -79,3 +79,10 @@ export const appendDescription = async (
 ): Promise<void> => {
   return apiClient.post(`/products/${id}/descriptions`, { content, sellerId }, true);
 };
+export const appendQuestion = async (
+  id: string,
+  content: string,
+  questionerId: number | undefined
+): Promise<void> => {
+  return apiClient.post(`/products/${id}/questions`, { content, questionerId }, true)
+}

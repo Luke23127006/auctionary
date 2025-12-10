@@ -28,6 +28,7 @@ export default function ProductDetailPage() {
     error,
     placeBid,
     appendDescription,
+    appendQuestion,
   } = useProductDetail();
 
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
@@ -202,6 +203,7 @@ export default function ProductDetailPage() {
           bids={bids}
           questions={questions}
           onAppendDescription={appendDescription}
+          onAppendQuestion={appendQuestion}
         />
 
         {/* Related Products */}

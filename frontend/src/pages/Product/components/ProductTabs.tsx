@@ -35,6 +35,7 @@ import type {
   BidHistoryResponse,
   QuestionsResponse,
 } from "../../../types/product";
+import { useAuth } from "../../../hooks/useAuth";
 
 interface AdditionalInfo {
   id: string;
@@ -58,6 +59,10 @@ interface ProductTabsProps {
   bids?: BidHistoryResponse | null;
   questions?: QuestionsResponse | null;
   onAppendDescription?: (content: string) => Promise<void>;
+  onAppendQuestion?: (
+    content: string,
+    questioner: number | undefined
+  ) => Promise<void>;
 }
 
 export function ProductTabs({
@@ -65,8 +70,10 @@ export function ProductTabs({
   bids,
   questions,
   onAppendDescription,
+  onAppendQuestion,
 }: ProductTabsProps) {
   const { hasRole } = usePermission();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editorContent, setEditorContent] = useState("");
   // Temporary state to manage appended descriptions
@@ -110,22 +117,24 @@ export function ProductTabs({
     handleCancelReply();
   };
 
-  const handleAskQuestion = () => {
+  const handleAskQuestion = async () => {
     if (!questionText.trim()) return;
 
     const newQuestion: LocalQuestion = {
-      questionId: `local-${Date.now()}`,
+      questionId: Date.now().toString(),
       question: questionText,
-      askedBy: "You", // Placeholder for current user
+      askedBy: "You",
       askedAt: new Date().toISOString(),
       answer: null,
     };
 
     setLocalQuestions((prev) => [newQuestion, ...prev]);
-
-    // Reset state
     setQuestionText("");
     setIsQuestionFocused(false);
+
+    if (onAppendQuestion) {
+      await onAppendQuestion(questionText, user?.id);
+    }
   };
 
   const handleSave = async () => {

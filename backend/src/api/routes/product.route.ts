@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.middleware";
-import { searchProductsSchema, createProductSchema, appendProductDescriptionSchema } from "../dtos/requests/product.schema";
+import { searchProductsSchema, createProductSchema, appendProductDescriptionSchema, appendProductQuestionSchema } from "../dtos/requests/product.schema";
 import { placeBidSchema } from "../dtos/requests/place-bid.schema";
 import { authorize } from "../middlewares/authorize.middleware";
 import * as productController from "../controllers/product.controller";
@@ -43,5 +43,12 @@ router.post("/:id/descriptions",
   validate(appendProductDescriptionSchema, "body"),
   productController.appendDescription
 );
+
+router.post("/:id/questions", 
+  requireAuth,
+  authorize("products.update"),
+  validate(appendProductQuestionSchema, "body"),
+  productController.appendQuestion
+)
 
 export default router;

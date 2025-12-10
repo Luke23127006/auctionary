@@ -6,6 +6,7 @@ import {
   ProductsSearchQuery,
   CreateProduct,
   AppendProductDescription,
+  AppendProductQuestion,
 } from "../dtos/requests/product.schema";
 
 export const searchProducts = async (
@@ -145,3 +146,22 @@ export const appendDescription = async (
     next(error);
   }
 };
+
+export const appendQuestion = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const productId = Number(request.params.id);
+    const body = request.body as AppendProductQuestion;
+
+    await productService.appendProductQuestion(productId, body);
+
+    response.status(201).message("Question append successfully");
+
+  } catch (error) {
+    logger.error("ProductController", "Failed to append question", error);
+    next(error);
+  }
+}

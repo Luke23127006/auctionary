@@ -341,6 +341,18 @@ export const appendProductDescription = async (
   });
 };
 
+export const appendProductQuestion = async (
+  productId: number,
+  questionerId: number,
+  content: string
+): Promise<void> => {
+  await db("product_comments").insert({
+    product_id: productId,
+    user_id: questionerId,
+    content: content,
+  });
+}
+
 export const getProductBidInfo = async (
   productId: number
 ) => {
