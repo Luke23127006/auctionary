@@ -53,12 +53,12 @@ export default function ProductDetailPage() {
 
     const parent = findCategory(categories, parentSlug);
     if (!parent || !parent.children || parent.children.length === 0) {
-      return `/products?categorySlug=${parentSlug}`;
+      return `/products?category=${parentSlug}`;
     }
 
     // Build URL with all children slugs
     const childSlugs = parent.children
-      .map((c) => `categorySlug=${c.slug}`)
+      .map((c) => `category=${c.slug}`)
       .join("&");
     return `/products?${childSlugs}`;
   };
@@ -150,7 +150,7 @@ export default function ProductDetailPage() {
               </>
             )}
             <Link
-              to={`/products?categorySlug=${product.category.slug}`}
+              to={`/products?category=${product.category.slug}`}
               className="text-muted-foreground hover:text-accent transition-colors"
             >
               {product.category.name}

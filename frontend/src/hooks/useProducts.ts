@@ -17,7 +17,7 @@ export const useProducts = () => {
   const [priceRange, setPriceRange] = useState([0, 5000]);
 
   const searchQuery = searchParams.get("q") || "";
-  const categorySlugs = searchParams.getAll("categorySlug");
+  const categorySlugs = searchParams.getAll("category");
   const currentPage = parseInt(searchParams.get("page") || "1");
   const sortParam = searchParams.get("sort") || "endTime:asc";
 
@@ -66,7 +66,7 @@ export const useProducts = () => {
     const newParams = new URLSearchParams(searchParams);
 
     // Remove all existing categorySlug params first
-    newParams.delete("categorySlug");
+    newParams.delete("category");
 
     let updatedSlugs: string[];
     if (checked) {
@@ -80,7 +80,7 @@ export const useProducts = () => {
     }
 
     // Append all updated slugs
-    updatedSlugs.forEach((slug) => newParams.append("categorySlug", slug));
+    updatedSlugs.forEach((slug) => newParams.append("category", slug));
 
     newParams.set("page", "1");
     setSearchParams(newParams);
@@ -95,9 +95,9 @@ export const useProducts = () => {
 
   const handleRemoveCategory = (categoryId: string) => {
     const newParams = new URLSearchParams(searchParams);
-    newParams.delete("categorySlug");
+    newParams.delete("category");
     const remaining = categorySlugs.filter((slug) => slug !== categoryId);
-    remaining.forEach((slug) => newParams.append("categorySlug", slug));
+    remaining.forEach((slug) => newParams.append("category", slug));
     newParams.set("page", "1");
     setSearchParams(newParams);
   };
