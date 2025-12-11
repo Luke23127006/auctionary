@@ -22,10 +22,10 @@ export const searchProducts = async (
   if (params.categorySlug) {
     if (Array.isArray(params.categorySlug)) {
       params.categorySlug.forEach((slug) =>
-        queryParams.append("category", slug)
+        queryParams.append("categorySlug", slug)
       );
     } else {
-      queryParams.append("category", params.categorySlug);
+      queryParams.append("categorySlug", params.categorySlug);
     }
   }
 
