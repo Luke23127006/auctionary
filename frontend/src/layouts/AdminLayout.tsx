@@ -201,7 +201,7 @@ export function AdminLayout({
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col overflow-hidden transition-all duration-300">
+      <div className="flex-1 flex flex-col min-h-screen transition-all duration-300">
         <header className="border-b border-border bg-card/30 backdrop-blur sticky top-0 z-30">
           <div className="px-6 py-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground tracking-tight">
