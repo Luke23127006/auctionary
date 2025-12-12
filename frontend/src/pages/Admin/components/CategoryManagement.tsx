@@ -23,8 +23,6 @@ import {
   ChevronRight,
   ChevronDown,
   Trash2,
-  Edit,
-  GripVertical,
   Package,
 } from "lucide-react";
 import {
@@ -38,139 +36,152 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../../../components/ui/alert-dialog";
-import { toast } from "sonner";
-
-interface Category {
-  id: string;
-  name: string;
-  count: number;
-  subcategories?: Category[];
-  expanded?: boolean;
-}
-
-const initialCategories: Category[] = [
-  {
-    id: "1",
-    name: "Electronics",
-    count: 342,
-    expanded: true,
-    subcategories: [
-      { id: "1-1", name: "Cameras", count: 87 },
-      { id: "1-2", name: "Laptops", count: 124 },
-      { id: "1-3", name: "Phones", count: 98 },
-      { id: "1-4", name: "Audio Equipment", count: 33 },
-    ],
-  },
-  {
-    id: "2",
-    name: "Fashion",
-    count: 256,
-    expanded: false,
-    subcategories: [
-      { id: "2-1", name: "Watches", count: 67 },
-      { id: "2-2", name: "Handbags", count: 89 },
-      { id: "2-3", name: "Sneakers", count: 100 },
-    ],
-  },
-  {
-    id: "3",
-    name: "Collectibles",
-    count: 189,
-    expanded: false,
-    subcategories: [
-      { id: "3-1", name: "Coins", count: 45 },
-      { id: "3-2", name: "Cards", count: 78 },
-      { id: "3-3", name: "Vintage Toys", count: 66 },
-    ],
-  },
-  {
-    id: "4",
-    name: "Art",
-    count: 134,
-    expanded: false,
-    subcategories: [
-      { id: "4-1", name: "Paintings", count: 56 },
-      { id: "4-2", name: "Sculptures", count: 34 },
-      { id: "4-3", name: "Photography", count: 44 },
-    ],
-  },
-  {
-    id: "5",
-    name: "Vehicles",
-    count: 98,
-    expanded: false,
-    subcategories: [
-      { id: "5-1", name: "Cars", count: 45 },
-      { id: "5-2", name: "Motorcycles", count: 23 },
-      { id: "5-3", name: "Boats", count: 30 },
-    ],
-  },
-];
+import { useAdminCategories } from "../../../hooks/useAdminCategories";
 
 export function CategoryManagement() {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  // Use admin categories hook for all data and handlers
+  const {
+    categories,
+    stats,
+    loading,
+    error,
+    expandedCategories,
+    toggleExpanded,
+    handleCreate,
+    handleDelete,
+    refetch,
+  } = useAdminCategories();
+  // Local UI state for add dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [newCategoryParent, setNewCategoryParent] = useState("");
+  const [newCategoryParent, setNewCategoryParent] = useState<number | null>(
+    null
+  );
 
-  const toggleExpanded = (categoryId: string) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat.id === categoryId ? { ...cat, expanded: !cat.expanded } : cat
-      )
-    );
-  };
-
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
 
-    const newCategory: Category = {
-      id: `new-${Date.now()}`,
-      name: newCategoryName,
-      count: 0,
-      subcategories: [],
-    };
-
-    if (newCategoryParent) {
-      // Add as subcategory
-      setCategories((prev) =>
-        prev.map((cat) => {
-          if (cat.id === newCategoryParent) {
-            return {
-              ...cat,
-              subcategories: [...(cat.subcategories || []), newCategory],
-            };
-          }
-          return cat;
-        })
-      );
-    } else {
-      // Add as main category
-      setCategories((prev) => [...prev, newCategory]);
+    try {
+      await handleCreate({
+        name: newCategoryName,
+        parentId: newCategoryParent,
+      });
+      // Success toast is handled by hook
+      setNewCategoryName("");
+      setNewCategoryParent(null);
+      setAddDialogOpen(false);
+    } catch (error) {
+      // Error toast is handled by hook, keep dialog open
     }
-
-    toast.success("Category added successfully!");
-    setNewCategoryName("");
-    setNewCategoryParent("");
-    setAddDialogOpen(false);
   };
 
-  const handleDeleteCategory = (categoryId: string, categoryName: string) => {
-    setCategories((prev) => {
-      // Remove from main categories
-      const filtered = prev.filter((cat) => cat.id !== categoryId);
+  // Loading state
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FolderTree className="h-5 w-5" />
+              Category Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-20 bg-secondary/50 animate-pulse rounded-lg"
+                />
+              ))}
+            </div>
+            <div className="h-64 bg-secondary/50 animate-pulse rounded-lg" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-      // Remove from subcategories
-      return filtered.map((cat) => ({
-        ...cat,
-        subcategories: cat.subcategories?.filter(
-          (sub) => sub.id !== categoryId
-        ),
-      }));
-    });
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FolderTree className="h-5 w-5" />
+              Category Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="py-12 text-center space-y-4">
+              <div className="text-destructive text-lg font-medium">
+                Failed to load categories
+              </div>
+              <p className="text-muted-foreground">{error}</p>
+              <Button onClick={refetch} variant="outline">
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-    toast.success(`Category "${categoryName}" deleted successfully!`);
-  };
+  // Empty state
+  if (categories.length === 0) {
+    return (
+      <div className="space-y-4">
+        <Card className="border-border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FolderTree className="h-5 w-5" />
+                Category Management
+              </CardTitle>
+              <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Category
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-card border-border">
+                  <DialogHeader>
+                    <DialogTitle>Add New Category</DialogTitle>
+                    <DialogDescription>
+                      Create a new category for organizing auctions.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Category Name</Label>
+                      <Input
+                        id="name"
+                        placeholder="Enter category name"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={handleAddCategory}>Add Category</Button>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="py-12 text-center space-y-2">
+              <div className="text-muted-foreground">No categories yet</div>
+              <p className="text-sm text-muted-foreground">
+                Create your first category to get started
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -215,8 +226,12 @@ export function CategoryManagement() {
                 </Label>
                 <select
                   id="parentCategory"
-                  value={newCategoryParent}
-                  onChange={(e) => setNewCategoryParent(e.target.value)}
+                  value={newCategoryParent ?? ""}
+                  onChange={(e) =>
+                    setNewCategoryParent(
+                      e.target.value ? Number(e.target.value) : null
+                    )
+                  }
                   className="w-full h-10 px-3 rounded-lg bg-background border border-border text-sm"
                 >
                   <option value="">None (Main Category)</option>
@@ -246,12 +261,12 @@ export function CategoryManagement() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <Card className="border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl mb-1">{categories.length}</div>
+                <div className="text-2xl mb-1">{stats.mainCategories}</div>
                 <div className="text-xs text-muted-foreground">
                   Main Categories
                 </div>
@@ -267,12 +282,7 @@ export function CategoryManagement() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl mb-1">
-                  {categories.reduce(
-                    (sum, cat) => sum + (cat.subcategories?.length || 0),
-                    0
-                  )}
-                </div>
+                <div className="text-2xl mb-1">{stats.subcategories}</div>
                 <div className="text-xs text-muted-foreground">
                   Subcategories
                 </div>
@@ -288,32 +298,9 @@ export function CategoryManagement() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl mb-1">
-                  {categories.reduce((sum, cat) => sum + cat.count, 0)}
-                </div>
+                <div className="text-2xl mb-1">{stats.totalCategories}</div>
                 <div className="text-xs text-muted-foreground">
-                  Total Auctions
-                </div>
-              </div>
-              <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/30">
-                <Package className="h-5 w-5 text-green-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl mb-1">
-                  {Math.round(
-                    categories.reduce((sum, cat) => sum + cat.count, 0) /
-                      categories.length
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Avg per Category
+                  Total Categories
                 </div>
               </div>
               <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/30">
@@ -338,12 +325,12 @@ export function CategoryManagement() {
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3 flex-1">
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="outline"
+                        size="icon"
                         onClick={() => toggleExpanded(category.id)}
                         className="h-6 w-6 p-0"
                       >
-                        {category.expanded ? (
+                        {expandedCategories.has(category.id) ? (
                           <ChevronDown className="h-4 w-4" />
                         ) : (
                           <ChevronRight className="h-4 w-4" />
@@ -362,17 +349,9 @@ export function CategoryManagement() {
                           </Badge>
                         </div>
                       </div>
-
-                      <Badge className="bg-accent/20 text-accent border-accent/50">
-                        {category.count} auctions
-                      </Badge>
                     </div>
 
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
@@ -388,17 +367,22 @@ export function CategoryManagement() {
                             <AlertDialogTitle>Delete Category</AlertDialogTitle>
                             <AlertDialogDescription>
                               Are you sure you want to delete "{category.name}"?
-                              This will also delete all{" "}
-                              {category.subcategories?.length || 0}{" "}
-                              subcategories and affect {category.count}{" "}
-                              auctions.
+                              {category.subcategories &&
+                                category.subcategories.length > 0 && (
+                                  <span>
+                                    {" "}
+                                    This will also affect{" "}
+                                    {category.subcategories.length}{" "}
+                                    subcategories.
+                                  </span>
+                                )}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() =>
-                                handleDeleteCategory(category.id, category.name)
+                                handleDelete(category.id, category.name)
                               }
                               className="bg-destructive text-white hover:bg-destructive/90"
                             >
@@ -407,91 +391,70 @@ export function CategoryManagement() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="cursor-grab active:cursor-grabbing"
-                      >
-                        <GripVertical className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                 </div>
 
                 {/* Subcategories */}
-                {category.expanded && category.subcategories && (
-                  <div className="bg-secondary/20">
-                    {category.subcategories.map((sub) => (
-                      <div
-                        key={sub.id}
-                        className="group hover:bg-secondary/50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between p-4 pl-16">
-                          <div className="flex items-center gap-3 flex-1">
-                            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                              <FolderTree className="h-3 w-3 text-blue-500" />
+                {expandedCategories.has(category.id) &&
+                  category.subcategories && (
+                    <div className="bg-secondary/20">
+                      {category.subcategories.map((sub) => (
+                        <div
+                          key={sub.id}
+                          className="group hover:bg-secondary/50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between p-4 pl-16">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                                <FolderTree className="h-3 w-3 text-blue-500" />
+                              </div>
+
+                              <span className="text-sm">{sub.name}</span>
                             </div>
 
-                            <span className="text-sm">{sub.name}</span>
-
-                            <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50 text-xs">
-                              {sub.count} auctions
-                            </Badge>
-                          </div>
-
-                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-3 w-3" />
-                            </Button>
-
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-destructive"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent className="bg-card border-red-500/30">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Delete Subcategory
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "{sub.name}
-                                    "? This will affect {sub.count} auctions.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() =>
-                                      handleDeleteCategory(sub.id, sub.name)
-                                    }
-                                    className="bg-destructive text-white hover:bg-destructive/90"
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive"
                                   >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="cursor-grab active:cursor-grabbing"
-                            >
-                              <GripVertical className="h-3 w-3" />
-                            </Button>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent className="bg-card border-red-500/30">
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Delete Subcategory
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "
+                                      {sub.name}"?
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() =>
+                                        handleDelete(sub.id, sub.name)
+                                      }
+                                      className="bg-destructive text-white hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
               </div>
             ))}
           </div>

@@ -9,7 +9,7 @@ export const authorize = (requiredPermission: string) => {
           .json({ message: "Unauthorized: User info missing" });
       }
 
-      if (user.roles?.includes("ADMIN")) {
+      if (user.roles?.includes("admin")) {
         return next();
       }
 

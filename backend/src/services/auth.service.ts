@@ -135,12 +135,7 @@ export const loginUser = async (
 
   const roles = await userRepo.getUserRoles(mappedUser.id);
   const permissions = await userRepo.getUserPermissions(mappedUser.id);
-  const userPayload = {
-    id: mappedUser.id,
-    email: mappedUser.email,
-    roles: roles,
-    permissions: permissions,
-  };
+  const userPayload = await createUserPayload(mappedUser.id, mappedUser.email);
 
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
