@@ -120,6 +120,11 @@ export const useProducts = () => {
     setSearchParams(newParams);
   };
 
+  // TODO: Add a refetch function for manual refresh (useful after bid placement)
+  // const refetch = useCallback(() => {
+  //   fetchProducts();
+  // }, [searchQuery, categorySlugs, currentPage, sortParam]);
+
   return {
     products,
     loading,
@@ -136,5 +141,7 @@ export const useProducts = () => {
     handleClearAllFilters,
     handleSortChange,
     handlePageChange,
+    // TODO: Uncomment when implementing refetch
+    // refetch,
   };
 };

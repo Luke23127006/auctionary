@@ -42,6 +42,28 @@ export const notify = {
       },
     }),
 
+  warning: (message: string) =>
+    toast(message, {
+      style: {
+        ...baseStyle,
+        borderLeft: "4px solid #f59e0b",
+        boxShadow:
+          "0 10px 40px -10px rgba(0,0,0,0.8), 0 0 20px rgba(245,158,11,0.2)",
+      },
+      icon: "⚠️",
+    }),
+
+  info: (message: string) =>
+    toast(message, {
+      style: {
+        ...baseStyle,
+        borderLeft: "4px solid #3b82f6",
+        boxShadow:
+          "0 10px 40px -10px rgba(0,0,0,0.8), 0 0 20px rgba(59,130,246,0.2)",
+      },
+      icon: "ℹ️",
+    }),
+
   undo: (message: string, onUndo: () => void) =>
     toast(
       (t) => (

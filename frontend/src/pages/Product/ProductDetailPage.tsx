@@ -2,6 +2,7 @@ import { ChevronLeft } from "lucide-react";
 import { buttonVariants } from "../../components/ui/button";
 import { Separator } from "../../components/ui/separator";
 import { ProductListCard } from "./components/ProductListCard";
+import { PlaceBidModal } from "./components/PlaceBidModal";
 import MainLayout from "../../layouts/MainLayout";
 import { useProductDetail } from "../../hooks/useProductDetail";
 import { ProductHeader } from "./components/ProductHeader";
@@ -13,17 +14,11 @@ import { Link } from "react-router-dom";
 import { formatTimeLeft } from "../../utils/time";
 import { useWatchlist } from "../../hooks/useWatchlist";
 import { useCategories } from "../../hooks/useCategories";
+import { useBidding } from "../../hooks/useBidding";
 import type { WatchlistProduct } from "../../types/watchlist";
 import type { CategoryNode } from "../../types/category";
-import type { BidProductData } from "./components/ProductListCard";
 
-interface ProductDetailPageProps {
-  onQuickPlaceBid: (data: BidProductData) => void;
-}
-
-export default function ProductDetailPage({
-  onQuickPlaceBid,
-}: ProductDetailPageProps) {
+export default function ProductDetailPage() {
   const {
     product,
     seller,
@@ -41,6 +36,18 @@ export default function ProductDetailPage({
 
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
   const { categories } = useCategories();
+
+  const {
+    selectedProduct,
+    isModalOpen,
+    isSubmitting,
+    openBidModal,
+    closeBidModal,
+    submitBid,
+  } = useBidding();
+
+  // TODO: Add a refresh handler to update related products after successful bid
+  // Consider using WebSocket or refetching product details after bid placement
 
   // Helper to generate URL with all children of a parent category
   const getParentCategoryUrl = (parentSlug: string): string => {
@@ -239,13 +246,28 @@ export default function ProductDetailPage({
                 <ProductListCard
                   key={relatedProduct.id}
                   {...relatedProduct}
-                  handleOpenBidModal={onQuickPlaceBid}
+                  handleOpenBidModal={openBidModal}
                 />
               ))}
             </div>
           </section>
         )}
       </main>
+
+      {/* Quick Place Bid Modal for Related Products */}
+      {selectedProduct && (
+        <PlaceBidModal
+          open={isModalOpen}
+          onOpenChange={closeBidModal}
+          productId={selectedProduct.id}
+          productTitle={selectedProduct.title}
+          topBidder={selectedProduct.topBidder}
+          currentBid={selectedProduct.currentBid}
+          minimumBid={selectedProduct.minimumBid}
+          onSubmitBid={submitBid}
+          isSubmitting={isSubmitting}
+        />
+      )}
     </MainLayout>
   );
 }
