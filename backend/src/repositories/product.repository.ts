@@ -1,3 +1,4 @@
+import { Knex } from "knex";
 import db from "../database/db";
 import { toSlug } from "../utils/slug.util";
 import { getCategoryIds } from "./category.repository";
@@ -11,9 +12,6 @@ function escapeQuery(q: string) {
     .trim();
 }
 
-/**
- * Search products with filters - returns raw database records
- */
 export const searchProducts = async (
   q?: string,
   categorySlugs?: string[],
@@ -29,13 +27,11 @@ export const searchProducts = async (
     .where("products.status", "active")
     .where("products.end_time", ">", new Date());
 
-  // Text search filter
   if (q) {
     const safeQ = escapeQuery(q);
     query = query.where("products.name", "ilike", `%${safeQ}%`);
   }
 
-  // Category filter (include)
   if (categorySlugs && categorySlugs.length > 0) {
     const allCategoryIds: number[] = [];
     for (const slug of categorySlugs) {
@@ -49,7 +45,6 @@ export const searchProducts = async (
     }
   }
 
-  // Category filter (exclude)
   if (excludeCategorySlugs && excludeCategorySlugs.length > 0) {
     const excludeCategoryIds = [];
     for (const slug of excludeCategorySlugs) {
@@ -61,30 +56,27 @@ export const searchProducts = async (
     }
   }
 
-  // Product filter (exclude)
   if (excludeProductIds && excludeProductIds.length > 0) {
     query = query.whereNotIn("products.product_id", excludeProductIds);
   }
 
-  // Count total before pagination
   const countQuery = query
     .clone()
     .count("products.product_id as total")
     .first();
 
-  // Apply sorting
   if (sort && Array.isArray(sort) && sort.length > 0) {
     sort.forEach((item) => {
       const dbField =
         item.field === "endTime"
           ? "products.end_time"
           : item.field === "price"
-          ? "products.current_price"
-          : item.field === "bidCount"
-          ? "products.bid_count"
-          : item.field === "createdAt"
-          ? "products.created_at"
-          : "products.created_at";
+            ? "products.current_price"
+            : item.field === "bidCount"
+              ? "products.bid_count"
+              : item.field === "createdAt"
+                ? "products.created_at"
+                : "products.created_at";
       query = query.orderBy(dbField, item.direction);
     });
   } else {
@@ -296,9 +288,10 @@ export const getHighestBidderId = async (
 export const updateProductBidStats = async (
   productId: number,
   highestBidderId: number,
-  currentPrice: number
+  currentPrice: number,
+  trx?: Knex.Transaction
 ): Promise<void> => {
-  await db("products")
+  await (trx || db)("products")
     .where({ product_id: productId })
     .update({
       highest_bidder_id: highestBidderId,
@@ -356,11 +349,13 @@ export const appendProductAnswer = async (
 }
 
 export const getProductBidInfo = async (
-  productId: number
+  productId: number,
+  trx?: Knex.Transaction
 ) => {
-  const product = await db("products")
+  const product = await (trx || db)("products")
     .where({ product_id: productId })
     .select("step_price", "start_price", "current_price", "highest_bidder_id")
+    .forUpdate() // Lock the row for consistency
     .first();
 
   if (!product) {
