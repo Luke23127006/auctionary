@@ -1,13 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Badge } from "../../../components/ui/badge";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../../components/ui/avatar";
+import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 import {
   Tabs,
   TabsContent,
@@ -39,7 +35,6 @@ import {
 import {
   Users,
   Search,
-  Filter,
   UserPlus,
   MoreVertical,
   Eye,
@@ -49,185 +44,136 @@ import {
   Clock,
   TrendingUp,
   Shield,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useAdminUsers } from "../../../hooks/useAdminUsers";
+import { useUpgradeRequests } from "../../../hooks/useUpgradeRequests";
+import { Pagination } from "../../../components/common/Pagination";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: "Bidder" | "Seller";
-  status: "Active" | "Suspended" | "Pending";
-  joined: string;
-  totalBids?: number;
-  totalSales?: number;
-  reputation: number;
-  avatar: string;
-}
+// Status display mapping
+const getStatusDisplay = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    pending_verification: "Unverified",
+    active: "Active",
+    pending_upgrade: "Pending Upgrade",
+    suspended: "Suspended",
+  };
+  return statusMap[status] || status;
+};
 
-interface UpgradeRequest {
-  id: string;
-  user: User;
-  requestDate: string;
-  businessName: string;
-  description: string;
-  status: "Pending" | "Approved" | "Rejected";
-}
+// Format date to display format
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
-const allUsers: User[] = [
-  {
-    id: "U001",
-    name: "John Smith",
-    email: "john.smith@email.com",
-    role: "Seller",
-    status: "Active",
-    joined: "Nov 15, 2024",
-    totalSales: 234,
-    reputation: 98,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-  },
-  {
-    id: "U002",
-    name: "Sarah Johnson",
-    email: "sarah.j@email.com",
-    role: "Bidder",
-    status: "Active",
-    joined: "Oct 22, 2024",
-    totalBids: 156,
-    reputation: 92,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-  },
-  {
-    id: "U003",
-    name: "Mike Davis",
-    email: "mike.davis@email.com",
-    role: "Seller",
-    status: "Suspended",
-    joined: "Sep 10, 2024",
-    totalSales: 45,
-    reputation: 45,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-  },
-  {
-    id: "U004",
-    name: "Emily Chen",
-    email: "emily.chen@email.com",
-    role: "Bidder",
-    status: "Active",
-    joined: "Nov 20, 2024",
-    totalBids: 89,
-    reputation: 95,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily",
-  },
-  {
-    id: "U005",
-    name: "Alex Turner",
-    email: "alex.turner@email.com",
-    role: "Seller",
-    status: "Active",
-    joined: "Aug 5, 2024",
-    totalSales: 178,
-    reputation: 88,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-  },
-];
-
-const upgradeRequests: UpgradeRequest[] = [
-  {
-    id: "UR001",
-    user: {
-      id: "U006",
-      name: "David Wilson",
-      email: "david.w@email.com",
-      role: "Bidder",
-      status: "Pending",
-      joined: "Nov 24, 2024",
-      totalBids: 45,
-      reputation: 87,
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-    },
-    requestDate: "Nov 25, 2024",
-    businessName: "Wilson's Vintage Cameras",
-    description:
-      "I specialize in selling vintage cameras and photography equipment. I have 10+ years of experience in the industry.",
-    status: "Pending",
-  },
-  {
-    id: "UR002",
-    user: {
-      id: "U007",
-      name: "Lisa Anderson",
-      email: "lisa.a@email.com",
-      role: "Bidder",
-      status: "Pending",
-      joined: "Nov 23, 2024",
-      totalBids: 67,
-      reputation: 91,
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa",
-    },
-    requestDate: "Nov 24, 2024",
-    businessName: "Luxury Watch Dealer",
-    description:
-      "Authorized dealer of luxury watches. Looking to expand my business on this platform.",
-    status: "Pending",
-  },
-  {
-    id: "UR003",
-    user: {
-      id: "U008",
-      name: "Robert Brown",
-      email: "robert.b@email.com",
-      role: "Bidder",
-      status: "Pending",
-      joined: "Nov 22, 2024",
-      totalBids: 23,
-      reputation: 78,
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robert",
-    },
-    requestDate: "Nov 23, 2024",
-    businessName: "Tech Reseller Pro",
-    description:
-      "Experienced tech reseller with verified supplier relationships.",
-    status: "Pending",
-  },
-];
+// Get initials from full name
+const getInitials = (name: string): string => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
 
 export function UserManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [requests, setRequests] = useState(upgradeRequests);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const handleApproveRequest = (requestId: string, userName: string) => {
-    setRequests((prev) =>
-      prev.map((req) =>
-        req.id === requestId ? { ...req, status: "Approved" as const } : req
-      )
-    );
-    toast.success(`Approved seller request for ${userName}!`);
-  };
+  const {
+    users,
+    isLoading: usersLoading,
+    error: usersError,
+    handleSuspendUser,
+  } = useAdminUsers();
 
-  const handleRejectRequest = (requestId: string, userName: string) => {
-    setRequests((prev) =>
-      prev.map((req) =>
-        req.id === requestId ? { ...req, status: "Rejected" as const } : req
-      )
-    );
-    toast.error(`Rejected seller request for ${userName}`);
-  };
+  const {
+    requests,
+    isLoading: requestsLoading,
+    error: requestsError,
+    handleApproveRequest,
+    handleRejectRequest,
+  } = useUpgradeRequests();
 
-  const filteredUsers = allUsers.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    const matchesStatus =
-      statusFilter === "all" || user.status === statusFilter;
+  // Filter users - optimized to cache toLowerCase results
+  const filteredUsers = useMemo(() => {
+    const searchLower = searchQuery.toLowerCase();
+    const roleLower = roleFilter.toLowerCase();
+    const statusLower = statusFilter.toLowerCase();
 
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+    return users.filter((user) => {
+      const matchesSearch =
+        user.fullName.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower);
+      const matchesRole = roleFilter === "all" || user.role === roleLower;
+      const matchesStatus =
+        statusFilter === "all" || user.status === statusLower;
 
-  const pendingRequests = requests.filter((req) => req.status === "Pending");
+      return matchesSearch && matchesRole && matchesStatus;
+    });
+  }, [users, searchQuery, roleFilter, statusFilter]);
+
+  // Filter pending requests
+  const pendingRequests = useMemo(() => {
+    return requests.filter((req) => req.status === "pending");
+  }, [requests]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredUsers.slice(startIndex, endIndex);
+  }, [filteredUsers, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter, statusFilter, itemsPerPage]);
+
+  // Loading skeleton for table
+  const TableSkeleton = () => (
+    <TableBody>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <TableRow key={i}>
+          <TableCell colSpan={7} className="h-16">
+            <div className="flex items-center gap-3 animate-pulse">
+              <div className="h-10 w-10 rounded-full bg-secondary" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-1/3 bg-secondary rounded" />
+                <div className="h-3 w-1/4 bg-secondary rounded" />
+              </div>
+            </div>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  );
+
+  // Error state component
+  const ErrorState = ({ message }: { message: string }) => (
+    <Card className="border-border">
+      <CardContent className="p-12 text-center">
+        <div className="inline-flex p-4 rounded-full bg-destructive/10 mb-4">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+        </div>
+        <h3 className="text-lg mb-2">Error Loading Data</h3>
+        <p className="text-sm text-muted-foreground mb-4">{message}</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Reload Page
+        </Button>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="space-y-6">
@@ -247,7 +193,9 @@ export function UserManagement() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl mb-1">{allUsers.length}</div>
+                <div className="text-2xl mb-1">
+                  {usersLoading ? "..." : users.length}
+                </div>
                 <div className="text-xs text-muted-foreground">Total Users</div>
               </div>
               <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
@@ -262,7 +210,9 @@ export function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl mb-1">
-                  {allUsers.filter((u) => u.role === "Seller").length}
+                  {usersLoading
+                    ? "..."
+                    : users.filter((u) => u.role === "seller").length}
                 </div>
                 <div className="text-xs text-muted-foreground">Sellers</div>
               </div>
@@ -278,7 +228,9 @@ export function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl mb-1">
-                  {allUsers.filter((u) => u.role === "Bidder").length}
+                  {usersLoading
+                    ? "..."
+                    : users.filter((u) => u.role === "bidder").length}
                 </div>
                 <div className="text-xs text-muted-foreground">Bidders</div>
               </div>
@@ -293,7 +245,9 @@ export function UserManagement() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl mb-1">{pendingRequests.length}</div>
+                <div className="text-2xl mb-1">
+                  {requestsLoading ? "..." : pendingRequests.length}
+                </div>
                 <div className="text-xs text-muted-foreground">
                   Pending Requests
                 </div>
@@ -342,8 +296,8 @@ export function UserManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="Bidder">Bidder</SelectItem>
-                    <SelectItem value="Seller">Seller</SelectItem>
+                    <SelectItem value="bidder">Bidder</SelectItem>
+                    <SelectItem value="seller">Seller</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -353,148 +307,200 @@ export function UserManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Suspended">Suspended</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                    <SelectItem value="pending_verification">
+                      Unverified
+                    </SelectItem>
                   </SelectContent>
                 </Select>
-
-                <Button variant="outline">
-                  <Filter className="h-4 w-4 mr-2" />
-                  More Filters
-                </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Users Table */}
-          <Card className="border-border">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Activity</TableHead>
-                    <TableHead>Reputation</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 border-2 border-border">
-                            <AvatarImage src={user.avatar} />
-                            <AvatarFallback>
-                              {user.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
+          {usersError ? (
+            <ErrorState message={usersError} />
+          ) : (
+            <Card className="border-border">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Reputation</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  {usersLoading ? (
+                    <TableSkeleton />
+                  ) : filteredUsers.length === 0 ? (
+                    <TableBody>
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-32 text-center">
+                          <div className="inline-flex p-4 rounded-full bg-secondary mb-4">
+                            <Users className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <h3 className="text-lg mb-2">No Users Found</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {searchQuery ||
+                            roleFilter !== "all" ||
+                            statusFilter !== "all"
+                              ? "Try adjusting your filters"
+                              : "No users available"}
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  ) : (
+                    <TableBody>
+                      {paginatedUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10 border-2 border-border">
+                                <AvatarFallback>
+                                  {getInitials(user.fullName)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span>{user.fullName}</span>
+                                  {user.reputation && user.reputation > 90 && (
+                                    <Shield className="h-3 w-3 text-accent" />
+                                  )}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {user.email}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={`capitalize ${
+                                user.role === "seller"
+                                  ? "bg-accent/20 text-accent border-accent/50"
+                                  : "bg-blue-500/20 text-blue-500 border-blue-500/50"
+                              }`}
+                            >
+                              {user.role}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={`capitalize ${
+                                user.status === "active"
+                                  ? "bg-green-500/20 text-green-500 border-green-500/50"
+                                  : user.status === "suspended"
+                                  ? "bg-red-500/20 text-red-500 border-red-500/50"
+                                  : "bg-yellow-500/20 text-yellow-500 border-yellow-500/50"
+                              }`}
+                            >
+                              {getStatusDisplay(user.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
                             <div className="flex items-center gap-2">
-                              <span>{user.name}</span>
-                              {user.reputation > 90 && (
-                                <Shield className="h-3 w-3 text-accent" />
+                              {user.reputation === null ? (
+                                <span className="text-xs text-muted-foreground">
+                                  N/A
+                                </span>
+                              ) : (
+                                <>
+                                  <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full ${
+                                        user.reputation > 80
+                                          ? "bg-green-500"
+                                          : user.reputation > 60
+                                          ? "bg-accent"
+                                          : "bg-red-500"
+                                      }`}
+                                      style={{ width: `${user.reputation}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">
+                                    {user.reputation}%
+                                  </span>
+                                </>
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {user.email}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={
-                            user.role === "Seller"
-                              ? "bg-accent/20 text-accent border-accent/50"
-                              : "bg-blue-500/20 text-blue-500 border-blue-500/50"
-                          }
-                        >
-                          {user.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={
-                            user.status === "Active"
-                              ? "bg-green-500/20 text-green-500 border-green-500/50"
-                              : "bg-red-500/20 text-red-500 border-red-500/50"
-                          }
-                        >
-                          {user.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {user.role === "Seller"
-                            ? `${user.totalSales} sales`
-                            : `${user.totalBids} bids`}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
-                            <div
-                              className={`h-full ${
-                                user.reputation > 80
-                                  ? "bg-green-500"
-                                  : user.reputation > 60
-                                  ? "bg-accent"
-                                  : "bg-red-500"
-                              }`}
-                              style={{ width: `${user.reputation}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {user.reputation}%
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {user.joined}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Profile
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Shield className="h-4 w-4 mr-2" />
-                              View Activity
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">
-                              <Ban className="h-4 w-4 mr-2" />
-                              Suspend User
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-muted-foreground">
+                              {formatDate(user.createdAt)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Profile
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  View Activity
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                {user.status !== "suspended" && (
+                                  <DropdownMenuItem
+                                    className="text-destructive"
+                                    onClick={() =>
+                                      handleSuspendUser(user.id, user.fullName)
+                                    }
+                                  >
+                                    <Ban className="h-4 w-4 mr-2" />
+                                    Suspend User
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  )}
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pagination Controls */}
+          {!usersLoading && !usersError && filteredUsers.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredUsers.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+              itemLabel="users"
+              pageSizeOptions={[10, 20, 30, 50]}
+            />
+          )}
         </TabsContent>
 
         {/* Upgrade Requests Tab */}
         <TabsContent value="upgrade-requests" className="space-y-4">
-          {requests.length === 0 ? (
+          {requestsError ? (
+            <ErrorState message={requestsError} />
+          ) : requestsLoading ? (
+            <div className="flex items-center justify-center p-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : requests.length === 0 ? (
             <Card className="border-border">
               <CardContent className="p-12 text-center">
                 <div className="inline-flex p-4 rounded-full bg-secondary mb-4">
@@ -512,7 +518,7 @@ export function UserManagement() {
                 <Card
                   key={request.id}
                   className={`border-border ${
-                    request.status === "Pending" ? "border-accent/30" : ""
+                    request.status === "pending" ? "border-accent/30" : ""
                   }`}
                 >
                   <CardContent className="p-6">
@@ -522,25 +528,24 @@ export function UserManagement() {
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-12 w-12 border-2 border-border">
-                              <AvatarImage src={request.user.avatar} />
                               <AvatarFallback>
-                                {request.user.name.charAt(0)}
+                                {getInitials(request.user.fullName)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="text-lg">
-                                  {request.user.name}
+                                  {request.user.fullName}
                                 </span>
                                 <Badge
                                   variant="outline"
-                                  className={
-                                    request.status === "Pending"
+                                  className={`capitalize ${
+                                    request.status === "pending"
                                       ? "bg-accent/20 text-accent border-accent/50"
-                                      : request.status === "Approved"
+                                      : request.status === "approved"
                                       ? "bg-green-500/20 text-green-500 border-green-500/50"
                                       : "bg-red-500/20 text-red-500 border-red-500/50"
-                                  }
+                                  }`}
                                 >
                                   {request.status}
                                 </Badge>
@@ -552,65 +557,70 @@ export function UserManagement() {
                           </div>
 
                           <div className="text-right text-sm text-muted-foreground">
-                            <div>Requested: {request.requestDate}</div>
-                            <div>Member since: {request.user.joined}</div>
+                            <div>
+                              Requested: {formatDate(request.createdAt)}
+                            </div>
+                            <div>
+                              Member since: {formatDate(request.user.createdAt)}
+                            </div>
                           </div>
                         </div>
 
                         {/* Request Details */}
-                        <div className="grid grid-cols-3 gap-4 p-4 rounded-lg bg-secondary/30 border border-border mb-4">
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Business Name
-                            </div>
-                            <div className="text-sm">
-                              {request.businessName}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Current Activity
-                            </div>
-                            <div className="text-sm">
-                              {request.user.totalBids} bids placed
-                            </div>
-                          </div>
+                        <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/30 border border-border mb-4">
                           <div>
                             <div className="text-xs text-muted-foreground mb-1">
                               Reputation
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-green-500"
-                                  style={{
-                                    width: `${request.user.reputation}%`,
-                                  }}
-                                />
-                              </div>
-                              <span className="text-sm">
-                                {request.user.reputation}%
-                              </span>
+                              {request.user.reputation === null ? (
+                                <span className="text-sm text-muted-foreground">
+                                  N/A
+                                </span>
+                              ) : (
+                                <>
+                                  <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-green-500"
+                                      style={{
+                                        width: `${request.user.reputation}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="text-sm">
+                                    {request.user.reputation}%
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">
+                              Reviews
+                            </div>
+                            <div className="text-sm">
+                              {request.user.positiveReviews} positive /{" "}
+                              {request.user.negativeReviews} negative
                             </div>
                           </div>
                         </div>
 
                         <div className="p-4 rounded-lg bg-secondary/20 border border-border">
                           <div className="text-xs text-muted-foreground mb-2">
-                            Description
+                            Message
                           </div>
-                          <p className="text-sm">{request.description}</p>
+                          <p className="text-sm">{request.message}</p>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      {request.status === "Pending" && (
+                      {request.status === "pending" && (
                         <div className="flex flex-col gap-2 flex-shrink-0">
                           <Button
                             onClick={() =>
                               handleApproveRequest(
                                 request.id,
-                                request.user.name
+                                request.user.fullName
                               )
                             }
                             className="bg-green-500 hover:bg-green-600"
@@ -621,7 +631,10 @@ export function UserManagement() {
                           <Button
                             variant="outline"
                             onClick={() =>
-                              handleRejectRequest(request.id, request.user.name)
+                              handleRejectRequest(
+                                request.id,
+                                request.user.fullName
+                              )
                             }
                             className="border-red-500/50 text-red-500 hover:bg-red-500/10"
                           >
