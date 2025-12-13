@@ -14,6 +14,7 @@ export const createRefreshToken = async (
       expires_at: expiresAt,
       device_info: deviceInfo,
       ip_address: ipAddress,
+      created_at: new Date(),
     })
     .returning("*");
   return token;
@@ -55,9 +56,7 @@ export const deleteUserTokens = async (userId: number) => {
 };
 
 export const deleteExpiredTokens = async () => {
-  return db("refresh_tokens")
-    .where("expires_at", "<", new Date())
-    .del();
+  return db("refresh_tokens").where("expires_at", "<", new Date()).del();
 };
 
 export const getUserTokens = async (userId: number) => {
