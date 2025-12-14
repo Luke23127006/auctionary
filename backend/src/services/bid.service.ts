@@ -96,7 +96,7 @@ export const placeBid = async (
       );
     }
 
-    const bidCount = await productRepository.getProductBidCount(productId);
+    const bidCount = await productRepository.getProductBidCount(productId, trx);
 
     return bidMapper.toPlaceBidResponse(
       winner.bidder_id === userId ? "winning" : "outbid",

@@ -398,11 +398,12 @@ export const getProductDetailById = async (productId: number) => {
   return product;
 };
 
-export const getProductBidCount = async (productId: number): Promise<number> => {
-  return await db("products")
+export const getProductBidCount = async (productId: number, trx?: Knex.Transaction): Promise<number> => {
+  const product = await (trx || db)("products")
     .where({ product_id: productId })
     .select("products.bid_count")
     .first();
+  return product?.bid_count || 0;
 }
 
 export const getProductImages = async (productId: number) => {
