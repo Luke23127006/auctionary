@@ -10,30 +10,30 @@ import {
   Users,
   Package,
   DollarSign,
-  UserPlus,
   Clock,
   CheckCircle2,
   Activity,
+  Gavel,
 } from "lucide-react";
 
 const statsCards = [
   {
-    title: "Total Users",
+    title: "Total Bidders",
     value: "12,458",
-    icon: Users,
+    icon: Gavel,
     color: "blue",
   },
   {
-    title: "Active Auctions",
+    title: "Total Sellers",
     value: "1,234",
-    icon: Package,
-    color: "accent",
+    icon: Users,
+    color: "red",
   },
   {
-    title: "New Seller Requests",
+    title: "Total Auctions",
     value: "12",
-    icon: UserPlus,
-    color: "red",
+    icon: Package,
+    color: "accent",
   },
   {
     title: "Total Revenue",
