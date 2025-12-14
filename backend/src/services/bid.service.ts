@@ -47,6 +47,11 @@ export const placeBid = async (
         Number(runnerUp.max_amount),
         trx
       );
+
+      await productRepository.increaseProductBidCount(
+        productId,
+        trx
+      );
     }
 
     let newPrice = startPrice;
@@ -91,10 +96,13 @@ export const placeBid = async (
       );
     }
 
+    const bidCount = await productRepository.getProductBidCount(productId);
+
     return bidMapper.toPlaceBidResponse(
       winner.bidder_id === userId ? "winning" : "outbid",
       newPrice,
-      winner.bidder_id
+      winner.bidder_id,
+      bidCount
     );
   });
 };

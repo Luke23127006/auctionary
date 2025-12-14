@@ -104,7 +104,7 @@ export const useProductDetail = () => {
             auction: {
               ...prev.auction,
               currentPrice: result.currentPrice,
-              bidCount: prev.auction.bidCount + 1,
+              bidCount: result.bidCount,
               topBidder: result.currentWinnerId.toString()
             },
             userProductStatus: {

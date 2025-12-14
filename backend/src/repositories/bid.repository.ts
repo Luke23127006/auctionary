@@ -52,5 +52,6 @@ export const getHighestBid = async (
   return (trx || db)("bids")
     .where({ product_id: productId })
     .orderBy("amount", "desc")
-    .first();
+    .orderBy("created_at", "asc")
+  .first();
 };

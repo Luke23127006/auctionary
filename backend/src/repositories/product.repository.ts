@@ -300,6 +300,15 @@ export const updateProductBidStats = async (
     .increment("bid_count", 1);
 };
 
+export const increaseProductBidCount = async (
+  productId: number,
+  trx?: Knex.Transaction
+): Promise<void> => {
+  await (trx || db)("products")
+    .where({ product_id: productId })
+    .increment("bid_count", 1);
+};
+
 export const appendProductDescription = async (
   productId: number,
   sellerId: number,
@@ -388,6 +397,13 @@ export const getProductDetailById = async (productId: number) => {
 
   return product;
 };
+
+export const getProductBidCount = async (productId: number): Promise<number> => {
+  return await db("products")
+    .where({ product_id: productId })
+    .select("products.bid_count")
+    .first();
+}
 
 export const getProductImages = async (productId: number) => {
   return await db("product_images")
@@ -537,10 +553,11 @@ export const getProductBidHistory = async (
       "bids.bid_id",
       "bids.amount",
       "bids.created_at",
-      "users.full_name as bidder_name"
+      "users.full_name as bidder_name",
+      "bids.bidder_id"
     )
     .orderBy("bids.amount", "desc")
-    .orderBy("bids.created_at", "desc")
+    .orderBy("bids.created_at", "asc")
     .limit(limit)
     .offset(offset);
 
@@ -551,9 +568,22 @@ export const getProductBidHistory = async (
 
   const total = totalResult ? parseInt(totalResult.total as string) : 0;
 
+  const product = await db("products")
+    .where({ product_id: productId })
+    .select("highest_bidder_id", "current_price")
+    .first();
+
   // Mark top bid
-  if (bids.length > 0) {
-    bids[0].isTopBid = true;
+  if (product) {
+    for (const bid of bids) {
+      if (
+        bid.bidder_id === product.highest_bidder_id &&
+        Math.abs(bid.amount - product.current_price) < 0.01
+      ) {
+        bid.isTopBid = true;
+        break;
+      }
+    }
   }
 
   return { bids, total };
