@@ -88,18 +88,16 @@
 
 ---
 
-## 4. Home Routes ❌
+## 4. Home Routes ✅
 
 **File**: [home.route.ts](file:///d:/Software%20Engineer/Web%20Dev/Auctionary/backend/src/api/routes/home.route.ts)  
-**Test File**: None
+**Test File**: [home.test.ts](file:///d:/Software%20Engineer/Web%20Dev/Auctionary/backend/src/tests/home.test.ts)
 
-| Endpoint             | Method | Auth   | Status        |
-| -------------------- | ------ | ------ | ------------- |
-| `/api/home/sections` | GET    | Public | ❌ Not Tested |
+| Endpoint             | Method | Auth   | Status    |
+| -------------------- | ------ | ------ | --------- |
+| `/api/home/sections` | GET    | Public | ✅ Tested |
 
-**Missing Tests**:
-
-- [ ] GET `/api/home/sections` - Get home page sections (ending soon, most active, highest price)
+**Status**: All endpoints tested ✅
 
 ---
 
@@ -124,18 +122,16 @@
 
 ---
 
-## 6. Seller Routes ❌
+## 6. Seller Routes ✅
 
 **File**: [seller.route.ts](file:///d:/Software%20Engineer/Web%20Dev/Auctionary/backend/src/api/routes/seller.route.ts)  
-**Test File**: None
+**Test File**: [seller.test.ts](file:///d:/Software%20Engineer/Web%20Dev/Auctionary/backend/src/tests/seller.test.ts)
 
-| Endpoint                | Method | Auth     | Status        |
-| ----------------------- | ------ | -------- | ------------- |
-| `/api/seller/dashboard` | GET    | Required | ❌ Not Tested |
+| Endpoint                | Method | Auth     | Status    |
+| ----------------------- | ------ | -------- | --------- |
+| `/api/seller/dashboard` | GET    | Required | ✅ Tested |
 
-**Missing Tests**:
-
-- [ ] GET `/api/seller/dashboard` - Get seller dashboard data
+**Status**: All endpoints tested ✅
 
 ---
 
@@ -181,22 +177,18 @@
 
 ---
 
-## 9. Watchlist Routes ❌
+## 9. Watchlist Routes ✅
 
 **File**: [watchlist.route.ts](file:///d:/Software%20Engineer/Web%20Dev/Auctionary/backend/src/api/routes/watchlist.route.ts)  
-**Test File**: None
+**Test File**: [watchlist.test.ts](file:///d:/Software%20Engineer/Web%20Dev/Auctionary/backend/src/tests/watchlist.test.ts)
 
-| Endpoint                    | Method | Auth     | Status        |
-| --------------------------- | ------ | -------- | ------------- |
-| `/api/watchlist/`           | GET    | Required | ❌ Not Tested |
-| `/api/watchlist/`           | POST   | Required | ❌ Not Tested |
-| `/api/watchlist/:productId` | DELETE | Required | ❌ Not Tested |
+| Endpoint                    | Method | Auth     | Status    |
+| --------------------------- | ------ | -------- | --------- |
+| `/api/watchlist/`           | GET    | Required | ✅ Tested |
+| `/api/watchlist/`           | POST   | Required | ✅ Tested |
+| `/api/watchlist/:productId` | DELETE | Required | ✅ Tested |
 
-**Missing Tests**:
-
-- [ ] GET `/api/watchlist/` - Get user's watchlist
-- [ ] POST `/api/watchlist/` - Add product to watchlist
-- [ ] DELETE `/api/watchlist/:productId` - Remove product from watchlist
+**Status**: All endpoints tested ✅
 
 ---
 
@@ -205,9 +197,9 @@
 ### Overall Coverage
 
 - **Total Endpoints**: 52
-- **Tested Endpoints**: 27
-- **Not Tested Endpoints**: 25
-- **Coverage Percentage**: 52%
+- **Tested Endpoints**: 32
+- **Not Tested Endpoints**: 20
+- **Coverage Percentage**: 62%
 
 ### By Route File
 
@@ -216,12 +208,12 @@
 | admin.route.ts          | 8         | 8      | 100%     |
 | auth.route.ts           | 12        | 0      | 0%       |
 | category.route.ts       | 6         | 6      | 100%     |
-| home.route.ts           | 1         | 0      | 0%       |
+| home.route.ts           | 1         | 1      | 100%     |
 | product.route.ts        | 9         | 9      | 100%     |
-| seller.route.ts         | 1         | 0      | 0%       |
+| seller.route.ts         | 1         | 1      | 100%     |
 | upgradeRequest.route.ts | 3         | 3      | 100%     |
 | user.route.ts           | 6         | 0      | 0%       |
-| watchlist.route.ts      | 3         | 0      | 0%       |
+| watchlist.route.ts      | 3         | 3      | 100%     |
 
 ---
 
@@ -229,14 +221,10 @@
 
 ### High Priority 🔴
 
-1. **auth.test.ts** - Authentication is critical (12 endpoints)
-2. **user.test.ts** - User profile management (6 endpoints)
-3. **watchlist.test.ts** - User feature (3 endpoints)
+1.  **auth.test.ts** - Authentication is critical (12 endpoints)
+2.  **user.test.ts** - User profile management (6 endpoints)
 
 ### Medium Priority 🟡
-
-4. **home.test.ts** - Public-facing feature (1 endpoint)
-5. **seller.test.ts** - Seller dashboard (1 endpoint)
 
 ### Low Priority 🟢
 
