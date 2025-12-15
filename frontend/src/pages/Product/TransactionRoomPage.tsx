@@ -275,7 +275,10 @@ const getChatFooterText = (screen: Screen) => {
 };
 
 export default function TransactionRoomPage() {
-  const [currentScreen] = useState<Screen>("transaction-room-complete");
+  // const [currentScreen] = useState<Screen>("transaction-room-payment");
+  const [currentScreen] = useState<Screen>("transaction-room-shipping");
+  // const [currentScreen] = useState<Screen>("transaction-room-delivery");
+  // const [currentScreen] = useState<Screen>("transaction-room-complete");
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
 
   const handleSubmitAddress = () => {
