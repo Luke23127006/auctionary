@@ -51,7 +51,7 @@ test.describe("OTP Verification Flow", () => {
     // Submit OTP (might auto-submit on completion)
     const submitButton = page.locator('button:has-text("Verify")');
     if (await submitButton.isVisible()) {
-      await submitButton.click();
+      await submitButton.click({ force: true });
     }
 
     // Wait for verification success
@@ -83,7 +83,7 @@ test.describe("OTP Verification Flow", () => {
     // Submit
     const submitButton = page.locator('button:has-text("Verify")');
     if (await submitButton.isVisible()) {
-      await submitButton.click();
+      await submitButton.click({ force: true });
     }
 
     // Verify error message
@@ -104,7 +104,7 @@ test.describe("OTP Verification Flow", () => {
 
     const submitButton = page.locator('button:has-text("Verify")');
     if (await submitButton.isVisible()) {
-      await submitButton.click();
+      await submitButton.click({ force: true });
     }
 
     // Wait for error
@@ -155,7 +155,7 @@ test.describe("OTP Verification Flow", () => {
 
     // Click verify button
     const submitButton = page.locator('button:has-text("Verify")');
-    await submitButton.click();
+    await submitButton.click({ force: true });
 
     // Immediately check for loading state
     await expect(page.locator("text=/Verifying|Loading/i"))

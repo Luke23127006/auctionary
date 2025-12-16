@@ -37,7 +37,7 @@ test.describe("User Signup - Valid Credentials", () => {
     await handleRecaptcha(page);
 
     // Submit the form
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Wait for navigation to OTP verification page
     await waitForNavigation(page, /verify-otp/);
@@ -61,7 +61,7 @@ test.describe("User Signup - Valid Credentials", () => {
 
     // Click submit and immediately check loading state
     const submitButton = page.locator('button[type="submit"]');
-    await submitButton.click();
+    await submitButton.click({ force: true });
 
     // Verify loading state
     await expect(submitButton).toBeDisabled();

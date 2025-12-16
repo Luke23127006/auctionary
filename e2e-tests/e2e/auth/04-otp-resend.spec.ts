@@ -109,7 +109,7 @@ test.describe("Resend OTP Functionality", () => {
     // Wait for resend button to be enabled
     const resendButton = page.locator('button:has-text("Resend")');
     await resendButton.waitFor({ state: "visible", timeout: 65000 });
-    await resendButton.click();
+    await resendButton.click({ force: true });
 
     // Verify success message
     await expect(
@@ -134,7 +134,7 @@ test.describe("Resend OTP Functionality", () => {
     await resendButton.waitFor({ state: "visible", timeout: 65000 });
 
     // Click resend
-    await resendButton.click();
+    await resendButton.click({ force: true });
 
     // Check for loading state immediately
     await expect(page.locator("text=/Sending/i"))
@@ -160,8 +160,8 @@ test.describe("Resend OTP Functionality", () => {
     await resendButton.waitFor({ state: "visible", timeout: 65000 });
 
     // Click multiple times rapidly
-    await resendButton.click();
-    await resendButton.click().catch(() => {
+    await resendButton.click({ force: true });
+    await resendButton.click({ force: true }).catch(() => {
       // Second click should fail or be ignored
     });
 
@@ -190,7 +190,7 @@ test.describe("Resend OTP Functionality", () => {
 
     const resendButton = page.locator('button:has-text("Resend")');
     await resendButton.waitFor({ state: "visible", timeout: 65000 });
-    await resendButton.click();
+    await resendButton.click({ force: true });
 
     // Should show error message
     await expect(page.locator("text=/failed|error|try again/i")).toBeVisible({

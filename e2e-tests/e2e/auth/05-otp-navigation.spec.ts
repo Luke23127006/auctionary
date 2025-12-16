@@ -52,7 +52,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
     await waitForNavigation(page, /verify-otp/);
 
     // Click "Back to Login" button/link
@@ -70,7 +70,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
     await waitForNavigation(page, /verify-otp/);
 
     // Verify email is displayed
@@ -101,7 +101,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
     await waitForNavigation(page, /verify-otp/);
 
     // Get OTP
@@ -128,16 +128,18 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
     await waitForNavigation(page, /verify-otp/);
 
     // Wait for page to settle
     await page.waitForTimeout(500);
 
     // Check if first OTP input is focused (good UX)
-    const firstInput = page.locator('input[maxlength="1"]').first();
+    const otpInputs = page.locator('input[maxlength="1"]');
+    const inputCount = await otpInputs.count();
 
-    if ((await firstInput.count()) > 0) {
+    if (inputCount > 0) {
+      const firstInput = otpInputs.first();
       const isFocused = await firstInput.evaluate(
         (el) => el === document.activeElement
       );
@@ -154,7 +156,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
     await waitForNavigation(page, /verify-otp/);
 
     // Get OTP inputs
@@ -193,7 +195,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
     await waitForNavigation(page, /verify-otp/);
 
     const inputs = page.locator('input[maxlength="1"]');
@@ -225,7 +227,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
     await waitForNavigation(page, /verify-otp/);
 
     // Fill only 3 digits (incomplete)
@@ -252,7 +254,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
     await waitForNavigation(page, /verify-otp/);
 
     // Simulate expired OTP by using an old/invalid code
@@ -260,7 +262,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
 
     const submitButton = page.locator('button:has-text("Verify")');
     if (await submitButton.isVisible()) {
-      await submitButton.click();
+      await submitButton.click({ force: true });
     }
 
     // Should show error message

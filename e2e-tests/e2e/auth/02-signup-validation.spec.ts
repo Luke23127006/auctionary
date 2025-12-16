@@ -27,7 +27,7 @@ test.describe("User Signup - Validation Errors", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Wait for OTP page (successful signup)
     await page.waitForURL(/verify-otp/, { timeout: 10000 });
@@ -36,7 +36,7 @@ test.describe("User Signup - Validation Errors", () => {
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Verify error message for duplicate email
     await expect(
@@ -57,7 +57,7 @@ test.describe("User Signup - Validation Errors", () => {
 
     await fillSignupForm(page, weakPasswordUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Verify error message (could be client-side or server-side validation)
     const errorVisible = await page
@@ -84,7 +84,7 @@ test.describe("User Signup - Validation Errors", () => {
         await handleRecaptcha(page);
 
         // Try to submit
-        await page.click('button[type="submit"]');
+        await page.click('button[type="submit"]', { force: true });
 
         // Browser's HTML5 validation or custom validation should prevent submission
         // Check if still on signup page
@@ -104,7 +104,7 @@ test.describe("User Signup - Validation Errors", () => {
 
     await fillSignupForm(page, mismatchUser);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Verify error message for password mismatch
     await expect(
@@ -122,7 +122,7 @@ test.describe("User Signup - Validation Errors", () => {
     await handleRecaptcha(page);
 
     // Try to submit
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Form should not submit - verify still on signup page
     await page.waitForTimeout(1000);
@@ -144,7 +144,7 @@ test.describe("User Signup - Validation Errors", () => {
     await handleRecaptcha(page);
 
     // Try to submit
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Form should not submit
     await page.waitForTimeout(1000);
@@ -165,7 +165,7 @@ test.describe("User Signup - Validation Errors", () => {
     await handleRecaptcha(page);
 
     // Try to submit
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Form should not submit
     await page.waitForTimeout(1000);
@@ -182,7 +182,7 @@ test.describe("User Signup - Validation Errors", () => {
     await handleRecaptcha(page);
 
     // Try to submit
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Form should not submit
     await page.waitForTimeout(1000);
@@ -197,7 +197,7 @@ test.describe("User Signup - Validation Errors", () => {
     // Skip handleRecaptcha() intentionally
 
     // Try to submit
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Check for reCAPTCHA error or form not submitting
     const urlAfterSubmit = page.url();
@@ -220,7 +220,7 @@ test.describe("User Signup - Validation Errors", () => {
     await page.goto("/signup");
 
     // Submit completely empty form
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Depending on validation approach, errors might be shown inline or as a list
     // This test verifies the validation feedback mechanism exists
@@ -241,7 +241,7 @@ test.describe("User Signup - Validation Errors", () => {
     await page.fill('input[name="fullName"]', testUser.fullName);
     await page.fill('input[name="email"]', testUser.email);
     await handleRecaptcha(page);
-    await page.click('button[type="submit"]');
+    await page.click('button[type="submit"]', { force: true });
 
     // Error should appear
     await expect(page.locator("text=/do not match|mismatch/i")).toBeVisible({

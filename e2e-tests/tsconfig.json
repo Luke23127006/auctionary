@@ -3,7 +3,7 @@
     "target": "ESNext",
     "module": "commonjs",
     "moduleResolution": "node",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "types": ["node", "@playwright/test"],
     "strict": true,
     "esModuleInterop": true,
