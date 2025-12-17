@@ -284,12 +284,12 @@ export default function TransactionRoomPage() {
   // Mock state to control UI - change this to test different views
   const [isSeller] = useState(true); // true = Seller view, false = Buyer view
 
-  const handleSubmitAddress = () => {
-    toast.success("Address Confirmed!", {
-      description:
-        "Your delivery address has been saved and shared with the seller.",
-    });
-  };
+  // const handleSubmitAddress = () => {
+  //   toast.success("Address Confirmed!", {
+  //     description:
+  //       "Your delivery address has been saved and shared with the seller.",
+  //   });
+  // };
 
   const handlePaymentProof = (file: File) => {
     console.log("Payment proof uploaded:", file.name);
