@@ -56,9 +56,7 @@ const AppRouter = () => {
       <Route element={<PublicOnlyRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/verify-otp" element={<VerifyOTPPage />} />{" "}
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        {/* Add this */}
       </Route>
 
       {/* ============================================== */}
@@ -72,6 +70,7 @@ const AppRouter = () => {
         }
       >
         <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="/verify-otp" element={<VerifyOTPPage />} />
       </Route>
 
       <Route

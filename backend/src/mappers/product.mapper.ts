@@ -28,7 +28,7 @@ export const mapToProductListCard = (product: any): ProductListCardProps => {
   const isNewArrival = Date.now() - new Date(product.created_at).getTime() < 24 * 60 * 60 * 1000;
 
   return {
-    id: product.product_id.toString(),
+    id: product.id.toString(),
     slug: product.slug,
     title: product.name,
     image: product.thumbnail_url || "",
