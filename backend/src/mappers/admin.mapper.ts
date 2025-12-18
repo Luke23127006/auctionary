@@ -67,7 +67,7 @@ export const mapUpgradeRequestToListItem = (
   request: any
 ): UpgradeRequestListItem => {
   return {
-    id: request.request_id,
+    id: request.id,
     userId: request.user_id,
     user: mapUpgradeRequestUser(request.user),
     message: request.message,
@@ -85,7 +85,7 @@ export const mapUpgradeRequestActionResponse = (
   data: any
 ): UpgradeRequestActionResponse => {
   return {
-    id: data.request_id,
+    id: data.id,
     userId: data.user_id,
     status: data.status,
     approvedAt: data.approved_at,
@@ -107,7 +107,7 @@ export const mapSuspendUserResponse = (data: any): SuspendUserResponse => {
  */
 export const mapProductSeller = (data: any): AdminProductSeller => {
   return {
-    id: data.seller_id,
+    id: data.id,
     name: data.seller_name,
   };
 };
@@ -117,7 +117,7 @@ export const mapProductSeller = (data: any): AdminProductSeller => {
  */
 export const mapProductCategory = (data: any): AdminProductCategory => {
   return {
-    id: data.category_id,
+    id: data.id,
     name: data.category_name,
     slug: data.category_slug,
   };
@@ -130,7 +130,7 @@ export const mapProductHighestBidder = (
   data: any
 ): AdminProductHighestBidder => {
   return {
-    id: data.highest_bidder_id || null,
+    id: data.id || null,
     name: data.highest_bidder_name || null,
   };
 };
@@ -143,7 +143,7 @@ export const mapProductToAdminListItem = (
   product: any
 ): AdminProductListItem => {
   return {
-    id: product.product_id,
+    id: product.id,
     title: product.name,
     seller: mapProductSeller(product),
     category: mapProductCategory(product),
