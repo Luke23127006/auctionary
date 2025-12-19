@@ -39,7 +39,7 @@ export const useWatchlist = () => {
 
   const addToWatchlist = async (product: WatchlistProduct, undoing = false) => {
     if (!user) {
-      notify.error("Please login to use watchlist");
+      notify.error("Please login to add to watchlist");
       return;
     }
 

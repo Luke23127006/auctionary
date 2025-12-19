@@ -27,6 +27,7 @@ import {
   Heart,
 } from "lucide-react";
 import type { AuctionInfo, UserProductStatus } from "../../../types/product";
+import { notify } from "../../../utils/notify";
 
 interface ProductBiddingProps {
   auction: AuctionInfo;
@@ -46,7 +47,6 @@ export function ProductBidding({
   const [bidAmount, setBidAmount] = useState("");
   const [bidPlaced, setBidPlaced] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const currentPrice = auction.currentPrice;
   const minBid = currentPrice + auction.stepPrice;
@@ -55,7 +55,7 @@ export function ProductBidding({
     // Client-side check for authentication
     const token = localStorage.getItem("token");
     if (!token) {
-      setErrorMsg("You need to login to use this feature");
+      notify.error("Please login to place bid");
       return;
     }
 
@@ -63,7 +63,6 @@ export function ProductBidding({
     if (amount >= minBid) {
       try {
         setLoading(true);
-        setErrorMsg(null);
         await onPlaceBid(amount);
         setBidPlaced(true);
         setBidAmount(""); // Reset input
@@ -81,7 +80,6 @@ export function ProductBidding({
         if (message === "API request failed" || message.includes("401")) {
           message = "You need to login to use this feature";
         }
-        setErrorMsg(message);
       } finally {
         setLoading(false);
       }
@@ -180,9 +178,6 @@ export function ProductBidding({
                 {loading ? "Placing Bid..." : "Place Bid"}
               </Button>
             </div>
-            {errorMsg && (
-              <p className="text-sm text-destructive mt-2">{errorMsg}</p>
-            )}
             <p className="text-xs text-muted-foreground">
               Minimum bid: ${minBid.toLocaleString()}
             </p>

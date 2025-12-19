@@ -8,6 +8,7 @@ import { Input } from "../../components/ui/input";
 import { useAuth } from "../../hooks/useAuth"; // Assuming hook is in contexts/
 import { useGoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
+import { useTheme } from "../../hooks/useTheme";
 
 // 2. Get Site Key from .env (Vite)
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { login, loginWithGoogle, loginWithFacebook } = useAuth();
+  const { theme } = useTheme();
 
   // 3. Update state according to schema: username -> email
   const [email, setEmail] = useState("");
@@ -114,7 +116,7 @@ export default function LoginPage() {
 
         <div className="mt-2 flex origin-center scale-95 justify-center">
           <ReCAPTCHA
-            theme="dark"
+            theme={theme === "tactical" ? "dark" : "light"}
             ref={recaptchaRef}
             sitekey={RECAPTCHA_SITE_KEY}
           />

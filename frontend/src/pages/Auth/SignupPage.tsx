@@ -6,6 +6,7 @@ import AuthLayout from "../../layouts/AuthLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
@@ -13,6 +14,7 @@ export default function SignupPage() {
   const navigate = useNavigate();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { signup } = useAuth();
+  const { theme } = useTheme();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -121,7 +123,7 @@ export default function SignupPage() {
 
         <div className="mt-2 flex justify-center scale-95 origin-center">
           <ReCAPTCHA
-            theme="dark"
+            theme={theme === "tactical" ? "dark" : "light"}
             ref={recaptchaRef}
             sitekey={RECAPTCHA_SITE_KEY}
           />

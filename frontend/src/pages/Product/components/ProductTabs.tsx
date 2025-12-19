@@ -68,7 +68,7 @@ export function ProductTabs({
   onAppendAnswer,
 }: ProductTabsProps) {
   const { hasRole } = usePermission();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   // Check if current user is the seller
   const isSellerOfProduct = user?.id === sellerId;
@@ -116,6 +116,11 @@ export function ProductTabs({
 
   const handleAskQuestion = async () => {
     if (!questionText.trim() || !onAppendQuestion) return;
+
+    if (!isAuthenticated) {
+      notify.error("Please login to ask a question");
+      return;
+    }
 
     try {
       setIsAskingQuestion(true);
