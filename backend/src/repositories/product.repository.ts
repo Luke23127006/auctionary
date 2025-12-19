@@ -12,6 +12,23 @@ function escapeQuery(q: string) {
     .trim();
 }
 
+export const getProductBasicInfoById = async (productId: number) => {
+  const product = await db("products")
+    .where("products.id", productId)
+    .select(
+      "products.id",
+      "products.name",
+      "products.status"
+    )
+    .first();
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  return product;
+};
+
 export const searchProducts = async (
   q?: string,
   categorySlugs?: string[],

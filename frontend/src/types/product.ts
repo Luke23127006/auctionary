@@ -10,7 +10,10 @@ export interface Product {
   status: string;
   isNewArrival?: boolean;
   bidCount: number;
-  canAccessTransaction: boolean;
+  transaction?: {
+    id: number;
+    canAccess: boolean;
+  };
 }
 
 export interface SearchProductsParams {
@@ -158,6 +161,10 @@ export interface ProductListCardProps {
   status: string;
   isNewArrival?: boolean;
   bidCount: number;
+  transaction?: {
+    id: number;
+    canAccess: boolean;
+  };
 }
 
 export interface PlaceBidResponse {

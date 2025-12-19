@@ -23,6 +23,7 @@ import {
 } from "../mappers/product.mapper";
 import { toSlug } from "../utils/slug.util";
 import * as storageService from "../services/storage.service";
+import { BadRequestError } from "../errors";
 
 export const searchProducts = async (
   query: ProductsSearchQuery,
@@ -143,6 +144,17 @@ export const appendProductDescription = async (
   body: AppendProductDescription
 ): Promise<void> => {
   const { sellerId, content } = body;
+
+  const product = await productRepository.getProductBasicInfoById(productId);
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  if (product.status !== 'active') {
+    throw new BadRequestError("Can only append description to active products");
+  }
+
   await productRepository.appendProductDescription(
     productId,
     sellerId,
@@ -155,6 +167,17 @@ export const appendProductQuestion = async (
   body: AppendProductQuestion
 ): Promise<void> => {
   const { questionerId, content } = body;
+
+  const product = await productRepository.getProductBasicInfoById(productId);
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  if (product.status !== 'active') {
+    throw new BadRequestError("Can only append description to active products");
+  }
+
   await productRepository.appendProductQuestion(productId, questionerId, content);
 }
 
@@ -163,6 +186,17 @@ export const appendProductAnswer = async (
   body: AppendProductAnswer
 ): Promise<void> => {
   const { questionId, answererId, content } = body;
+  
+  const product = await productRepository.getProductBasicInfoById(productId);
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  if (product.status !== 'active') {
+    throw new BadRequestError("Can only reply to questions on active products");
+  }
+
   await productRepository.appendProductAnswer(productId, questionId, answererId, content);
 }
 
