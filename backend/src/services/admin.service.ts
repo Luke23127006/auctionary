@@ -83,7 +83,7 @@ export const getAllUpgradeRequests =
 
     // Transform raw data to expected structure
     const requests = rawRequests.map((row) => ({
-      request_id: row.request_id,
+      id: row.id,
       user_id: row.user_id,
       status: row.status,
       message: row.message,

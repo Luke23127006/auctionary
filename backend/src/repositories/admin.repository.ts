@@ -7,7 +7,7 @@ import db from "../database/db";
 export const getAllUsers = async () => {
   return await db("users")
     .leftJoin("users_roles", "users.id", "users_roles.user_id")
-    .leftJoin("roles", "users_roles.role_id", "roles.role_id")
+    .leftJoin("roles", "users_roles.role_id", "roles.id")
     .select(
       "users.id",
       "users.full_name",
@@ -29,7 +29,7 @@ export const getAllUpgradeRequests = async () => {
   return await db("upgrade_requests")
     .join("users", "upgrade_requests.user_id", "users.id")
     .select(
-      "upgrade_requests.id as request_id",
+      "upgrade_requests.id",
       "upgrade_requests.user_id",
       "upgrade_requests.status",
       "upgrade_requests.message",
@@ -162,7 +162,7 @@ export const updateUserStatus = async (userId: number, status: string) => {
 export const getAllProducts = async () => {
   return await db("products")
     .join("users as seller", "products.seller_id", "seller.id")
-    .join("categories", "products.category_id", "categories.category_id")
+    .join("categories", "products.category_id", "categories.id")
     .leftJoin(
       "users as highest_bidder",
       "products.highest_bidder_id",
@@ -170,7 +170,7 @@ export const getAllProducts = async () => {
     )
     .select(
       // Product fields
-      "products.id as product_id",
+      "products.id",
       "products.name",
       "products.current_price",
       "products.bid_count",
@@ -182,7 +182,7 @@ export const getAllProducts = async () => {
       "seller.id as seller_id",
       "seller.full_name as seller_name",
       // Category fields
-      "categories.category_id",
+      "categories.id as category_id",
       "categories.name as category_name",
       "categories.slug as category_slug",
       // Highest bidder fields (nullable)
@@ -258,7 +258,7 @@ export const getOverviewStats = async () => {
 export const getRecentAuctions = async () => {
   return await db("products")
     .join("users", "products.seller_id", "users.id")
-    .join("categories", "products.category_id", "categories.category_id")
+    .join("categories", "products.category_id", "categories.id")
     .select(
       "products.id as id",
       "products.name as title",

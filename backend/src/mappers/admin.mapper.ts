@@ -107,7 +107,7 @@ export const mapSuspendUserResponse = (data: any): SuspendUserResponse => {
  */
 export const mapProductSeller = (data: any): AdminProductSeller => {
   return {
-    id: data.id,
+    id: data.seller_id,
     name: data.seller_name,
   };
 };
@@ -117,7 +117,7 @@ export const mapProductSeller = (data: any): AdminProductSeller => {
  */
 export const mapProductCategory = (data: any): AdminProductCategory => {
   return {
-    id: data.id,
+    id: data.category_id,
     name: data.category_name,
     slug: data.category_slug,
   };
@@ -130,7 +130,7 @@ export const mapProductHighestBidder = (
   data: any
 ): AdminProductHighestBidder => {
   return {
-    id: data.id || null,
+    id: data.highest_bidder_id || null,
     name: data.highest_bidder_name || null,
   };
 };

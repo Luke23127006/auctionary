@@ -66,7 +66,7 @@ export const submitUpgradeRequest = async (
   await upgradeRequestRepository.updateUserStatus(userId, "pending_upgrade");
 
   return {
-    requestId: request.request_id,
+    requestId: request.id,
     message:
       "Upgrade request submitted successfully. We will review your request soon.",
   };
@@ -121,7 +121,7 @@ export const cancelMyUpgradeRequest = async (
   }
 
   // Cancel the request
-  await upgradeRequestRepository.cancelUpgradeRequest(request.request_id);
+  await upgradeRequestRepository.cancelUpgradeRequest(request.id);
 
   // Revert user status to active
   await upgradeRequestRepository.updateUserStatus(userId, "active");
