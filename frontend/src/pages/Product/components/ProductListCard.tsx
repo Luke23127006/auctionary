@@ -25,6 +25,8 @@ interface ProductListCardProps {
   buyNowPrice?: number;
   topBidder: string;
   timeLeft: string;
+  endTime: string;
+  status: string;
   isNewArrival?: boolean;
   bidCount: number;
   handleOpenBidModal: (data: BidProductData) => void;
@@ -39,6 +41,8 @@ export function ProductListCard({
   buyNowPrice,
   topBidder,
   timeLeft,
+  endTime,
+  status,
   isNewArrival = false,
   bidCount,
   handleOpenBidModal,

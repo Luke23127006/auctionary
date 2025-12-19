@@ -10,6 +10,14 @@ import {
   AppendProductAnswer,
 } from "../dtos/requests/product.schema";
 
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number | string;
+    roles?: string[];
+    permissions?: string[];
+  };
+}
+
 export const searchProducts = async (
   request: Request,
   response: Response,
@@ -17,7 +25,8 @@ export const searchProducts = async (
 ) => {
   try {
     const query = request.query as unknown as ProductsSearchQuery;
-    const result = await productService.searchProducts(query);
+    const userId = (request as AuthenticatedRequest).user?.id;
+    const result = await productService.searchProducts(query, userId);
 
     response.status(200).json(result);
   } catch (error) {

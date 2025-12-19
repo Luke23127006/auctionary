@@ -17,8 +17,14 @@ export interface ProductListCardProps {
   buyNowPrice?: number;
   topBidder: string;
   timeLeft: string;
+  endTimse: string;
+  statu: string;
   isNewArrival?: boolean;
   bidCount: number;
+  transaction?: {
+    id: number;
+    canAccess: boolean;
+  };
 }
 
 // Product Detail Page - Type Definitions

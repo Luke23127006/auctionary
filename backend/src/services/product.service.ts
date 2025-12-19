@@ -1,4 +1,5 @@
 import * as productRepository from "../repositories/product.repository";
+import * as transactionRepository from "../repositories/transaction.repository";
 import {
   ProductsSearchQuery,
   CreateProduct,
@@ -24,7 +25,8 @@ import { toSlug } from "../utils/slug.util";
 import * as storageService from "../services/storage.service";
 
 export const searchProducts = async (
-  query: ProductsSearchQuery
+  query: ProductsSearchQuery,
+  userId: number | string | undefined
 ): Promise<PaginatedResult<ProductListCardProps>> => {
   const { q, categorySlug, page, limit, sort, excludeCategorySlug } = query;
 
@@ -36,6 +38,33 @@ export const searchProducts = async (
     sort,
     excludeCategorySlug
   );
+
+  const soldProductIds = result.data
+    .filter(item => item.status === 'sold')
+    .map(item => item.id);
+
+  let transactionMap = new Map<number, { id: number; canAccess: boolean }>();
+
+  if (soldProductIds.length > 0 && userId) {
+    const transactions = await transactionRepository.findTransactionsByProductIds(soldProductIds);
+
+    transactions.forEach(transaction => {
+      const canAccess =
+        userId === transaction.seller_id ||
+        userId === transaction.buyer_id;
+
+      transactionMap.set(transaction.product_id, {
+        id: transaction.id,
+        canAccess,
+      });
+    });
+  }
+
+  result.data.forEach(item => {
+    if (item.status === 'sold' && transactionMap.has(item.id)) {
+      item.transaction = transactionMap.get(item.id);
+    }
+  });
 
   return {
     data: result.data.map(mapToProductListCard),

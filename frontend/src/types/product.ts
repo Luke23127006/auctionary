@@ -6,8 +6,11 @@ export interface Product {
   buyNowPrice?: number;
   topBidder: string;
   timeLeft: string;
+  endTime: string;
+  status: string;
   isNewArrival?: boolean;
   bidCount: number;
+  canAccessTransaction: boolean;
 }
 
 export interface SearchProductsParams {
@@ -151,6 +154,8 @@ export interface ProductListCardProps {
   buyNowPrice?: number;
   topBidder: string;
   timeLeft: string;
+  endTime: string;
+  status: string;
   isNewArrival?: boolean;
   bidCount: number;
 }
@@ -185,7 +190,7 @@ export interface Step2Data {
   description: string;
   autoExtend: boolean;
 }
-export interface AuctionFormData extends Step1Data, Step2Data {}
+export interface AuctionFormData extends Step1Data, Step2Data { }
 
 export interface CreateProductPayload {
   name: string;

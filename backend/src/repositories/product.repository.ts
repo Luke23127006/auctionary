@@ -98,6 +98,7 @@ export const searchProducts = async (
       "products.end_time",
       "products.bid_count",
       "products.highest_bidder_id",
+      "products.seller_id",
       "users.full_name as bidder_name"
     )
     .limit(limit)
