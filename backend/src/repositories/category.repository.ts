@@ -200,7 +200,7 @@ export const countProductsInCategory = async (
 ): Promise<number> => {
   const result = await db("products")
     .where({ category_id: categoryId })
-    .count("product_id as total")
+    .count("id as total")
     .first();
 
   return result ? parseInt(result.total as string) : 0;

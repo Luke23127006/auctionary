@@ -49,7 +49,7 @@ export const getSellerStats = async (sellerId: number) => {
  */
 export const getSellerListings = async (sellerId: number) => {
   const listings = await db("products")
-    .leftJoin("categories", "products.category_id", "categories.category_id")
+    .leftJoin("categories", "products.category_id", "categories.id")
     .where("products.seller_id", sellerId)
     .select(
       "products.id as id",

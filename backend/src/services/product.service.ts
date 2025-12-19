@@ -103,7 +103,7 @@ export const createProduct = async (
   } as any);
 
   return {
-    productId: product.product_id,
+    productId: product.id,
     name: product.name,
     status: product.status,
   };
@@ -186,7 +186,7 @@ export const getProductDetail = async (
 
   // Build breadcrumb from category path
   const breadcrumb = categoryPath.map((cat: any) => ({
-    id: cat.category_id,
+    id: cat.id,
     name: cat.name,
     slug: cat.slug,
   }));
@@ -205,7 +205,7 @@ export const getProductDetail = async (
   // Build response
   const response: ProductDetailResponse = {
     product: {
-      id: product.product_id,
+      id: product.id,
       name: product.name,
       slug: product.slug || product.category_slug, // Use product slug (fallback to category slug for old products)
       thumbnailUrl: product.thumbnail_url || "",
@@ -299,10 +299,10 @@ export const getProductQuestions = async (
       askedAt: q.created_at,
       answer: q.answer
         ? {
-            answer: q.answer.answer,
-            answeredBy: q.answer.answerer_name,
-            answeredAt: q.answer.answered_at,
-          }
+          answer: q.answer.answer,
+          answeredBy: q.answer.answerer_name,
+          answeredAt: q.answer.answered_at,
+        }
         : null,
     })),
     pagination: {
