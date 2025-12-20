@@ -7,28 +7,16 @@ import type {
   ReviewSubmitData,
 } from "../types/transactionActions";
 
-/**
- * Get transaction details by ID
- * @param transactionId - Transaction ID
- * @returns Promise<TransactionResponse> - Full transaction data
- */
 export const getTransactionById = async (
   transactionId: number
 ): Promise<TransactionDetailResponse> => {
-  // apiClient.get() already unwraps { success: true, data: {...} } → returns data directly
   const data = await apiClient.get<TransactionDetailResponse>(
     `/transactions/${transactionId}`,
-    true // requires authentication
+    true
   );
   return data;
 };
 
-/**
- * Submit payment proof and shipping info (Buyer - Step 1)
- * @param transactionId - Transaction ID
- * @param data - Payment proof file and shipping info
- * @returns Promise<TransactionDetailResponse> - Updated transaction
- */
 export const submitPayment = async (
   transactionId: number,
   data: PaymentSubmitData
@@ -48,12 +36,6 @@ export const submitPayment = async (
   return response;
 };
 
-/**
- * Confirm payment and upload shipping proof (Seller - Step 2)
- * @param transactionId - Transaction ID
- * @param data - Shipping proof file and payment confirmation
- * @returns Promise<TransactionDetailResponse> - Updated transaction
- */
 export const confirmAndShip = async (
   transactionId: number,
   data: ShippingSubmitData
@@ -70,12 +52,6 @@ export const confirmAndShip = async (
   return response;
 };
 
-/**
- * Confirm delivery received (Buyer - Step 3)
- * @param transactionId - Transaction ID
- * @param data - Delivery confirmation
- * @returns Promise<TransactionDetailResponse> - Updated transaction
- */
 export const confirmDelivery = async (
   transactionId: number,
   data: DeliveryConfirmData
@@ -88,12 +64,6 @@ export const confirmDelivery = async (
   return response;
 };
 
-/**
- * Submit review (Buyer/Seller - Step 4)
- * @param transactionId - Transaction ID
- * @param data - Review rating and comment
- * @returns Promise<TransactionDetailResponse> - Updated transaction
- */
 export const submitReview = async (
   transactionId: number,
   data: ReviewSubmitData

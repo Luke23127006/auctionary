@@ -183,3 +183,27 @@ export const findTransactionMessages = async (
 
   return messages;
 };
+
+export const updateTransactionPayment = async (
+  transactionId: number,
+  data: {
+    payment_proof_url: string;
+    shipping_full_name: string;
+    shipping_address: string;
+    shipping_city: string;
+    shipping_phone_number: string;
+    payment_proof_uploaded_at: Date;
+  }
+): Promise<void> => {
+  await db("transactions")
+    .where({ id: transactionId })
+    .update({
+      payment_proof_url: data.payment_proof_url,
+      shipping_full_name: data.shipping_full_name,
+      shipping_address: data.shipping_address,
+      shipping_city: data.shipping_city,
+      shipping_phone_number: data.shipping_phone_number,
+      payment_proof_uploaded_at: data.payment_proof_uploaded_at,
+      updated_at: db.fn.now(),
+  });
+};

@@ -1,7 +1,9 @@
 import * as TransactionRepository from '../repositories/transaction.repository';
+import * as storageService from './storage.service';
 import { ForbiddenError, NotFoundError } from '../errors';
 import { TransactionDetailResponse, TransactionMessage } from '../api/dtos/responses/transaction.type';
 import { mapTransactionDetailToResponse } from '../mappers/transaction.mapper';
+import { TransactionPaymentProofUploadRequest } from '../api/dtos/requests/transaction.schema';
 
 export const verifyUserOwnership = async (userId: number, transactionId: number): Promise<void> => {
   const transaction = await TransactionRepository.findTransactionById(transactionId);
@@ -15,23 +17,15 @@ export const verifyUserOwnership = async (userId: number, transactionId: number)
   }
 }
 
-/**
- * Get full transaction details with all related information
- * @param transactionId - Transaction ID
- * @returns Promise<TransactionDetailResponse> - Complete transaction data in camelCase
- */
 export const getTransactionDetail = async (transactionId: number): Promise<TransactionDetailResponse> => {
-  // Fetch transaction detail with JOINs
   const transactionRaw = await TransactionRepository.findTransactionDetailById(transactionId);
 
   if (!transactionRaw) {
     throw new NotFoundError('Transaction not found');
   }
 
-  // Fetch transaction messages separately
   const messagesRaw = await TransactionRepository.findTransactionMessages(transactionId);
 
-  // Map messages to camelCase
   const messages: TransactionMessage[] = messagesRaw.map(msg => ({
     id: msg.id,
     senderId: msg.sender_id,
@@ -39,6 +33,35 @@ export const getTransactionDetail = async (transactionId: number): Promise<Trans
     createdAt: msg.created_at,
   }));
 
-  // Use mapper to transform snake_case → camelCase
   return mapTransactionDetailToResponse(transactionRaw, messages);
 }
+
+export const uploadPaymentProof = async (
+  transactionId: number,
+  data: TransactionPaymentProofUploadRequest,
+  file: Express.Multer.File
+): Promise<void> => {
+  const transaction = await TransactionRepository.findTransactionById(transactionId);
+
+  if (!transaction) {
+    throw new NotFoundError('Transaction not found');
+  }
+
+  const timestamp = Date.now();
+  const storagePath = `transactions/${transactionId}/payment/proof_${timestamp}.png`;
+
+  const proofUrl = await storageService.uploadFile(
+    "auctionary-transaction-proofs",
+    file,
+    storagePath
+  );
+
+  await TransactionRepository.updateTransactionPayment(transactionId, {
+    payment_proof_url: proofUrl,
+    shipping_full_name: data.shippingFullName,
+    shipping_address: data.shippingAddress,
+    shipping_city: data.shippingCity,
+    shipping_phone_number: data.shippingPhoneNumber,
+    payment_proof_uploaded_at: new Date(),
+  });
+};
