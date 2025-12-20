@@ -19,8 +19,6 @@ import {
   Upload,
   X,
   Image as ImageIcon,
-  Building2,
-  Copy,
   MapPin,
   Clock,
   Loader2,
@@ -31,19 +29,9 @@ interface TransactionRoomProps {
   isSeller: boolean;
 }
 
-// Mock bank info - in real app this would come from API
-const sellerBankInfo = {
-  bankName: "Bank of America",
-  accountNumber: "1234567890",
-  accountHolder: "John Smith",
-  routingNumber: "021000322",
-  transactionCode: "TXN-89234",
-};
-
 export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomProps) {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
   
   // Shipping address form state
   const [shippingAddress, setShippingAddress] = useState({
@@ -55,12 +43,6 @@ export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomPro
     zipCode: "",
     phone: "",
   });
-
-  const handleCopy = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-  };
 
   const handleImageUpload = (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -222,7 +204,7 @@ export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomPro
       <Alert className="border-accent/30 bg-accent/5">
         <Shield className="h-4 w-4 text-accent" />
         <AlertDescription className="text-sm text-accent/90">
-          <strong>Direct Bank Transfer:</strong> Please transfer the exact amount to the seller's bank account below. Upload your payment receipt after completing the transfer.
+          <strong>Payment Required:</strong> Please complete the payment transfer and upload your payment receipt.
         </AlertDescription>
       </Alert>
 
@@ -252,125 +234,6 @@ export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomPro
         </CardContent>
       </Card>
 
-      {/*}
-      <Card className="border-accent/30 bg-accent/5">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-accent" />
-            Seller's Bank Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert className="border-accent/30 bg-background">
-            <Info className="h-4 w-4 text-accent" />
-            <AlertDescription className="text-xs">
-              Transfer the exact amount to this account. Use the transaction code as transfer description.
-            </AlertDescription>
-          </Alert>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
-              <div className="flex-1">
-                <div className="text-xs text-muted-foreground mb-1">Bank Name</div>
-                <div className="font-medium">{sellerBankInfo.bankName}</div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCopy(sellerBankInfo.bankName, "bank")}
-              >
-                {copiedField === "bank" ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
-              <div className="flex-1">
-                <div className="text-xs text-muted-foreground mb-1">Account Holder</div>
-                <div className="font-medium">{sellerBankInfo.accountHolder}</div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCopy(sellerBankInfo.accountHolder, "holder")}
-              >
-                {copiedField === "holder" ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
-              <div className="flex-1">
-                <div className="text-xs text-muted-foreground mb-1">Account Number</div>
-                <code className="font-mono text-lg tracking-wider text-accent">
-                  {sellerBankInfo.accountNumber}
-                </code>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCopy(sellerBankInfo.accountNumber, "account")}
-              >
-                {copiedField === "account" ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
-              <div className="flex-1">
-                <div className="text-xs text-muted-foreground mb-1">Routing Number</div>
-                <code className="font-mono text-lg tracking-wider">
-                  {sellerBankInfo.routingNumber}
-                </code>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCopy(sellerBankInfo.routingNumber, "routing")}
-              >
-                {copiedField === "routing" ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg bg-accent/10 border-2 border-accent/30">
-              <div className="flex-1">
-                <div className="text-xs text-muted-foreground mb-1">
-                  Transfer Description (Required)
-                </div>
-                <code className="font-mono text-lg tracking-wider text-accent font-bold">
-                  {sellerBankInfo.transactionCode}
-                </code>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCopy(sellerBankInfo.transactionCode, "code")}
-              >
-                {copiedField === "code" ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      */}
-
       {/* Upload Payment Proof */}
       <Card className="border-border">
         <CardHeader>
@@ -383,7 +246,7 @@ export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomPro
           <Alert className="border-border bg-secondary/30">
             <Info className="h-4 w-4" />
             <AlertDescription className="text-xs">
-              After completing the bank transfer, upload a screenshot or photo of your payment receipt for verification.
+              After completing the payment, upload a screenshot or photo of your payment receipt for verification.
             </AlertDescription>
           </Alert>
 

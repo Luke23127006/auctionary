@@ -11,7 +11,6 @@ import { Separator } from "../../../components/ui/separator";
 import { Textarea } from "../../../components/ui/textarea";
 import { Label } from "../../../components/ui/label";
 import {
-  Check,
   Download,
   Calendar,
   CheckCircle2,
@@ -117,10 +116,7 @@ export function TransactionRoomComplete({ isSeller }: TransactionRoomCompletePro
                   {isSeller ? "Total Received" : "Total Paid"}
                 </div>
                 <div className="text-2xl text-accent">
-                  {isSeller ? "$1,400.00" : "$1,428.00"}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {isSeller ? "After platform fees" : "Includes $28.00 escrow fee"}
+                  $1,400.00
                 </div>
               </div>
               <Separator orientation="vertical" className="h-12" />

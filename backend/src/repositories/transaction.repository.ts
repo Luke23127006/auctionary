@@ -7,6 +7,139 @@ export interface TransactionInfo {
   seller_id: number;
 }
 
+/**
+ * Full transaction data with all related information
+ * Includes product, buyer, seller info via JOINs
+ */
+export interface TransactionDetailRaw {
+  // Transaction fields
+  id: number;
+  status: string;
+  final_price: number;
+
+  // Shipping info
+  shipping_full_name: string | null;
+  shipping_phone_number: string | null;
+  shipping_city: string | null;
+  shipping_address: string | null;
+
+  // Payment info
+  payment_proof_url: string | null;
+  payment_proof_uploaded_at: string | null;
+  payment_confirmed_at: string | null;
+
+  // Fulfillment info
+  shipping_proof_url: string | null;
+  shipping_proof_uploaded_at: string | null;
+  shipped_confirmed_at: string | null;
+  delivered_at: string | null;
+  buyer_received_at: string | null;
+
+  // Ratings
+  buyer_rating: number | null;
+  buyer_comment: string | null;
+  seller_rating: number | null;
+  seller_comment: string | null;
+
+  // Metadata
+  cancel_reason: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
+  created_at: string;
+  updated_at: string;
+
+  // Product info (via JOIN)
+  product_id: number;
+  product_name: string;
+  product_thumbnail_url: string;
+
+  // Buyer info (via JOIN)
+  buyer_id: number;
+  buyer_full_name: string;
+
+  // Seller info (via JOIN)
+  seller_id: number;
+  seller_full_name: string;
+}
+
+export const findTransactionById = async (
+  transactionId: number
+): Promise<TransactionInfo | null> => {
+  const transaction = await db("transactions")
+    .where({ id: transactionId })
+    .select("id", "product_id", "buyer_id", "seller_id")
+    .first();
+
+  return transaction || null;
+}
+
+/**
+ * Get full transaction details with all related information
+ * Includes JOINs for product, buyer, and seller data
+ */
+export const findTransactionDetailById = async (
+  transactionId: number
+): Promise<TransactionDetailRaw | null> => {
+  const transaction = await db("transactions")
+    .leftJoin("products", "transactions.product_id", "products.id")
+    .leftJoin("users as buyer", "transactions.buyer_id", "buyer.id")
+    .leftJoin("users as seller", "transactions.seller_id", "seller.id")
+    .where("transactions.id", transactionId)
+    .select(
+      // Transaction fields
+      "transactions.id",
+      "transactions.status",
+      "transactions.final_price",
+
+      // Shipping info
+      "transactions.shipping_full_name",
+      "transactions.shipping_phone_number",
+      "transactions.shipping_city",
+      "transactions.shipping_address",
+
+      // Payment info
+      "transactions.payment_proof_url",
+      "transactions.payment_proof_uploaded_at",
+      "transactions.payment_confirmed_at",
+
+      // Fulfillment info
+      "transactions.shipping_proof_url",
+      "transactions.shipping_proof_uploaded_at",
+      "transactions.shipped_confirmed_at",
+      "transactions.delivered_at",
+      "transactions.buyer_received_at",
+
+      // Ratings
+      "transactions.buyer_rating",
+      "transactions.buyer_comment",
+      "transactions.seller_rating",
+      "transactions.seller_comment",
+
+      // Metadata
+      "transactions.cancel_reason",
+      "transactions.completed_at",
+      "transactions.cancelled_at",
+      "transactions.created_at",
+      "transactions.updated_at",
+
+      // Product info
+      "products.id as product_id",
+      "products.name as product_name",
+      "products.thumbnail_url as product_thumbnail_url",
+
+      // Buyer info
+      "buyer.id as buyer_id",
+      "buyer.full_name as buyer_full_name",
+
+      // Seller info
+      "seller.id as seller_id",
+      "seller.full_name as seller_full_name"
+    )
+    .first();
+
+  return transaction || null;
+}
+
 export const findTransactionByProductId = async (
   productId: number
 ): Promise<TransactionInfo | null> => {
@@ -30,4 +163,23 @@ export const findTransactionsByProductIds = async (
     .select("id", "product_id", "buyer_id", "seller_id");
 
   return transactions;
+};
+
+/**
+ * Get transaction messages for a specific transaction
+ */
+export const findTransactionMessages = async (
+  transactionId: number
+): Promise<Array<{
+  id: number;
+  sender_id: number;
+  content: string;
+  created_at: string;
+}>> => {
+  const messages = await db("transaction_messages")
+    .where({ transaction_id: transactionId })
+    .select("id", "sender_id", "content", "created_at")
+    .orderBy("created_at", "asc");
+
+  return messages;
 };

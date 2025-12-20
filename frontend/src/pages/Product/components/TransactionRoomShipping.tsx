@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Label } from "../../../components/ui/label";
 import {
   Card,
   CardContent,
@@ -32,7 +30,6 @@ export function TransactionRoomShipping({
   isSeller,
   onShippingProof,
 }: TransactionRoomShippingProps) {
-  const [trackingNumber, setTrackingNumber] = useState("");
   const [shippingProof, setShippingProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -85,7 +82,7 @@ export function TransactionRoomShipping({
         <Alert className="border-green-500/30 bg-green-500/5">
           <Shield className="h-4 w-4 text-green-500" />
           <AlertDescription className="text-sm text-green-500/90">
-            <strong>Payment Received:</strong> Buyer has completed the payment. Please check your bank account and ship the item.
+            <strong>Payment Received:</strong> Buyer has completed the payment. Please ship the item.
           </AlertDescription>
         </Alert>
 
@@ -101,7 +98,7 @@ export function TransactionRoomShipping({
               <div className="flex-1">
                 <h2 className="text-2xl mb-2">Ready to Ship</h2>
                 <p className="text-sm text-muted-foreground mb-3">
-                  The buyer has transferred the payment. Please verify your bank account and prepare the item for shipping.
+                  The buyer has completed the payment. Please prepare the item for shipping.
                 </p>
                 <div className="flex items-center gap-2">
                   <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
@@ -117,39 +114,6 @@ export function TransactionRoomShipping({
             </div>
           </CardContent>
         </Card>
-
-        {/* Tracking Number Input
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Truck className="h-5 w-5 text-accent" />
-              Shipping Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert className="border-border bg-secondary/30">
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                Enter the tracking number (optional) and upload proof of shipment to proceed.
-              </AlertDescription>
-            </Alert>
-
-            <div className="space-y-2">
-              <Label htmlFor="trackingNumber">
-                Tracking Number <span className="text-muted-foreground">(Optional)</span>
-              </Label>
-              <Input
-                id="trackingNumber"
-                placeholder="e.g., TRK-1234567890"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Providing a tracking number helps the buyer track their package
-              </p>
-            </div>
-          </CardContent>
-        </Card> */}
 
         {/* Upload Shipping Proof */}
         <Card className="border-border">

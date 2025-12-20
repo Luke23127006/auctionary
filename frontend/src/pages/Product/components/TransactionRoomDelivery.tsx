@@ -282,8 +282,7 @@ export function TransactionRoomDelivery({
             <AlertDescription className="text-sm">
               <strong className="text-accent">Important:</strong> Once you
               confirm receipt, the funds{" "}
-              <strong className="text-accent">($1,400)</strong> held in Escrow
-              will be released to the seller immediately.{" "}
+              <strong className="text-accent">($1,400)</strong> will be released to the seller immediately.{" "}
               <strong className="text-accent">
                 This action cannot be undone.
               </strong>
@@ -327,14 +326,6 @@ export function TransactionRoomDelivery({
               <AlertTriangle className="mr-2 h-4 w-4" />
               Report Issue / Request Return
             </Button>
-          </div>
-
-          {/* Escrow Info */}
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/30 border border-border">
-            <Shield className="h-4 w-4 text-green-500" />
-            <span className="text-xs text-muted-foreground">
-              Escrow Protection: $1,400 + $28 fee secured until confirmation
-            </span>
           </div>
         </CardContent>
       </Card>
