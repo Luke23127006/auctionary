@@ -71,7 +71,8 @@ export default function CreateAuctionPage() {
         navigate("/seller/dashboard");
       }
     } catch (error) {
-      notify.error("Failed to publish auction");
+      const message = error instanceof Error ? error.message : "Failed to publish auction";
+      notify.error(message);
     }
   };
 

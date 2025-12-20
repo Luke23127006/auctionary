@@ -31,13 +31,20 @@ type StepState = "completed" | "active-actor" | "active-observer" | "locked";
 interface TransactionRoomProps {
   mode: StepState;
   transaction: TransactionDetailResponse;
-  onPaymentProof: (file: File) => void;
+  onPaymentProof: (file: File, shippingInfo: {
+    fullName: string;
+    address: string;
+    city: string;
+    phone: string;
+  }) => void;
   isSeller: boolean;
+  isLoading?: boolean;
 }
 
-export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }: TransactionRoomProps) {
+export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, isLoading = false }: TransactionRoomProps) {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const [shippingAddress, setShippingAddress] = useState({
     fullName: transaction.shippingInfo.fullName || "",
@@ -76,9 +83,46 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
     setPaymentProof(null);
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!paymentProof) {
+      newErrors.paymentProof = "Payment receipt is required";
+    }
+
+    if (!isSeller) {
+      // Full Name validation
+      if (!shippingAddress.fullName.trim()) {
+        newErrors.fullName = "Full name is required";
+      } else if (shippingAddress.fullName.trim().length > 255) {
+        newErrors.fullName = "Full name is too long (max 255 characters)";
+      }
+
+      // Address validation
+      if (!shippingAddress.address.trim()) {
+        newErrors.address = "Address is required";
+      }
+
+      // City validation
+      if (!shippingAddress.city.trim()) {
+        newErrors.city = "City is required";
+      }
+
+      // Phone validation (Vietnamese format)
+      if (!shippingAddress.phone.trim()) {
+        newErrors.phone = "Phone number is required";
+      } else if (!/^(0|\+84)(\d{9,10})$/.test(shippingAddress.phone.trim())) {
+        newErrors.phone = "Invalid Vietnamese phone number (e.g., 0901234567 or +84901234567)";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = () => {
-    if (paymentProof) {
-      onPaymentProof(paymentProof);
+    if (validateForm() && paymentProof) {
+      onPaymentProof(paymentProof, shippingAddress);
     }
   };
 
@@ -430,11 +474,16 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                     id="fullName"
                     placeholder="John Doe"
                     value={shippingAddress.fullName}
-                    onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, fullName: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setShippingAddress({ ...shippingAddress, fullName: e.target.value });
+                      setErrors((prev) => ({ ...prev, fullName: "" }));
+                    }}
+                    className={errors.fullName ? "border-destructive" : ""}
                     required
                   />
+                  {errors.fullName && (
+                    <p className="text-xs text-destructive">{errors.fullName}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -445,11 +494,16 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                     id="address"
                     placeholder="123 Main Street"
                     value={shippingAddress.address}
-                    onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, address: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setShippingAddress({ ...shippingAddress, address: e.target.value });
+                      setErrors((prev) => ({ ...prev, address: "" }));
+                    }}
+                    className={errors.address ? "border-destructive" : ""}
                     required
                   />
+                  {errors.address && (
+                    <p className="text-xs text-destructive">{errors.address}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -461,11 +515,16 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                       id="city"
                       placeholder="New York"
                       value={shippingAddress.city}
-                      onChange={(e) =>
-                        setShippingAddress({ ...shippingAddress, city: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setShippingAddress({ ...shippingAddress, city: e.target.value });
+                        setErrors((prev) => ({ ...prev, city: "" }));
+                      }}
+                      className={errors.city ? "border-destructive" : ""}
                       required
                     />
+                    {errors.city && (
+                      <p className="text-xs text-destructive">{errors.city}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">
@@ -474,13 +533,18 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder=""
+                      placeholder="0901234567 or +84901234567"
                       value={shippingAddress.phone}
-                      onChange={(e) =>
-                        setShippingAddress({ ...shippingAddress, phone: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setShippingAddress({ ...shippingAddress, phone: e.target.value });
+                        setErrors((prev) => ({ ...prev, phone: "" }));
+                      }}
+                      className={errors.phone ? "border-destructive" : ""}
                       required
                     />
+                    {errors.phone && (
+                      <p className="text-xs text-destructive">{errors.phone}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -488,9 +552,21 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
           </Card>
         )}
 
-        <Button className="w-full" size="lg" disabled={!paymentProof} onClick={handleSubmit}>
-          <Check className="mr-2 h-5 w-5" />
-          Confirm Payment Sent
+        <Button 
+          className="w-full" 
+          size="lg" 
+          disabled={!paymentProof || isLoading} 
+          onClick={handleSubmit}
+          isLoading={isLoading}
+        >
+          {isLoading ? (
+            "Submitting..."
+          ) : (
+            <>
+              <Check className="mr-2 h-5 w-5" />
+              Confirm Payment Sent
+            </>
+          )}
         </Button>
       </div>
     );

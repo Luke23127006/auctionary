@@ -27,9 +27,12 @@ import {
   AccordionTrigger,
 } from "../../components/ui/accordion";
 import { useTransaction } from "../../hooks/useTransaction";
+import { useTransactionActions } from "../../hooks/useTransactionActions";
 import { useAuth } from "../../hooks/useAuth";
 import { formatTime } from "../../utils/dateUtils";
 import type { TransactionDetailResponse, TransactionStatus } from "../../types/transaction";
+import type { PaymentSubmitData, ShippingSubmitData } from "../../types/transactionActions";
+import { notify } from "../../utils/notify";
 
 type StepState = "completed" | "active-actor" | "active-observer" | "locked";
 
@@ -344,7 +347,12 @@ export default function TransactionRoomPage() {
   const { id } = useParams<{ id: string }>();
   const transactionId = Number(id);
 
-  const { transaction, isLoading, error } = useTransaction(transactionId);
+  const { transaction, isLoading, error, refetch } = useTransaction(transactionId);
+  const { 
+    handleSubmitPayment, 
+    handleConfirmAndShip,
+    isUpdating 
+  } = useTransactionActions();
   const { user } = useAuth();
 
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -403,18 +411,49 @@ export default function TransactionRoomPage() {
     transaction.seller.fullName
   );
 
-  const handlePaymentProof = (file: File) => {
-    console.log("Payment proof uploaded:", file.name);
-    toast.success("Payment Proof Uploaded!", {
-      description: "Your payment receipt has been submitted for verification.",
-    });
+  const handlePaymentProof = async (
+    file: File,
+    shippingInfo: PaymentSubmitData["shippingInfo"]
+  ) => {
+    if (isUpdating || !transaction) return;
+
+    try {
+      const data: PaymentSubmitData = {
+        paymentProof: file,
+        shippingInfo,
+      };
+
+      await handleSubmitPayment(transaction.id, data);
+      
+      // Refetch transaction to get updated data
+      await refetch();
+      
+      notify.success("Payment proof submitted successfully!");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to submit payment proof";
+      notify.error(message);
+    }
   };
 
-  const handleShippingProof = (file: File) => {
-    console.log("Shipping proof uploaded:", file.name);
-    toast.success("Shipping Proof Uploaded!", {
-      description: "Your shipping confirmation has been submitted.",
-    });
+  const handleShippingProof = async (file: File, paymentConfirmed: boolean) => {
+    if (isUpdating || !transaction) return;
+
+    try {
+      const data: ShippingSubmitData = {
+        shippingProof: file,
+        paymentConfirmed,
+      };
+
+      await handleConfirmAndShip(transaction.id, data);
+      
+      // Refetch transaction to get updated data
+      await refetch();
+      
+      notify.success("Shipping proof submitted successfully!");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to submit shipping proof";
+      notify.error(message);
+    }
   };
 
   const handleCancelTransaction = () => {
@@ -547,6 +586,7 @@ export default function TransactionRoomPage() {
                       transaction={transaction}
                       onPaymentProof={handlePaymentProof}
                       isSeller={isSeller}
+                      isLoading={isUpdating}
                     />
                   </AccordionContent>
                 </AccordionItem>
@@ -586,6 +626,7 @@ export default function TransactionRoomPage() {
                       transaction={transaction}
                       isSeller={isSeller}
                       onShippingProof={handleShippingProof}
+                      isLoading={isUpdating}
                     />
                   </AccordionContent>
                 </AccordionItem>

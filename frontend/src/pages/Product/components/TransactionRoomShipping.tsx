@@ -32,7 +32,8 @@ interface TransactionRoomShippingProps {
   mode: StepState;
   transaction: TransactionDetailResponse;
   isSeller: boolean;
-  onShippingProof: (file: File) => void;
+  onShippingProof: (file: File, paymentConfirmed: boolean) => void;
+  isLoading?: boolean;
 }
 
 export function TransactionRoomShipping({
@@ -40,10 +41,12 @@ export function TransactionRoomShipping({
   transaction,
   isSeller,
   onShippingProof,
+  isLoading = false,
 }: TransactionRoomShippingProps) {
   const [shippingProof, setShippingProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleImageUpload = (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -75,9 +78,24 @@ export function TransactionRoomShipping({
     setShippingProof(null);
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!shippingProof) {
+      newErrors.shippingProof = "Shipping proof is required";
+    }
+
+    if (!paymentConfirmed) {
+      newErrors.paymentConfirmed = "Please confirm payment received";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = () => {
-    if (shippingProof) {
-      onShippingProof(shippingProof);
+    if (validateForm() && shippingProof) {
+      onShippingProof(shippingProof, paymentConfirmed);
     }
   };
 
@@ -349,8 +367,13 @@ export function TransactionRoomShipping({
                   type="checkbox"
                   id="payment-confirmation"
                   checked={paymentConfirmed}
-                  onChange={(e) => setPaymentConfirmed(e.target.checked)}
-                  className="mt-1 h-5 w-5 rounded border-accent text-accent focus:ring-accent cursor-pointer"
+                  onChange={(e) => {
+                    setPaymentConfirmed(e.target.checked);
+                    setErrors((prev) => ({ ...prev, paymentConfirmed: "" }));
+                  }}
+                  className={`mt-1 h-5 w-5 rounded border-accent text-accent focus:ring-accent cursor-pointer ${
+                    errors.paymentConfirmed ? "border-destructive" : ""
+                  }`}
                 />
                 <label htmlFor="payment-confirmation" className="flex-1 cursor-pointer">
                   <div className="font-medium text-accent mb-1">
@@ -359,6 +382,9 @@ export function TransactionRoomShipping({
                   <div className="text-xs text-muted-foreground">
                     By checking this box, you confirm that you have received the full payment of ${transaction.finalPrice.toFixed(2)} from the buyer.
                   </div>
+                  {errors.paymentConfirmed && (
+                    <p className="text-xs text-destructive mt-1">{errors.paymentConfirmed}</p>
+                  )}
                 </label>
               </div>
             </CardContent>
@@ -466,18 +492,25 @@ export function TransactionRoomShipping({
           <Button
             className="w-full"
             size="lg"
-            disabled={!shippingProof || !paymentConfirmed}
+            disabled={!shippingProof || !paymentConfirmed || isLoading}
             onClick={handleSubmit}
+            isLoading={isLoading}
           >
-            <Check className="mr-2 h-5 w-5" />
-            Confirm Payment & Shipment
+            {isLoading ? (
+              "Submitting..."
+            ) : (
+              <>
+                <Check className="mr-2 h-5 w-5" />
+                Confirm Payment & Shipment
+              </>
+            )}
           </Button>
 
-          {(!shippingProof || !paymentConfirmed) && (
+          {(!shippingProof || !paymentConfirmed) && !isLoading && (
             <Alert className="border-yellow-500/30 bg-yellow-500/5">
               <AlertCircle className="h-4 w-4 text-yellow-500" />
               <AlertDescription className="text-xs text-yellow-500/90">
-                Please {!paymentConfirmed && "confirm payment received"}{!paymentConfirmed && !shippingProof && " and "}{!shippingProof && "upload shipping proof"} to continue.
+                Please {!shippingProof && !paymentConfirmed ? "upload shipping proof and confirm payment received" : !shippingProof ? "upload shipping proof" : "confirm payment received"} to continue.
               </AlertDescription>
             </Alert>
           )}
