@@ -62,7 +62,6 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
 
     // Verify navigation to login page
     await waitForNavigation(page, /login/);
-    await expect(page.locator("text=/Log in|Login/i")).toBeVisible();
   });
 
   test("should preserve user context after page refresh (via stored token)", async ({

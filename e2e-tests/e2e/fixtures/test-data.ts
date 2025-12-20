@@ -42,7 +42,7 @@ export const ERROR_MESSAGES = {
   INVALID_EMAIL: "Invalid email format",
   PASSWORD_MISMATCH: "Passwords do not match",
   RECAPTCHA_REQUIRED: "Please complete the reCAPTCHA",
-  INVALID_OTP: "Invalid or expired OTP",
+  INVALID_OTP: "Invalid OTP code",
   EXPIRED_OTP: "OTP has expired",
   MISSING_FIELD: "This field is required",
 };
@@ -50,8 +50,8 @@ export const ERROR_MESSAGES = {
 export const SUCCESS_MESSAGES = {
   SIGNUP_SUCCESS: "Account created",
   OTP_SENT: "verification code has been sent",
-  OTP_VERIFIED: "Account verified successfully",
-  OTP_RESENT: "A new verification code has been sent",
+  OTP_VERIFIED: "Account verified successfully!",
+  OTP_RESENT: "A new verification code has been sent.",
 };
 
 export const VALID_OTP = "123456";

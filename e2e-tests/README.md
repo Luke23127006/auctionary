@@ -103,11 +103,14 @@ npx playwright test
 ### Run Specific Test Suite
 
 ```bash
-npx playwright test auth/01-signup-valid
-npx playwright test auth/02-signup-validation
-npx playwright test auth/03-otp-verification
-npx playwright test auth/04-otp-resend
-npx playwright test auth/05-otp-navigation
+npx playwright test auth/01-signup-valid # 5/5
+npx playwright test auth/02-signup-validation # 14/14
+npx playwright test auth/03-otp-verification # 9/9
+npx playwright test auth/04-otp-resend # 5/9
+npx playwright test auth/05-otp-navigation # 9/9
+npx playwright test auth/06-login-valid
+npx playwright test auth/07-login-invalid
+npx playwright test auth/08-login-social
 ```
 
 ### Run Tests in UI Mode (Interactive)
@@ -154,7 +157,10 @@ e2e-tests/
 │   │   ├── 02-signup-validation.spec.ts # Signup validation errors
 │   │   ├── 03-otp-verification.spec.ts  # OTP verification flow
 │   │   ├── 04-otp-resend.spec.ts       # Resend OTP functionality
-│   │   └── 05-otp- navigation.spec.ts   # Edge cases & navigation
+│   │   ├── 05-otp-navigation.spec.ts   # Edge cases & navigation
+│   │   ├── 06-login-valid.spec.ts      # Valid login flow
+│   │   ├── 07-login-invalid.spec.ts    # Invalid login scenarios
+│   │   └── 08-login-social.spec.ts     # Social OAuth login (documented)
 │   ├── helpers/
 │   │   └── test-helpers.ts             # Reusable test utilities
 │   └── fixtures/

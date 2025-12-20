@@ -122,27 +122,21 @@ export async function getOTPForUser(email: string): Promise<string> {
  * Fill OTP input (handles individual digit inputs)
  */
 export async function fillOTPInput(page: Page, otp: string) {
-  // Wait for OTP inputs to be visible and ready
-  // OTP inputs have inputMode="numeric" and maxLength="1"
   const multipleInputs = page.locator(
     'input[inputMode="numeric"][maxLength="1"]'
   );
-
-  // Wait for first input to be visible
   await multipleInputs.first().waitFor({ state: "visible", timeout: 5000 });
-
   const inputCount = await multipleInputs.count();
-
   if (inputCount === 6) {
-    // Multiple input fields (one per digit) - fill each digit
-    for (let i = 0; i < 6; i++) {
+    // Fill only the available digits (for incomplete OTP support)
+    const digitsToFill = Math.min(otp.length, 6);
+    for (let i = 0; i < digitsToFill; i++) {
       await multipleInputs.nth(i).fill(otp[i]);
     }
   } else {
     // Fallback: try single input field
     const singleInput = page.locator('input[type="text"][maxlength="6"]');
     const singleInputCount = await singleInput.count();
-
     if (singleInputCount > 0) {
       await singleInput.fill(otp);
     } else {
