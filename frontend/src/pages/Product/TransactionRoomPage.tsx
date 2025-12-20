@@ -234,6 +234,12 @@ const getChatFooterText = (status: TransactionStatus): string => {
 
 /**
  * Determine the state of each transaction step based on backend data
+ * Priority: Actual database timestamps over status enum
+ * 
+ * Rules:
+ * - Completed: Timestamp for end of step is NOT NULL
+ * - Active: Previous step completed AND current step timestamp is NULL
+ * - Locked: Previous step NOT completed
  */
 const getStepStates = (
   transaction: TransactionDetailResponse,
@@ -251,39 +257,82 @@ const getStepStates = (
     complete: "locked" as StepState,
   };
 
-  // Step 1: Payment
+  // ============================================================================
+  // STEP 1: PAYMENT
+  // Completed when: payment.confirmedAt is NOT NULL
+  // Active when: payment.confirmedAt is NULL
+  // ============================================================================
   if (transaction.payment.confirmedAt) {
+    // Payment confirmed - step completed
     states.payment = "completed";
-  } else if (transaction.status === "payment_pending") {
-    // Buyer uploads proof, Seller waits
+  } else {
+    // Payment not confirmed yet
+    // Buyer must upload proof (actor), Seller waits (observer)
     states.payment = isSeller ? "active-observer" : "active-actor";
   }
 
-  // Step 2: Shipping
+  // ============================================================================
+  // STEP 2: SHIPPING
+  // Completed when: fulfillment.shippedConfirmedAt is NOT NULL
+  // Active when: payment confirmed AND (shippingInfo exists OR shippedConfirmedAt is NULL)
+  // Locked when: payment NOT confirmed
+  // ============================================================================
   if (transaction.fulfillment.shippedConfirmedAt) {
+    // Shipping confirmed - step completed
     states.shipping = "completed";
-  } else if (
-    transaction.payment.confirmedAt &&
-    transaction.status === "shipping_pending"
-  ) {
-    // Seller uploads shipping proof, Buyer waits
-    states.shipping = isSeller ? "active-actor" : "active-observer";
+  } else if (transaction.payment.confirmedAt) {
+    // Payment confirmed, but shipping not confirmed yet
+    
+    // Sub-step 1: Buyer provides shipping address (if not provided yet)
+    const hasShippingAddress = transaction.shippingInfo.fullName && 
+                                transaction.shippingInfo.address;
+    
+    if (!hasShippingAddress) {
+      // Buyer needs to provide shipping address
+      states.shipping = isSeller ? "active-observer" : "active-actor";
+    } else {
+      // Address exists, Seller needs to upload shipping proof
+      states.shipping = isSeller ? "active-actor" : "active-observer";
+    }
+  } else {
+    // Payment not confirmed - shipping is locked
+    states.shipping = "locked";
   }
 
-  // Step 3: Delivery
+  // ============================================================================
+  // STEP 3: DELIVERY
+  // Completed when: fulfillment.buyerReceivedAt is NOT NULL
+  // Active when: shipping confirmed AND buyerReceivedAt is NULL
+  // Locked when: shipping NOT confirmed
+  // ============================================================================
   if (transaction.fulfillment.buyerReceivedAt) {
+    // Buyer confirmed receipt - step completed
     states.delivery = "completed";
-  } else if (
-    transaction.fulfillment.deliveredAt &&
-    transaction.status === "delivered"
-  ) {
-    // Buyer confirms receipt, Seller waits
+  } else if (transaction.fulfillment.shippedConfirmedAt) {
+    // Package shipped, waiting for buyer confirmation
+    // Buyer confirms receipt (actor), Seller waits (observer)
     states.delivery = isSeller ? "active-observer" : "active-actor";
+  } else {
+    // Shipping not confirmed - delivery is locked
+    states.delivery = "locked";
   }
 
-  // Step 4: Complete
-  if (transaction.status === "completed") {
+  // ============================================================================
+  // STEP 4: COMPLETE (FEEDBACK)
+  // Completed when: completedAt is NOT NULL
+  // Active when: buyer received AND completedAt is NULL
+  // Locked when: buyer NOT received
+  // ============================================================================
+  if (transaction.completedAt) {
+    // Transaction completed
     states.complete = "completed";
+  } else if (transaction.fulfillment.buyerReceivedAt) {
+    // Buyer received item, waiting for feedback/completion
+    // Both can leave feedback (both are actors)
+    states.complete = "active-actor";
+  } else {
+    // Buyer hasn't received - complete is locked
+    states.complete = "locked";
   }
 
   return states;
@@ -591,6 +640,8 @@ export default function TransactionRoomPage() {
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
                     <TransactionRoom
+                      mode={stepStates.payment}
+                      transaction={transaction}
                       onPaymentProof={handlePaymentProof}
                       isSeller={isSeller}
                     />
@@ -629,6 +680,8 @@ export default function TransactionRoomPage() {
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
                     <TransactionRoomShipping
+                      mode={stepStates.shipping}
+                      transaction={transaction}
                       isSeller={isSeller}
                       onShippingProof={handleShippingProof}
                     />
@@ -667,6 +720,8 @@ export default function TransactionRoomPage() {
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
                     <TransactionRoomDelivery
+                      mode={stepStates.delivery}
+                      transaction={transaction}
                       isSeller={isSeller}
                       onConfirmReceipt={handleConfirmReceipt}
                       onReportIssue={handleReportIssue}

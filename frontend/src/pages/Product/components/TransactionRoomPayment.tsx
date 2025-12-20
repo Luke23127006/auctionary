@@ -23,35 +23,37 @@ import {
   Clock,
   Loader2,
 } from "lucide-react";
+import type { TransactionDetailResponse } from "../../../types/transaction";
+import { formatTime } from "../../../utils/dateUtils";
+
+type StepState = "completed" | "active-actor" | "active-observer" | "locked";
 
 interface TransactionRoomProps {
+  mode: StepState;
+  transaction: TransactionDetailResponse;
   onPaymentProof: (file: File) => void;
   isSeller: boolean;
 }
 
-export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomProps) {
+export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }: TransactionRoomProps) {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   
   // Shipping address form state
   const [shippingAddress, setShippingAddress] = useState({
-    fullName: "",
-    addressLine1: "",
+    fullName: transaction.shippingInfo.fullName || "",
+    addressLine1: transaction.shippingInfo.address || "",
     addressLine2: "",
-    city: "",
+    city: transaction.shippingInfo.city || "",
     state: "",
     zipCode: "",
-    phone: "",
+    phone: transaction.shippingInfo.phoneNumber || "",
   });
 
   const handleImageUpload = (files: FileList | null) => {
     if (!files || files.length === 0) return;
-
     const file = files[0];
-    if (!file.type.startsWith("image/")) {
-      return;
-    }
-
+    if (!file.type.startsWith("image/")) return;
     setPaymentProof(file);
   };
 
@@ -69,7 +71,6 @@ export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomPro
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     if (e.dataTransfer.files) {
       handleImageUpload(e.dataTransfer.files);
     }
@@ -85,389 +86,471 @@ export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomPro
     }
   };
 
-  // SELLER VIEW - Waiting for buyer payment
-  if (isSeller) {
+  // ============================================================================
+  // COMPLETED STATE - Show read-only payment confirmation
+  // ============================================================================
+  if (mode === "completed") {
     return (
       <div className="lg:col-span-2 space-y-6">
-        {/* Waiting Alert */}
-        <Alert className="border-accent/30 bg-accent/5">
-          <Clock className="h-4 w-4 text-accent" />
-          <AlertDescription className="text-sm text-accent/90">
-            <strong>Awaiting Payment:</strong> Waiting for the buyer to complete the payment transfer.
+        {/* Completion Alert */}
+        <Alert className="border-green-500/30 bg-green-500/5">
+          <Shield className="h-4 w-4 text-green-500" />
+          <AlertDescription className="text-sm text-green-500/90">
+            <strong>Payment Confirmed:</strong> Payment was verified and confirmed on{" "}
+            {transaction.payment.confirmedAt && formatTime(transaction.payment.confirmedAt)}.
           </AlertDescription>
         </Alert>
 
-        {/* Waiting State Card */}
+        {/* Payment Details Summary */}
         <Card className="border-border">
-          <CardContent className="p-12">
-            <div className="flex flex-col items-center text-center space-y-6">
-              {/* Animated Icon */}
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-accent/10 border-2 border-accent/30 flex items-center justify-center">
-                  <CreditCard className="h-16 w-16 text-accent" />
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-green-500" />
+                Payment Confirmed
+              </CardTitle>
+              <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
+                <Check className="h-3 w-3 mr-1" />
+                Completed
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
+              <div className="col-span-2">
+                <div className="text-xs text-muted-foreground mb-1">Amount Paid</div>
+                <div className="text-3xl text-green-500 font-bold">${transaction.finalPrice.toFixed(2)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Payment Uploaded</div>
+                <div className="text-sm">
+                  {transaction.payment.uploadedAt && formatTime(transaction.payment.uploadedAt)}
                 </div>
-                <div className="absolute -top-2 -right-2">
-                  <div className="w-12 h-12 rounded-full bg-secondary border-2 border-border flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 text-accent animate-spin" />
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Confirmed At</div>
+                <div className="text-sm">
+                  {transaction.payment.confirmedAt && formatTime(transaction.payment.confirmedAt)}
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Proof Image */}
+            {transaction.payment.proofUrl && (
+              <div className="space-y-2">
+                <Label>Payment Receipt</Label>
+                <div className="relative rounded-lg overflow-hidden border-2 border-green-500/30">
+                  <img
+                    src={transaction.payment.proofUrl}
+                    alt="Payment receipt"
+                    className="w-full h-auto max-h-96 object-contain bg-secondary"
+                  />
+                  <Badge className="absolute bottom-2 left-2 bg-green-500/90 backdrop-blur border-0">
+                    <Check className="h-3 w-3 mr-1" />
+                    Verified
+                  </Badge>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Shipping Address Summary */}
+        {transaction.shippingInfo.fullName && (
+          <Card className="border-border">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-accent" />
+                Delivery Address
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+                <div className="space-y-1 text-sm">
+                  <div><strong>{transaction.shippingInfo.fullName}</strong></div>
+                  <div>{transaction.shippingInfo.address}</div>
+                  <div>{transaction.shippingInfo.city}</div>
+                  <div>{transaction.shippingInfo.phoneNumber}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // ACTIVE-OBSERVER STATE - Waiting for the other party
+  // ============================================================================
+  if (mode === "active-observer") {
+    // SELLER waiting for BUYER to upload payment proof
+    if (isSeller) {
+      // Check if buyer already uploaded proof (awaiting seller confirmation)
+      if (transaction.payment.proofUrl) {
+        return (
+          <div className="lg:col-span-2 space-y-6">
+            {/* Review Alert */}
+            <Alert className="border-accent/30 bg-accent/5">
+              <Shield className="h-4 w-4 text-accent" />
+              <AlertDescription className="text-sm text-accent/90">
+                <strong>Payment Proof Received:</strong> The buyer has submitted payment proof. Please review and confirm.
+              </AlertDescription>
+            </Alert>
+
+            {/* Payment Proof Review */}
+            <Card className="border-border">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-accent" />
+                  Review Payment Proof
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
+                  <div className="col-span-2">
+                    <div className="text-xs text-muted-foreground mb-1">Amount to Verify</div>
+                    <div className="text-3xl text-accent font-bold">${transaction.finalPrice.toFixed(2)}</div>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="text-xs text-muted-foreground mb-1">Uploaded At</div>
+                    <div className="text-sm">
+                      {transaction.payment.uploadedAt && formatTime(transaction.payment.uploadedAt)}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Waiting Message */}
-              <div className="space-y-3">
-                <h2 className="text-2xl">Waiting for Buyer Payment</h2>
-                <p className="text-sm text-muted-foreground max-w-md">
-                  The buyer is processing the payment transfer. You'll be notified once the payment proof is submitted.
-                </p>
-              </div>
+                {/* Payment Proof Image */}
+                <div className="space-y-2">
+                  <Label>Payment Receipt</Label>
+                  <div className="relative rounded-lg overflow-hidden border-2 border-accent">
+                    <img
+                      src={transaction.payment.proofUrl}
+                      alt="Payment receipt"
+                      className="w-full h-auto max-h-96 object-contain bg-secondary"
+                    />
+                    <Badge className="absolute bottom-2 left-2 bg-accent/90 backdrop-blur border-0">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Awaiting Confirmation
+                    </Badge>
+                  </div>
+                </div>
 
-              {/* Status Badge */}
-              <div className="flex flex-wrap items-center justify-center gap-2">
+                {/* Buyer's Shipping Address */}
+                {transaction.shippingInfo.fullName && (
+                  <div className="space-y-2">
+                    <Label>Shipping Address Provided</Label>
+                    <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+                      <div className="space-y-1 text-sm">
+                        <div><strong>{transaction.shippingInfo.fullName}</strong></div>
+                        <div>{transaction.shippingInfo.address}</div>
+                        <div>{transaction.shippingInfo.city}</div>
+                        <div>{transaction.shippingInfo.phoneNumber}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Confirm Button */}
+                <Button className="w-full" size="lg">
+                  <Check className="mr-2 h-5 w-5" />
+                  Confirm Payment Received
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+
+      // Buyer hasn't uploaded yet - pure waiting state
+      return (
+        <div className="lg:col-span-2 space-y-6">
+          <Alert className="border-accent/30 bg-accent/5">
+            <Clock className="h-4 w-4 text-accent" />
+            <AlertDescription className="text-sm text-accent/90">
+              <strong>Awaiting Payment:</strong> Waiting for the buyer to complete the payment transfer.
+            </AlertDescription>
+          </Alert>
+
+          <Card className="border-border">
+            <CardContent className="p-12">
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full bg-accent/10 border-2 border-accent/30 flex items-center justify-center">
+                    <CreditCard className="h-16 w-16 text-accent" />
+                  </div>
+                  <div className="absolute -top-2 -right-2">
+                    <div className="w-12 h-12 rounded-full bg-secondary border-2 border-border flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 text-accent animate-spin" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <h2 className="text-2xl">Waiting for Buyer Payment</h2>
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    The buyer is processing the payment transfer. You'll be notified once the payment proof is submitted.
+                  </p>
+                </div>
                 <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
                   <Clock className="h-3 w-3 mr-1" />
                   Awaiting Payment Proof
                 </Badge>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
 
-              {/* Information */}
-              <Alert className="border-border bg-secondary/30 max-w-md">
-                <Info className="h-4 w-4" />
-                <AlertDescription className="text-xs">
-                  The buyer has up to 72 hours to complete the payment. 
-                  You can chat with the buyer if needed.
-                </AlertDescription>
-              </Alert>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Timeline Preview */}
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="h-5 w-5 text-accent" />
-              Transaction Timeline
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
-                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-muted-foreground">Buyer Completes Payment</div>
-                  <div className="text-xs text-muted-foreground">Pending...</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
-                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-muted-foreground">Payment Verification</div>
-                  <div className="text-xs text-muted-foreground">Pending...</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
-                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
-                  <Upload className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-muted-foreground">Ship Item</div>
-                  <div className="text-xs text-muted-foreground">Pending...</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
-                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
-                  <Check className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-muted-foreground">Transaction Complete</div>
-                  <div className="text-xs text-muted-foreground">Pending...</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    // BUYER in observer mode (shouldn't happen in payment step, but handle gracefully)
+    return null;
   }
 
-  // BUYER VIEW - Payment form
-  return (
-    <div className="lg:col-span-2 space-y-6">
-      {/* Payment Alert */}
-      <Alert className="border-accent/30 bg-accent/5">
-        <Shield className="h-4 w-4 text-accent" />
-        <AlertDescription className="text-sm text-accent/90">
-          <strong>Payment Required:</strong> Please complete the payment transfer and upload your payment receipt.
-        </AlertDescription>
-      </Alert>
+  // ============================================================================
+  // ACTIVE-ACTOR STATE - User needs to take action
+  // ============================================================================
+  if (mode === "active-actor") {
+    // BUYER VIEW - Payment form
+    return (
+      <div className="lg:col-span-2 space-y-6">
+        <Alert className="border-accent/30 bg-accent/5">
+          <Shield className="h-4 w-4 text-accent" />
+          <AlertDescription className="text-sm text-accent/90">
+            <strong>Payment Required:</strong> Please complete the payment transfer and upload your payment receipt.
+          </AlertDescription>
+        </Alert>
 
-      {/* Payment Details */}
-      <Card className="border-border">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-accent" />
-              Payment Information
-            </CardTitle>
-            <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
-              <AlertCircle className="h-3 w-3 mr-1" />
-              Awaiting Payment
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
-            <div className="col-span-2">
-              <div className="text-xs text-muted-foreground mb-1">
-                Total Amount to Transfer
-              </div>
-              <div className="text-3xl text-accent font-bold">$1,400.00</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Upload Payment Proof */}
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Upload className="h-5 w-5 text-accent" />
-            Upload Payment Receipt
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert className="border-border bg-secondary/30">
-            <Info className="h-4 w-4" />
-            <AlertDescription className="text-xs">
-              After completing the payment, upload a screenshot or photo of your payment receipt for verification.
-            </AlertDescription>
-          </Alert>
-
-          {/* Upload Area */}
-          <div
-            className={`relative border-2 border-dashed rounded-lg transition-all ${
-              dragActive
-                ? "border-accent bg-accent/10"
-                : "border-border hover:border-accent/50 hover:bg-accent/5"
-            }`}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            <input
-              type="file"
-              id="payment-proof-upload"
-              accept="image/*"
-              onChange={(e) => handleImageUpload(e.target.files)}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              disabled={!!paymentProof}
-            />
-            <div className="p-8 text-center">
-              <div className="p-4 rounded-full bg-secondary/50 w-fit mx-auto mb-4">
-                <ImageIcon className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <p className="mb-2">
-                Drag and drop your receipt here, or{" "}
-                <span className="text-accent">click to browse</span>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                PNG, JPG or WEBP (Max 5MB)
-              </p>
-            </div>
-          </div>
-
-          {/* Image Preview */}
-          {paymentProof && (
-            <div className="relative rounded-lg overflow-hidden border-2 border-border">
-              <img
-                src={URL.createObjectURL(paymentProof)}
-                alt="Payment receipt"
-                className="w-full h-auto max-h-96 object-contain bg-secondary"
-              />
-              <button
-                type="button"
-                onClick={removeImage}
-                className="absolute top-2 right-2 p-2 rounded-full bg-destructive/90 backdrop-blur text-white hover:bg-destructive transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-              <Badge className="absolute bottom-2 left-2 bg-green-500/90 backdrop-blur border-0">
-                <Check className="h-3 w-3 mr-1" />
-                Receipt Uploaded
+        {/* Payment Details */}
+        <Card className="border-border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-accent" />
+                Payment Information
+              </CardTitle>
+              <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                Awaiting Payment
               </Badge>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
+              <div className="col-span-2">
+                <div className="text-xs text-muted-foreground mb-1">Total Amount to Transfer</div>
+                <div className="text-3xl text-accent font-bold">${transaction.finalPrice.toFixed(2)}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Shipping Address Form - Only for Buyers */}
-      {!isSeller && (
+        {/* Upload Payment Proof */}
         <Card className="border-border">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-accent" />
-              Delivery Address
+              <Upload className="h-5 w-5 text-accent" />
+              Upload Payment Receipt
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert className="border-border bg-secondary/30">
               <Info className="h-4 w-4" />
               <AlertDescription className="text-xs">
-                Please provide your delivery address. This will be shared with the seller for shipping.
+                After completing the payment, upload a screenshot or photo of your payment receipt for verification.
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">
-                  Full Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="fullName"
-                  placeholder="John Doe"
-                  value={shippingAddress.fullName}
-                  onChange={(e) =>
-                    setShippingAddress({
-                      ...shippingAddress,
-                      fullName: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="addressLine1">
-                  Address Line 1 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="addressLine1"
-                  placeholder="123 Main Street"
-                  value={shippingAddress.addressLine1}
-                  onChange={(e) =>
-                    setShippingAddress({
-                      ...shippingAddress,
-                      addressLine1: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="addressLine2">Address Line 2 (Optional)</Label>
-                <Input
-                  id="addressLine2"
-                  placeholder="Apartment, suite, etc."
-                  value={shippingAddress.addressLine2}
-                  onChange={(e) =>
-                    setShippingAddress({
-                      ...shippingAddress,
-                      addressLine2: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">
-                    City <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="city"
-                    placeholder="New York"
-                    value={shippingAddress.city}
-                    onChange={(e) =>
-                      setShippingAddress({
-                        ...shippingAddress,
-                        city: e.target.value,
-                      })
-                    }
-                    required
-                  />
+            <div
+              className={`relative border-2 border-dashed rounded-lg transition-all ${
+                dragActive
+                  ? "border-accent bg-accent/10"
+                  : "border-border hover:border-accent/50 hover:bg-accent/5"
+              }`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+              <input
+                type="file"
+                id="payment-proof-upload"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e.target.files)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={!!paymentProof}
+              />
+              <div className="p-8 text-center">
+                <div className="p-4 rounded-full bg-secondary/50 w-fit mx-auto mb-4">
+                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="state">
-                    State <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="state"
-                    placeholder="NY"
-                    value={shippingAddress.state}
-                    onChange={(e) =>
-                      setShippingAddress({
-                        ...shippingAddress,
-                        state: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="zipCode">
-                    ZIP Code <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="zipCode"
-                    placeholder="10001"
-                    value={shippingAddress.zipCode}
-                    onChange={(e) =>
-                      setShippingAddress({
-                        ...shippingAddress,
-                        zipCode: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">
-                    Phone <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="(555) 123-4567"
-                    value={shippingAddress.phone}
-                    onChange={(e) =>
-                      setShippingAddress({
-                        ...shippingAddress,
-                        phone: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
+                <p className="mb-2">
+                  Drag and drop your receipt here, or{" "}
+                  <span className="text-accent">click to browse</span>
+                </p>
+                <p className="text-xs text-muted-foreground">PNG, JPG or WEBP (Max 5MB)</p>
               </div>
             </div>
+
+            {paymentProof && (
+              <div className="relative rounded-lg overflow-hidden border-2 border-border">
+                <img
+                  src={URL.createObjectURL(paymentProof)}
+                  alt="Payment receipt"
+                  className="w-full h-auto max-h-96 object-contain bg-secondary"
+                />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 p-2 rounded-full bg-destructive/90 backdrop-blur text-white hover:bg-destructive transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <Badge className="absolute bottom-2 left-2 bg-green-500/90 backdrop-blur border-0">
+                  <Check className="h-3 w-3 mr-1" />
+                  Receipt Uploaded
+                </Badge>
+              </div>
+            )}
           </CardContent>
         </Card>
-      )}
 
-      {/* Confirm Payment Button */}
-      <Button
-        className="w-full"
-        size="lg"
-        disabled={!paymentProof}
-        onClick={handleSubmit}
-      >
-        <Check className="mr-2 h-5 w-5" />
-        Confirm Payment Sent
-      </Button>
-    </div>
-  );
+        {/* Shipping Address Form - Only for Buyers */}
+        {!isSeller && (
+          <Card className="border-border">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-accent" />
+                Delivery Address
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="border-border bg-secondary/30">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  Please provide your delivery address. This will be shared with the seller for shipping.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">
+                    Full Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="fullName"
+                    placeholder="John Doe"
+                    value={shippingAddress.fullName}
+                    onChange={(e) =>
+                      setShippingAddress({ ...shippingAddress, fullName: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="addressLine1">
+                    Address Line 1 <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="addressLine1"
+                    placeholder="123 Main Street"
+                    value={shippingAddress.addressLine1}
+                    onChange={(e) =>
+                      setShippingAddress({ ...shippingAddress, addressLine1: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="addressLine2">Address Line 2 (Optional)</Label>
+                  <Input
+                    id="addressLine2"
+                    placeholder="Apartment, suite, etc."
+                    value={shippingAddress.addressLine2}
+                    onChange={(e) =>
+                      setShippingAddress({ ...shippingAddress, addressLine2: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">
+                      City <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="city"
+                      placeholder="New York"
+                      value={shippingAddress.city}
+                      onChange={(e) =>
+                        setShippingAddress({ ...shippingAddress, city: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="state">
+                      State <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="state"
+                      placeholder="NY"
+                      value={shippingAddress.state}
+                      onChange={(e) =>
+                        setShippingAddress({ ...shippingAddress, state: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode">
+                      ZIP Code <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="zipCode"
+                      placeholder="10001"
+                      value={shippingAddress.zipCode}
+                      onChange={(e) =>
+                        setShippingAddress({ ...shippingAddress, zipCode: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">
+                      Phone <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      value={shippingAddress.phone}
+                      onChange={(e) =>
+                        setShippingAddress({ ...shippingAddress, phone: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Button className="w-full" size="lg" disabled={!paymentProof} onClick={handleSubmit}>
+          <Check className="mr-2 h-5 w-5" />
+          Confirm Payment Sent
+        </Button>
+      </div>
+    );
+  }
+
+  // LOCKED STATE - Step not yet available
+  return null;
 }
