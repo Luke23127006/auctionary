@@ -39,14 +39,10 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   
-  // Shipping address form state
   const [shippingAddress, setShippingAddress] = useState({
     fullName: transaction.shippingInfo.fullName || "",
-    addressLine1: transaction.shippingInfo.address || "",
-    addressLine2: "",
+    address: transaction.shippingInfo.address || "",
     city: transaction.shippingInfo.city || "",
-    state: "",
-    zipCode: "",
     phone: transaction.shippingInfo.phoneNumber || "",
   });
 
@@ -86,9 +82,6 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
     }
   };
 
-  // ============================================================================
-  // COMPLETED STATE - Show read-only payment confirmation
-  // ============================================================================
   if (mode === "completed") {
     return (
       <div className="lg:col-span-2 space-y-6">
@@ -186,7 +179,7 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
   if (mode === "active-observer") {
     // SELLER waiting for BUYER to upload payment proof
     if (isSeller) {
-      // Check if buyer already uploaded proof (awaiting seller confirmation)
+      // Check if buyer already uploaded proof (seller just observes, no confirmation here)
       if (transaction.payment.proofUrl) {
         return (
           <div className="lg:col-span-2 space-y-6">
@@ -194,7 +187,7 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
             <Alert className="border-accent/30 bg-accent/5">
               <Shield className="h-4 w-4 text-accent" />
               <AlertDescription className="text-sm text-accent/90">
-                <strong>Payment Proof Received:</strong> The buyer has submitted payment proof. Please review and confirm.
+                <strong>Payment Proof Received:</strong> The buyer has submitted payment proof. You'll confirm payment in the next step.
               </AlertDescription>
             </Alert>
 
@@ -203,7 +196,7 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-accent" />
-                  Review Payment Proof
+                  Payment Proof Submitted
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -231,7 +224,7 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                     />
                     <Badge className="absolute bottom-2 left-2 bg-accent/90 backdrop-blur border-0">
                       <AlertCircle className="h-3 w-3 mr-1" />
-                      Awaiting Confirmation
+                      Awaiting Your Confirmation (Next Step)
                     </Badge>
                   </div>
                 </div>
@@ -251,11 +244,13 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                   </div>
                 )}
 
-                {/* Confirm Button */}
-                <Button className="w-full" size="lg">
-                  <Check className="mr-2 h-5 w-5" />
-                  Confirm Payment Received
-                </Button>
+                {/* Info Alert - No action needed here */}
+                <Alert className="border-border bg-secondary/30">
+                  <Info className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    You will confirm payment receipt and upload shipping proof in the next step.
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
           </div>
@@ -302,15 +297,10 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
       );
     }
 
-    // BUYER in observer mode (shouldn't happen in payment step, but handle gracefully)
     return null;
   }
 
-  // ============================================================================
-  // ACTIVE-ACTOR STATE - User needs to take action
-  // ============================================================================
   if (mode === "active-actor") {
-    // BUYER VIEW - Payment form
     return (
       <div className="lg:col-span-2 space-y-6">
         <Alert className="border-accent/30 bg-accent/5">
@@ -452,25 +442,13 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                     Address Line 1 <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="addressLine1"
+                    id="address"
                     placeholder="123 Main Street"
-                    value={shippingAddress.addressLine1}
+                    value={shippingAddress.address}
                     onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, addressLine1: e.target.value })
+                      setShippingAddress({ ...shippingAddress, address: e.target.value })
                     }
                     required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="addressLine2">Address Line 2 (Optional)</Label>
-                  <Input
-                    id="addressLine2"
-                    placeholder="Apartment, suite, etc."
-                    value={shippingAddress.addressLine2}
-                    onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, addressLine2: e.target.value })
-                    }
                   />
                 </div>
 
@@ -489,39 +467,6 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                       required
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="state">
-                      State <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="state"
-                      placeholder="NY"
-                      value={shippingAddress.state}
-                      onChange={(e) =>
-                        setShippingAddress({ ...shippingAddress, state: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="zipCode">
-                      ZIP Code <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="zipCode"
-                      placeholder="10001"
-                      value={shippingAddress.zipCode}
-                      onChange={(e) =>
-                        setShippingAddress({ ...shippingAddress, zipCode: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="phone">
                       Phone <span className="text-destructive">*</span>
@@ -529,7 +474,7 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="(555) 123-4567"
+                      placeholder=""
                       value={shippingAddress.phone}
                       onChange={(e) =>
                         setShippingAddress({ ...shippingAddress, phone: e.target.value })
@@ -551,6 +496,5 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller }:
     );
   }
 
-  // LOCKED STATE - Step not yet available
   return null;
 }

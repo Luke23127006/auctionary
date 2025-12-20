@@ -31,19 +31,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { formatTime } from "../../utils/dateUtils";
 import type { TransactionDetailResponse, TransactionStatus } from "../../types/transaction";
 
-// ============================================================================
-// TYPE DEFINITIONS
-// ============================================================================
-
 type StepState = "completed" | "active-actor" | "active-observer" | "locked";
 
-// ============================================================================
-// HELPER FUNCTIONS - Map Transaction Status to UI State
-// ============================================================================
-
-/**
- * Get status badge configuration based on transaction status
- */
 const getStatusBadge = (status: TransactionStatus) => {
   switch (status) {
     case "payment_pending":
@@ -132,7 +121,6 @@ const getTransactionSteps = (status: TransactionStatus): TransactionStep[] => {
     },
   ];
 
-  // Update statuses based on transaction state (cumulative)
   switch (status) {
     case "payment_pending":
       steps[0].status = "pending";
@@ -153,7 +141,6 @@ const getTransactionSteps = (status: TransactionStatus): TransactionStep[] => {
       steps[3].status = "completed";
       break;
     case "cancelled":
-      // All steps remain upcoming for cancelled
       break;
   }
 
@@ -175,9 +162,6 @@ const getProgressPercentage = (status: TransactionStatus): number => {
   }
 };
 
-/**
- * Map transaction messages to chat messages format
- */
 const mapTransactionMessagesToChat = (
   messages: TransactionDetailResponse["messages"],
   buyerId: number,
@@ -186,7 +170,6 @@ const mapTransactionMessagesToChat = (
   sellerName: string
 ): ChatMessage[] => {
   return messages.map((msg) => {
-    // Determine sender type
     let sender: "buyer" | "seller" | "system";
     let name: string | undefined;
     let avatar: string | undefined;
@@ -214,9 +197,6 @@ const mapTransactionMessagesToChat = (
   });
 };
 
-/**
- * Get footer text for chat based on transaction status
- */
 const getChatFooterText = (status: TransactionStatus): string => {
   switch (status) {
     case "payment_pending":
@@ -232,15 +212,6 @@ const getChatFooterText = (status: TransactionStatus): string => {
   }
 };
 
-/**
- * Determine the state of each transaction step based on backend data
- * Priority: Actual database timestamps over status enum
- * 
- * Rules:
- * - Completed: Timestamp for end of step is NOT NULL
- * - Active: Previous step completed AND current step timestamp is NULL
- * - Locked: Previous step NOT completed
- */
 const getStepStates = (
   transaction: TransactionDetailResponse,
   isSeller: boolean
@@ -257,90 +228,46 @@ const getStepStates = (
     complete: "locked" as StepState,
   };
 
-  // ============================================================================
-  // STEP 1: PAYMENT
-  // Completed when: payment.confirmedAt is NOT NULL
-  // Active when: payment.confirmedAt is NULL
-  // ============================================================================
   if (transaction.payment.confirmedAt) {
-    // Payment confirmed - step completed
     states.payment = "completed";
   } else {
-    // Payment not confirmed yet
-    // Buyer must upload proof (actor), Seller waits (observer)
     states.payment = isSeller ? "active-observer" : "active-actor";
   }
 
-  // ============================================================================
-  // STEP 2: SHIPPING
-  // Completed when: fulfillment.shippedConfirmedAt is NOT NULL
-  // Active when: payment confirmed AND (shippingInfo exists OR shippedConfirmedAt is NULL)
-  // Locked when: payment NOT confirmed
-  // ============================================================================
   if (transaction.fulfillment.shippedConfirmedAt) {
-    // Shipping confirmed - step completed
     states.shipping = "completed";
   } else if (transaction.payment.confirmedAt) {
-    // Payment confirmed, but shipping not confirmed yet
-    
-    // Sub-step 1: Buyer provides shipping address (if not provided yet)
     const hasShippingAddress = transaction.shippingInfo.fullName && 
                                 transaction.shippingInfo.address;
     
     if (!hasShippingAddress) {
-      // Buyer needs to provide shipping address
       states.shipping = isSeller ? "active-observer" : "active-actor";
     } else {
-      // Address exists, Seller needs to upload shipping proof
       states.shipping = isSeller ? "active-actor" : "active-observer";
     }
   } else {
-    // Payment not confirmed - shipping is locked
     states.shipping = "locked";
   }
 
-  // ============================================================================
-  // STEP 3: DELIVERY
-  // Completed when: fulfillment.buyerReceivedAt is NOT NULL
-  // Active when: shipping confirmed AND buyerReceivedAt is NULL
-  // Locked when: shipping NOT confirmed
-  // ============================================================================
   if (transaction.fulfillment.buyerReceivedAt) {
-    // Buyer confirmed receipt - step completed
     states.delivery = "completed";
   } else if (transaction.fulfillment.shippedConfirmedAt) {
-    // Package shipped, waiting for buyer confirmation
-    // Buyer confirms receipt (actor), Seller waits (observer)
     states.delivery = isSeller ? "active-observer" : "active-actor";
   } else {
-    // Shipping not confirmed - delivery is locked
     states.delivery = "locked";
   }
 
-  // ============================================================================
-  // STEP 4: COMPLETE (FEEDBACK)
-  // Completed when: completedAt is NOT NULL
-  // Active when: buyer received AND completedAt is NULL
-  // Locked when: buyer NOT received
-  // ============================================================================
   if (transaction.completedAt) {
-    // Transaction completed
     states.complete = "completed";
   } else if (transaction.fulfillment.buyerReceivedAt) {
-    // Buyer received item, waiting for feedback/completion
-    // Both can leave feedback (both are actors)
     states.complete = "active-actor";
   } else {
-    // Buyer hasn't received - complete is locked
     states.complete = "locked";
   }
 
   return states;
 };
 
-/**
- * Render step header with status indicator
- */
 const StepHeader = ({
   icon: Icon,
   label,
@@ -414,24 +341,18 @@ const StepHeader = ({
 };
 
 export default function TransactionRoomPage() {
-  // Get transaction ID from URL
   const { id } = useParams<{ id: string }>();
   const transactionId = Number(id);
 
-  // Fetch transaction data and current user
   const { transaction, isLoading, error } = useTransaction(transactionId);
   const { user } = useAuth();
 
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
 
-  // State for controlling which accordion items are expanded
-  // Initialize with active steps expanded
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
-  // Determine if current user is the seller (safe with optional chaining)
   const isSeller = user?.id === transaction?.seller.id;
 
-  // Determine step states (only if transaction exists)
   const stepStates = transaction
     ? getStepStates(transaction, isSeller)
     : {
@@ -441,7 +362,6 @@ export default function TransactionRoomPage() {
         complete: "locked" as StepState,
       };
 
-  // Auto-expand active steps when transaction data changes
   React.useEffect(() => {
     if (!transaction) return;
     
@@ -453,7 +373,6 @@ export default function TransactionRoomPage() {
     setExpandedItems(active);
   }, [transaction, stepStates.payment, stepStates.shipping, stepStates.delivery, stepStates.complete]);
 
-  // Show loading state
   if (isLoading) {
     return (
       <MainLayout>
@@ -464,7 +383,6 @@ export default function TransactionRoomPage() {
     );
   }
 
-  // Show error state
   if (error || !transaction) {
     return (
       <MainLayout>
@@ -477,7 +395,6 @@ export default function TransactionRoomPage() {
     );
   }
 
-  // Map transaction messages to chat format
   const chatMessages = mapTransactionMessagesToChat(
     transaction.messages,
     transaction.buyer.id,
@@ -485,13 +402,6 @@ export default function TransactionRoomPage() {
     transaction.buyer.fullName,
     transaction.seller.fullName
   );
-
-  // const handleSubmitAddress = () => {
-  //   toast.success("Address Confirmed!", {
-  //     description:
-  //       "Your delivery address has been saved and shared with the seller.",
-  //   });
-  // };
 
   const handlePaymentProof = (file: File) => {
     console.log("Payment proof uploaded:", file.name);
@@ -540,12 +450,10 @@ export default function TransactionRoomPage() {
 
   const handleSendMessage = (message: string) => {
     console.log("Send message:", message);
-    // In real app, send to API
   };
 
   return (
     <MainLayout>
-      {/* Breadcrumb */}
       <div className="border-b border-border bg-card/30">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -561,7 +469,6 @@ export default function TransactionRoomPage() {
               <span className="text-foreground">TXN-{transaction.id}</span>
             </div>
 
-            {/* Only show Rate Transaction button if transaction is completed */}
             {transaction.completedAt && (
               <Button variant="outline" size="sm" onClick={handleOpenFeedback}>
                 Rate Transaction
@@ -571,10 +478,8 @@ export default function TransactionRoomPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-6">
-          {/* Shared Header */}
           <TransactionRoomHeader
             statusBadge={getStatusBadge(transaction.status)}
             description={getDescription(transaction.status, isSeller)}
@@ -584,26 +489,22 @@ export default function TransactionRoomPage() {
             onCancelTransaction={handleCancelTransaction}
           />
 
-          {/* Shared Product Summary */}
           <TransactionProductSummary
             product={{
               image: transaction.product.thumbnailUrl,
               title: transaction.product.name,
-              endDate: "Auction Ended", // TODO: Need auction end date from backend
-              category: "Product", // TODO: Need category from backend
+              endDate: "Auction Ended",
+              category: "Product",
               winningBid: transaction.finalPrice,
             }}
           />
 
-          {/* Shared Transaction Stepper */}
           <TransactionStepper
             steps={getTransactionSteps(transaction.status)}
             progressPercentage={getProgressPercentage(transaction.status)}
           />
 
-          {/* Vertical Stacked Accordion Layout */}
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left: Transaction Stages (Accordion) */}
             <div className="lg:col-span-2 space-y-4">
               <Accordion
                 type="multiple"
@@ -611,7 +512,6 @@ export default function TransactionRoomPage() {
                 onValueChange={setExpandedItems}
                 className="space-y-4"
               >
-                {/* Step 1: Payment */}
                 <AccordionItem
                   value="payment"
                   className={`border rounded-lg ${
@@ -651,7 +551,6 @@ export default function TransactionRoomPage() {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Step 2: Shipping */}
                 <AccordionItem
                   value="shipping"
                   className={`border rounded-lg ${
@@ -691,7 +590,6 @@ export default function TransactionRoomPage() {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Step 3: Delivery */}
                 <AccordionItem
                   value="delivery"
                   className={`border rounded-lg ${
@@ -732,7 +630,6 @@ export default function TransactionRoomPage() {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Step 4: Complete */}
                 <AccordionItem
                   value="complete"
                   className={`border rounded-lg ${
@@ -769,7 +666,6 @@ export default function TransactionRoomPage() {
               </Accordion>
             </div>
 
-            {/* Shared Chat Box */}
             <div className="lg:col-span-1">
               <TransactionChat
                 messages={chatMessages}
@@ -781,7 +677,6 @@ export default function TransactionRoomPage() {
         </div>
       </main>
 
-      {/* Feedback Modal */}
       <FeedbackModal
         open={feedbackModalOpen}
         onOpenChange={setFeedbackModalOpen}

@@ -20,6 +20,8 @@ import {
   Info,
   Loader2,
   MapPin,
+  CreditCard,
+  AlertCircle,
 } from "lucide-react";
 import type { TransactionDetailResponse } from "../../../types/transaction";
 import { formatTime } from "../../../utils/dateUtils";
@@ -41,6 +43,7 @@ export function TransactionRoomShipping({
 }: TransactionRoomShippingProps) {
   const [shippingProof, setShippingProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
   const handleImageUpload = (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -282,42 +285,81 @@ export function TransactionRoomShipping({
   // ACTIVE-ACTOR STATE - User needs to take action
   // ============================================================================
   if (mode === "active-actor") {
-    // SELLER VIEW - Upload shipping proof
+    // SELLER VIEW - Confirm payment received and upload shipping proof
     if (isSeller) {
       return (
         <div className="lg:col-span-2 space-y-6">
-          <Alert className="border-green-500/30 bg-green-500/5">
-            <Shield className="h-4 w-4 text-green-500" />
-            <AlertDescription className="text-sm text-green-500/90">
-              <strong>Payment Confirmed:</strong> Please ship the item and upload proof of shipment.
+          <Alert className="border-accent/30 bg-accent/5">
+            <Shield className="h-4 w-4 text-accent" />
+            <AlertDescription className="text-sm text-accent/90">
+              <strong>Action Required:</strong> Confirm payment received and upload proof of shipment.
             </AlertDescription>
           </Alert>
 
-          {/* Status Card */}
+          {/* Payment Proof from Buyer - Review Section */}
           <Card className="border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-6">
-                <div className="flex-shrink-0">
-                  <div className="w-20 h-20 rounded-full bg-accent/10 border-2 border-accent/30 flex items-center justify-center">
-                    <PackageCheck className="h-10 w-10 text-accent" />
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-accent" />
+                Buyer's Payment Proof
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="border-border bg-secondary/30">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  Please verify the payment proof before confirming. Make sure the amount matches.
+                </AlertDescription>
+              </Alert>
+
+              <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
+                <div className="col-span-2">
+                  <div className="text-xs text-muted-foreground mb-1">Amount to Verify</div>
+                  <div className="text-3xl text-accent font-bold">${transaction.finalPrice.toFixed(2)}</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-xs text-muted-foreground mb-1">Payment Uploaded At</div>
+                  <div className="text-sm">
+                    {transaction.payment.uploadedAt && formatTime(transaction.payment.uploadedAt)}
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl mb-2">Ready to Ship</h2>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    The buyer has completed the payment. Please prepare the item for shipping.
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
-                      <Check className="h-3 w-3 mr-1" />
-                      Payment Confirmed
-                    </Badge>
-                    <Badge className="bg-accent/20 text-accent border-accent/50">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Action Required
+              </div>
+
+              {/* Payment Proof Image */}
+              {transaction.payment.proofUrl && (
+                <div className="space-y-2">
+                  <Label>Payment Receipt</Label>
+                  <div className="relative rounded-lg overflow-hidden border-2 border-accent">
+                    <img
+                      src={transaction.payment.proofUrl}
+                      alt="Payment receipt"
+                      className="w-full h-auto max-h-96 object-contain bg-secondary"
+                    />
+                    <Badge className="absolute bottom-2 left-2 bg-yellow-500/90 backdrop-blur border-0">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Awaiting Your Confirmation
                     </Badge>
                   </div>
                 </div>
+              )}
+
+              {/* Payment Confirmation Checkbox */}
+              <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-accent/30 bg-accent/5">
+                <input
+                  type="checkbox"
+                  id="payment-confirmation"
+                  checked={paymentConfirmed}
+                  onChange={(e) => setPaymentConfirmed(e.target.checked)}
+                  className="mt-1 h-5 w-5 rounded border-accent text-accent focus:ring-accent cursor-pointer"
+                />
+                <label htmlFor="payment-confirmation" className="flex-1 cursor-pointer">
+                  <div className="font-medium text-accent mb-1">
+                    Tôi xác nhận đã nhận đủ tiền
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    By checking this box, you confirm that you have received the full payment of ${transaction.finalPrice.toFixed(2)} from the buyer.
+                  </div>
+                </label>
               </div>
             </CardContent>
           </Card>
@@ -362,7 +404,7 @@ export function TransactionRoomShipping({
               <Alert className="border-border bg-secondary/30">
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-xs">
-                  Upload a photo of the shipping receipt or tracking number (required to proceed).
+                  Upload a photo of the shipping receipt or tracking number to proceed.
                 </AlertDescription>
               </Alert>
 
@@ -420,15 +462,25 @@ export function TransactionRoomShipping({
             </CardContent>
           </Card>
 
+          {/* Submit Button - Requires both conditions */}
           <Button
             className="w-full"
             size="lg"
-            disabled={!shippingProof}
+            disabled={!shippingProof || !paymentConfirmed}
             onClick={handleSubmit}
           >
             <Check className="mr-2 h-5 w-5" />
-            Confirm Shipped
+            Confirm Payment & Shipment
           </Button>
+
+          {(!shippingProof || !paymentConfirmed) && (
+            <Alert className="border-yellow-500/30 bg-yellow-500/5">
+              <AlertCircle className="h-4 w-4 text-yellow-500" />
+              <AlertDescription className="text-xs text-yellow-500/90">
+                Please {!paymentConfirmed && "confirm payment received"}{!paymentConfirmed && !shippingProof && " and "}{!shippingProof && "upload shipping proof"} to continue.
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       );
     }

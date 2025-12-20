@@ -391,8 +391,8 @@ export const getProductBidInfo = async (
 ) => {
   const product = await (trx || db)("products")
     .where({ id: productId })
-    .select("step_price", "start_price", "current_price", "highest_bidder_id")
-    .forUpdate() // Lock the row for consistency
+    .select("step_price", "start_price", "current_price", "highest_bidder_id", "status")
+    .forUpdate()
     .first();
 
   if (!product) {
