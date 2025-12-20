@@ -12,6 +12,23 @@ function escapeQuery(q: string) {
     .trim();
 }
 
+export const getProductBasicInfoById = async (productId: number) => {
+  const product = await db("products")
+    .where("products.id", productId)
+    .select(
+      "products.id",
+      "products.name",
+      "products.status"
+    )
+    .first();
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  return product;
+};
+
 export const searchProducts = async (
   q?: string,
   categorySlugs?: string[],
@@ -24,8 +41,7 @@ export const searchProducts = async (
   const offset = (page - 1) * limit;
 
   let query = db("products")
-    .where("products.status", "active")
-    .where("products.end_time", ">", new Date());
+    .whereIn("products.status", ["active", "sold", "expired"]);
 
   if (q) {
     const safeQ = escapeQuery(q);
@@ -65,6 +81,17 @@ export const searchProducts = async (
     .count("products.id as total")
     .first();
 
+  // Order by status priority first: active > sold > expired
+  query = query.orderByRaw(
+    `CASE 
+      WHEN products.status = 'active' THEN 1 
+      WHEN products.status = 'sold' THEN 2 
+      WHEN products.status = 'expired' THEN 3 
+      ELSE 4 
+    END`
+  );
+
+  // Then apply user's custom sort or default sort
   if (sort && Array.isArray(sort) && sort.length > 0) {
     sort.forEach((item) => {
       const dbField =
@@ -98,6 +125,7 @@ export const searchProducts = async (
       "products.end_time",
       "products.bid_count",
       "products.highest_bidder_id",
+      "products.seller_id",
       "users.full_name as bidder_name"
     )
     .limit(limit)
@@ -363,8 +391,8 @@ export const getProductBidInfo = async (
 ) => {
   const product = await (trx || db)("products")
     .where({ id: productId })
-    .select("step_price", "start_price", "current_price", "highest_bidder_id")
-    .forUpdate() // Lock the row for consistency
+    .select("step_price", "start_price", "current_price", "highest_bidder_id", "status")
+    .forUpdate()
     .first();
 
   if (!product) {

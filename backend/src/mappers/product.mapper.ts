@@ -36,8 +36,11 @@ export const mapToProductListCard = (product: any): ProductListCardProps => {
     buyNowPrice: product.buy_now_price ? toNum(product.buy_now_price) : undefined,
     topBidder: product.bidder_name || "No bids yet",
     timeLeft,
+    endTime: product.end_time,
+    status: product.status,
     isNewArrival,
     bidCount: product.bid_count || 0,
+    ...(product.transaction && { transaction: product.transaction }),
   };
 };
 

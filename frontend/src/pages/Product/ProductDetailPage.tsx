@@ -125,6 +125,8 @@ export default function ProductDetailPage() {
         topBidder: auction.topBidder,
         bidCount: auction.bidCount,
         timeLeft: timeLeft,
+        endTime: auction.endTime,
+        status: auction.status,
         isNewArrival: false,
       };
 
@@ -219,6 +221,7 @@ export default function ProductDetailPage() {
           bids={bids}
           questions={questions}
           sellerId={seller.id}
+          auctionStatus={auction.status}
           onAppendDescription={appendDescription}
           onAppendQuestion={appendQuestion}
           onAppendAnswer={appendAnswer}

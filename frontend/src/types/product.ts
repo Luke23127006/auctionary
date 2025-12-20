@@ -1,13 +1,20 @@
 export interface Product {
   id: string;
+  slug?: string;
   title: string;
   image: string;
   currentBid: number;
   buyNowPrice?: number;
   topBidder: string;
   timeLeft: string;
+  endTime: string;
+  status: string;
   isNewArrival?: boolean;
   bidCount: number;
+  transaction?: {
+    id: number;
+    canAccess: boolean;
+  };
 }
 
 export interface SearchProductsParams {
@@ -151,8 +158,14 @@ export interface ProductListCardProps {
   buyNowPrice?: number;
   topBidder: string;
   timeLeft: string;
+  endTime: string;
+  status: string;
   isNewArrival?: boolean;
   bidCount: number;
+  transaction?: {
+    id: number;
+    canAccess: boolean;
+  };
 }
 
 export interface PlaceBidResponse {
@@ -185,7 +198,7 @@ export interface Step2Data {
   description: string;
   autoExtend: boolean;
 }
-export interface AuctionFormData extends Step1Data, Step2Data {}
+export interface AuctionFormData extends Step1Data, Step2Data { }
 
 export interface CreateProductPayload {
   name: string;

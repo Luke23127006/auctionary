@@ -5,6 +5,7 @@ import { placeBidSchema } from "../dtos/requests/place-bid.schema";
 import { authorize } from "../middlewares/authorize.middleware";
 import * as productController from "../controllers/product.controller";
 import { requireAuth } from "../middlewares/require-auth.middleware";
+import { userIdentifier } from "../middlewares/identifier.middleware";
 import multer from "multer";
 
 const upload = multer({
@@ -15,6 +16,7 @@ const router = Router();
 
 router.get(
   "/",
+  userIdentifier,
   validate(searchProductsSchema, "query"),
   productController.searchProducts
 );

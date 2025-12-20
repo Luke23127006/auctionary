@@ -1,4 +1,5 @@
 import * as productRepository from "../repositories/product.repository";
+import * as transactionRepository from "../repositories/transaction.repository";
 import {
   ProductsSearchQuery,
   CreateProduct,
@@ -22,9 +23,11 @@ import {
 } from "../mappers/product.mapper";
 import { toSlug } from "../utils/slug.util";
 import * as storageService from "../services/storage.service";
+import { BadRequestError } from "../errors";
 
 export const searchProducts = async (
-  query: ProductsSearchQuery
+  query: ProductsSearchQuery,
+  userId: number | string | undefined
 ): Promise<PaginatedResult<ProductListCardProps>> => {
   const { q, categorySlug, page, limit, sort, excludeCategorySlug } = query;
 
@@ -36,6 +39,33 @@ export const searchProducts = async (
     sort,
     excludeCategorySlug
   );
+
+  const soldProductIds = result.data
+    .filter(item => item.status === 'sold')
+    .map(item => item.id);
+
+  let transactionMap = new Map<number, { id: number; canAccess: boolean }>();
+
+  if (soldProductIds.length > 0 && userId) {
+    const transactions = await transactionRepository.findTransactionsByProductIds(soldProductIds);
+
+    transactions.forEach(transaction => {
+      const canAccess =
+        userId === transaction.seller_id ||
+        userId === transaction.buyer_id;
+
+      transactionMap.set(transaction.product_id, {
+        id: transaction.id,
+        canAccess,
+      });
+    });
+  }
+
+  result.data.forEach(item => {
+    if (item.status === 'sold' && transactionMap.has(item.id)) {
+      item.transaction = transactionMap.get(item.id);
+    }
+  });
 
   return {
     data: result.data.map(mapToProductListCard),
@@ -114,6 +144,17 @@ export const appendProductDescription = async (
   body: AppendProductDescription
 ): Promise<void> => {
   const { sellerId, content } = body;
+
+  const product = await productRepository.getProductBasicInfoById(productId);
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  if (product.status !== 'active') {
+    throw new BadRequestError("Can only append description to active products");
+  }
+
   await productRepository.appendProductDescription(
     productId,
     sellerId,
@@ -126,6 +167,17 @@ export const appendProductQuestion = async (
   body: AppendProductQuestion
 ): Promise<void> => {
   const { questionerId, content } = body;
+
+  const product = await productRepository.getProductBasicInfoById(productId);
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  if (product.status !== 'active') {
+    throw new BadRequestError("Can only append description to active products");
+  }
+
   await productRepository.appendProductQuestion(productId, questionerId, content);
 }
 
@@ -134,6 +186,17 @@ export const appendProductAnswer = async (
   body: AppendProductAnswer
 ): Promise<void> => {
   const { questionId, answererId, content } = body;
+  
+  const product = await productRepository.getProductBasicInfoById(productId);
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  if (product.status !== 'active') {
+    throw new BadRequestError("Can only reply to questions on active products");
+  }
+
   await productRepository.appendProductAnswer(productId, questionId, answererId, content);
 }
 

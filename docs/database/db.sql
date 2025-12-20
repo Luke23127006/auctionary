@@ -72,7 +72,7 @@ CREATE TABLE public.product_comments (
   user_id integer NOT NULL,
   content text NOT NULL,
   parent_id integer,
-  created_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT product_comments_pkey PRIMARY KEY (id),
   CONSTRAINT product_comments_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.product_comments(id),
   CONSTRAINT product_comments_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
@@ -85,7 +85,7 @@ CREATE TABLE public.product_descriptions (
   content text NOT NULL,
   lang character varying NOT NULL DEFAULT 'vi'::character varying,
   version integer NOT NULL DEFAULT 1,
-  created_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT product_descriptions_pkey PRIMARY KEY (id),
   CONSTRAINT product_descriptions_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.users(id),
   CONSTRAINT product_descriptions_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id)
@@ -102,7 +102,7 @@ CREATE TABLE public.product_rejections (
   product_id integer NOT NULL,
   bidder_id integer NOT NULL,
   reason text,
-  created_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT product_rejections_pkey PRIMARY KEY (id),
   CONSTRAINT product_rejections_bidder_id_fkey FOREIGN KEY (bidder_id) REFERENCES public.users(id),
   CONSTRAINT product_rejections_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id)
@@ -193,8 +193,8 @@ CREATE TABLE public.transaction_messages (
   content text NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT transaction_messages_pkey PRIMARY KEY (id),
-  CONSTRAINT fk_sender FOREIGN KEY (sender_id) REFERENCES public.users(id),
-  CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES public.transactions(id)
+  CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES public.transactions(id),
+  CONSTRAINT fk_sender FOREIGN KEY (sender_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.transactions (
   id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -205,7 +205,7 @@ CREATE TABLE public.transactions (
   status USER-DEFINED NOT NULL DEFAULT 'payment_pending'::transaction_status_enum,
   payment_proof_url text,
   shipping_address text,
-  seller_confirmed_at timestamp with time zone,
+  shipped_confirmed_at timestamp with time zone,
   shipping_proof_url text,
   buyer_received_at timestamp with time zone,
   buyer_rating integer CHECK (buyer_rating = ANY (ARRAY[1, '-1'::integer])),
@@ -214,9 +214,19 @@ CREATE TABLE public.transactions (
   seller_comment text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  shipping_full_name text,
+  shipping_phone_number character varying,
+  shipping_city text,
+  payment_proof_uploaded_at timestamp with time zone,
+  payment_confirmed_at timestamp with time zone,
+  shipping_proof_uploaded_at timestamp with time zone,
+  delivered_at timestamp with time zone,
+  completed_at timestamp with time zone,
+  cancelled_at timestamp with time zone,
+  cancel_reason text,
   CONSTRAINT transactions_pkey PRIMARY KEY (id),
-  CONSTRAINT transactions_buyer_id_fkey FOREIGN KEY (buyer_id) REFERENCES public.users(id),
   CONSTRAINT transactions_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
+  CONSTRAINT transactions_buyer_id_fkey FOREIGN KEY (buyer_id) REFERENCES public.users(id),
   CONSTRAINT transactions_seller_id_fkey FOREIGN KEY (seller_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.upgrade_requests (
@@ -268,7 +278,7 @@ CREATE TABLE public.users_roles (
 CREATE TABLE public.watchlist (
   user_id integer NOT NULL,
   product_id integer NOT NULL,
-  created_at timestamp with time zone NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT watchlist_pkey PRIMARY KEY (user_id, product_id),
   CONSTRAINT watchlist_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
   CONSTRAINT watchlist_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)

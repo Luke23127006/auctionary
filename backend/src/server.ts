@@ -23,6 +23,7 @@ import sellerRouter from "./api/routes/seller.route";
 import adminRouter from "./api/routes/admin.route";
 import upgradeRequestRouter from "./api/routes/upgradeRequest.route";
 import homeRouter from "./api/routes/home.route";
+import transactionRouter from "./api/routes/transaction.route";
 import mailRouter from "./api/routes/mail.route";
 
 const app: Application = express();
@@ -51,6 +52,7 @@ app.use("/watchlist", watchlistRouter);
 app.use("/seller", sellerRouter);
 app.use("/admin", adminRouter);
 app.use("/home", homeRouter);
+app.use("/transactions", transactionRouter);
 app.use("/mail", mailRouter);
 
 // Error Handling

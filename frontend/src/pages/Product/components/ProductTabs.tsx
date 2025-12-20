@@ -46,6 +46,7 @@ interface ProductTabsProps {
   bids?: BidHistoryResponse | null;
   questions?: QuestionsResponse | null;
   sellerId?: number;
+  auctionStatus?: string;
   onAppendDescription?: (content: string) => Promise<void>;
   onAppendQuestion?: (
     content: string,
@@ -63,6 +64,7 @@ export function ProductTabs({
   bids,
   questions,
   sellerId,
+  auctionStatus,
   onAppendDescription,
   onAppendQuestion,
   onAppendAnswer,
@@ -89,6 +91,10 @@ export function ProductTabs({
   );
 
   const handleStartReply = (questionId: string) => {
+    if (auctionStatus !== 'active') {
+      notify.warning("This product has ended. Replies are not available.");
+      return;
+    }
     setReplyingToId(questionId);
     setReplyText("");
   };
@@ -159,6 +165,10 @@ export function ProductTabs({
   };
 
   const handleAddInfoClick = () => {
+    if (auctionStatus === "sold" || auctionStatus === "expired") {
+      notify.warning("This product has ended and cannot be modified.");
+      return;
+    }
     setEditorContent("");
     setIsEditing(true);
   };
@@ -182,7 +192,11 @@ export function ProductTabs({
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Product Description</CardTitle>
             {hasRole("seller") && isSellerOfProduct && !isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddInfoClick}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleAddInfoClick}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Information
               </Button>
@@ -332,11 +346,17 @@ export function ProductTabs({
                   </Avatar>
                   <div className="flex-1 space-y-2">
                     <Textarea
-                      placeholder="Ask a question about this product..."
+                      placeholder={auctionStatus !== 'active' ? "Questions are not available for ended products" : "Ask a question about this product..."}
                       value={questionText}
                       onChange={(e) => setQuestionText(e.target.value)}
-                      onFocus={() => setIsQuestionFocused(true)}
-                      disabled={isAskingQuestion}
+                      onFocus={() => {
+                        if (auctionStatus !== 'active') {
+                          notify.warning("This product has ended. Questions are not available.");
+                        } else {
+                          setIsQuestionFocused(true);
+                        }
+                      }}
+                      disabled={isAskingQuestion || auctionStatus !== 'active'}
                       className="min-h-[60px] resize-none bg-background border-border/50 focus-visible:ring-1 focus-visible:ring-primary/50 transition-all"
                     />
 

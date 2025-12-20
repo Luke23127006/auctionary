@@ -12,8 +12,13 @@ export const placeBid = async (
 ): Promise<PlaceBidResponse> => {
   return await db.transaction(async (trx) => {
     const product = await productRepository.getProductBidInfo(productId, trx);
+
     if (!product) {
       throw new NotFoundError("Product not found");
+    }
+
+    if (product.status !== "active") {
+      throw new BadRequestError("Cannot place bid on inactive product");
     }
 
     const currentPrice = Number(product.current_price);
