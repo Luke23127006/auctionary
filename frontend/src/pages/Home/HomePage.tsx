@@ -84,7 +84,11 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <Button variant="ghost" className="text-accent">
+            <Button
+              variant="ghost"
+              className="text-accent hover:bg-transparent hover:scale-105"
+              onClick={() => navigate("/products?sort=endTime:asc")}
+            >
               View All
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
@@ -130,7 +134,11 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <Button variant="ghost" className="text-accent">
+            <Button
+              variant="ghost"
+              className="text-accent hover:bg-transparent hover:scale-105"
+              onClick={() => navigate("/products?sort=bidCount:desc")}
+            >
               View All
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
@@ -176,7 +184,11 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <Button variant="ghost" className="text-accent">
+            <Button
+              variant="ghost"
+              className="text-accent hover:bg-transparent hover:scale-105"
+              onClick={() => navigate("/products?sort=price:desc")}
+            >
               View All
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>

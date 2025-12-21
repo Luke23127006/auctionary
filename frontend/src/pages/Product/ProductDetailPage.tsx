@@ -1,5 +1,5 @@
 import { ChevronLeft } from "lucide-react";
-import { buttonVariants } from "../../components/ui/button";
+import { Button, buttonVariants } from "../../components/ui/button";
 import { Separator } from "../../components/ui/separator";
 import { ProductListCard } from "./components/ProductListCard";
 import MainLayout from "../../layouts/MainLayout";
@@ -10,7 +10,7 @@ import { ProductBidding } from "./components/ProductBidding";
 import { SellerCommandCenter } from "./components/SellerCommandCenter";
 import { SellerCard } from "./components/SellerCard";
 import { ProductTabs } from "./components/ProductTabs";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { formatTimeLeft } from "../../utils/time";
 import { useWatchlist } from "../../hooks/useWatchlist";
 import { useCategories } from "../../hooks/useCategories";
@@ -38,6 +38,7 @@ export default function ProductDetailPage() {
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
   const { categories } = useCategories();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Helper to generate URL with all children of a parent category
   const getParentCategoryUrl = (parentSlug: string): string => {
@@ -230,16 +231,16 @@ export default function ProductDetailPage() {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl">Similar Items You May Like</h2>
-              <Link
-                to={`/products?category=${product.category.slug}`}
-                className={buttonVariants({
-                  variant: "ghost",
-                  className: "text-accent",
-                })}
+              <Button
+                variant="ghost"
+                className="text-accent hover:bg-transparent hover:scale-105"
+                onClick={() =>
+                  navigate(`/products?category=${product.category.slug}`)
+                }
               >
                 View All
                 <ChevronLeft className="ml-2 h-4 w-4 rotate-180" />
-              </Link>
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
