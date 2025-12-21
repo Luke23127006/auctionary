@@ -22,16 +22,38 @@ interface RawHomeAuctionRow {
 export const mapToHomeAuctionItem = (
   row: RawHomeAuctionRow
 ): HomeAuctionItem => {
+  const endTime = row.end_time.getTime();
+  const now = Date.now();
+  const difference = endTime - now;
+
+  let timeLeft: string;
+  if (difference <= 0) {
+    timeLeft = "ENDED";
+  } else {
+    const hours = Math.floor(difference / (1000 * 60 * 60));
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      timeLeft = `${days}d ${hours % 24}h`;
+    } else if (hours > 0) {
+      timeLeft = `${hours}h ${minutes}m`;
+    } else {
+      timeLeft = `${minutes}m`;
+    }
+  }
+
   return {
     id: row.id,
     title: row.name,
     image: row.thumbnail_url || "",
     currentBid: parseFloat(row.current_price),
-    buyNowPrice: row.buy_now_price ? parseFloat(row.buy_now_price) : null,
-    seller: row.seller_name,
-    topBidder: row.top_bidder_name,
+    buyNowPrice: row.buy_now_price ? parseFloat(row.buy_now_price) : undefined,
+    topBidder: row.top_bidder_name || "No bids yet",
     bidCount: row.bid_count,
     endTime: row.end_time.toISOString(),
+    timeLeft,
+    status: "active",
   };
 };
 

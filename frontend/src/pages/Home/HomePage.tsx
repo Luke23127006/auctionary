@@ -13,7 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import { ChevronRight } from "lucide-react";
-import { AuctionCard } from "./components/AuctionCard";
+import { ProductListCard } from "../Product/components/ProductListCard";
 import { AuctionCardSkeleton } from "./components/AuctionCardSkeleton";
 import { EmptyState } from "./components/EmptyState";
 import { ErrorState } from "./components/ErrorState";
@@ -102,7 +102,12 @@ export default function HomePage() {
             ) : sections?.endingSoon && sections.endingSoon.length > 0 ? (
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {sections.endingSoon.map((auction) => (
-                  <AuctionCard key={auction.id} {...auction} />
+                  <div key={auction.id} className="flex-shrink-0 w-[280px]">
+                    <ProductListCard
+                      {...auction}
+                      isNewArrival={auction.isHot}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
@@ -143,7 +148,12 @@ export default function HomePage() {
             ) : sections?.mostActive && sections.mostActive.length > 0 ? (
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {sections.mostActive.map((auction) => (
-                  <AuctionCard key={auction.id} {...auction} />
+                  <div key={auction.id} className="flex-shrink-0 w-[280px]">
+                    <ProductListCard
+                      {...auction}
+                      isNewArrival={auction.isHot}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
@@ -184,7 +194,12 @@ export default function HomePage() {
             ) : sections?.highestPrice && sections.highestPrice.length > 0 ? (
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {sections.highestPrice.map((auction) => (
-                  <AuctionCard key={auction.id} {...auction} />
+                  <div key={auction.id} className="flex-shrink-0 w-[280px]">
+                    <ProductListCard
+                      {...auction}
+                      isNewArrival={auction.isHot}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (

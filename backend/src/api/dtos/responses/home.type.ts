@@ -10,11 +10,12 @@ export interface HomeAuctionItem {
   title: string;
   image: string;
   currentBid: number;
-  buyNowPrice: number | null;
-  seller: string;
-  topBidder: string | null;
+  buyNowPrice?: number;
+  topBidder: string;
   bidCount: number;
   endTime: string; // ISO 8601 timestamp
+  timeLeft: string;
+  status: string;
 }
 
 /**
