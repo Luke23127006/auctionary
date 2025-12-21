@@ -318,6 +318,7 @@ export const getProductDetail = async (
       endTime: product.end_time,
       autoExtend: product.auto_extend,
       status: product.status,
+      allowNewBidder: product.allow_new_bidder,
     },
     userProductStatus,
   };

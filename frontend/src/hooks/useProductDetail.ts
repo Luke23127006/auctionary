@@ -105,15 +105,15 @@ export const useProductDetail = () => {
               ...prev.auction,
               currentPrice: result.currentPrice,
               bidCount: result.bidCount,
-              topBidder: result.currentWinnerId.toString()
+              topBidder: result.currentWinnerId.toString(),
             },
             userProductStatus: {
               ...prev.userProductStatus,
               isOutbid: result.status === "outbid",
               isTopBidder: result.status === "winning",
               currentUserMaxBid: amount,
-              isWatchlisted: prev.userProductStatus?.isWatchlisted || false
-            }
+              isWatchlisted: prev.userProductStatus?.isWatchlisted || false,
+            },
           };
         });
 
@@ -125,7 +125,11 @@ export const useProductDetail = () => {
     },
     appendDescription: async (content: string) => {
       if (!productId || !productData?.seller.id) return;
-      await productService.appendDescription(productId, content, productData.seller.id);
+      await productService.appendDescription(
+        productId,
+        content,
+        productData.seller.id
+      );
 
       // Refresh product details to show new description
       const data = await productService.getProductDetail(productId);
@@ -137,11 +141,36 @@ export const useProductDetail = () => {
       const questionsData = await productService.getProductQuestions(productId);
       setQuestionsData(questionsData);
     },
-    appendAnswer: async (content: string, questionId: number | undefined, answerBy: number | undefined) => {
+    appendAnswer: async (
+      content: string,
+      questionId: number | undefined,
+      answerBy: number | undefined
+    ) => {
       if (!productId || !productData?.seller.id) return;
-      await productService.appendAnswer(productId, questionId, content, answerBy);
+      await productService.appendAnswer(
+        productId,
+        questionId,
+        content,
+        answerBy
+      );
       const questionsData = await productService.getProductQuestions(productId);
       setQuestionsData(questionsData);
-    }
+    },
+    toggleAllowNewBidder: async (allowNewBidder: boolean) => {
+      if (!productId) return;
+      await productService.updateProductConfig(productId, allowNewBidder);
+
+      // Update local state to reflect the change
+      setProductData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          auction: {
+            ...prev.auction,
+            allowNewBidder,
+          },
+        };
+      });
+    },
   };
 };

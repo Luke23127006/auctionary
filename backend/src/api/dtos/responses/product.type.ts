@@ -87,6 +87,7 @@ export interface AuctionInfo {
   startTime: string;
   endTime: string;
   autoExtend: boolean;
+  allowNewBidder: boolean;
   status: string;
 }
 

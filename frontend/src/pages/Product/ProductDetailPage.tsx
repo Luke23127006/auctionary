@@ -8,6 +8,7 @@ import { useProductDetail } from "../../hooks/useProductDetail";
 import { ProductHeader } from "./components/ProductHeader";
 import { ProductImages } from "./components/ProductImages";
 import { ProductBidding } from "./components/ProductBidding";
+import { SellerCommandCenter } from "./components/SellerCommandCenter";
 import { SellerCard } from "./components/SellerCard";
 import { ProductTabs } from "./components/ProductTabs";
 import { Link } from "react-router-dom";
@@ -15,6 +16,7 @@ import { formatTimeLeft } from "../../utils/time";
 import { useWatchlist } from "../../hooks/useWatchlist";
 import { useCategories } from "../../hooks/useCategories";
 import { useBidding } from "../../hooks/useBidding";
+import { useAuth } from "../../hooks/useAuth";
 import type { WatchlistProduct } from "../../types/watchlist";
 import type { CategoryNode } from "../../types/category";
 
@@ -32,10 +34,12 @@ export default function ProductDetailPage() {
     appendDescription,
     appendQuestion,
     appendAnswer,
+    toggleAllowNewBidder,
   } = useProductDetail();
 
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
   const { categories } = useCategories();
+  const { user } = useAuth();
 
   const {
     selectedProduct,
@@ -205,13 +209,21 @@ export default function ProductDetailPage() {
 
             <Separator />
 
-            <ProductBidding
-              auction={auction}
-              userStatus={userStatus}
-              onPlaceBid={placeBid}
-              onToggleWatchlist={handleToggleWatchlist}
-              isWatchlisted={isCurrentlyWatchlisted}
-            />
+            {/* Conditional Rendering: Seller Command Center vs Product Bidding */}
+            {user && seller && user.id === seller.id ? (
+              <SellerCommandCenter
+                auction={auction}
+                onToggleAllowNewBidder={toggleAllowNewBidder}
+              />
+            ) : (
+              <ProductBidding
+                auction={auction}
+                userStatus={userStatus}
+                onPlaceBid={placeBid}
+                onToggleWatchlist={handleToggleWatchlist}
+                isWatchlisted={isCurrentlyWatchlisted}
+              />
+            )}
           </div>
         </div>
 

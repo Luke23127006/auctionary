@@ -215,6 +215,10 @@ export const findDetailById = async (productId: number) => {
       .select("content")
       .first(),
     db("categories").where({ id: product.category_id }).first(),
+    db("product_configs")
+      .where({ product_id: productId })
+      .select("allow_new_bidder")
+      .first(),
   ]);
 
   let parentCategory = null;
@@ -419,6 +423,7 @@ export const getProductDetailById = async (productId: number) => {
     .leftJoin("categories", "products.category_id", "categories.id")
     .leftJoin("users as seller", "products.seller_id", "seller.id")
     .leftJoin("users as bidder", "products.highest_bidder_id", "bidder.id")
+    .leftJoin("product_configs", "products.id", "product_configs.product_id")
     .where("products.id", productId)
     .select(
       "products.*",
@@ -430,7 +435,8 @@ export const getProductDetailById = async (productId: number) => {
       "seller.full_name as seller_name",
       "seller.positive_reviews",
       "seller.negative_reviews",
-      "bidder.full_name as bidder_name"
+      "bidder.full_name as bidder_name",
+      "product_configs.allow_new_bidder"
     )
     .first();
 
