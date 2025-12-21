@@ -399,15 +399,17 @@ export const getProductBidInfo = async (
   trx?: Knex.Transaction
 ) => {
   const product = await (trx || db)("products")
-    .where({ id: productId })
+    .leftJoin("product_configs", "products.id", "product_configs.product_id")
+    .where({ "products.id": productId })
     .select(
-      "step_price",
-      "start_price",
-      "current_price",
-      "highest_bidder_id",
-      "status"
+      "products.step_price",
+      "products.start_price",
+      "products.current_price",
+      "products.highest_bidder_id",
+      "products.status",
+      "product_configs.allow_new_bidder"
     )
-    .forUpdate()
+    .forUpdate("products")
     .first();
 
   if (!product) {

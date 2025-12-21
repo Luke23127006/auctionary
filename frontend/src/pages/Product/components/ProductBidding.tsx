@@ -25,9 +25,11 @@ import {
   Shield,
   TrendingUp,
   Heart,
+  XCircle,
 } from "lucide-react";
 import type { AuctionInfo, UserProductStatus } from "../../../types/product";
 import { notify } from "../../../utils/notify";
+import { useAuth } from "../../../hooks/useAuth";
 
 interface ProductBiddingProps {
   auction: AuctionInfo;
@@ -47,9 +49,45 @@ export function ProductBidding({
   const [bidAmount, setBidAmount] = useState("");
   const [bidPlaced, setBidPlaced] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const currentPrice = auction.currentPrice;
   const minBid = currentPrice + auction.stepPrice;
+
+  // Check bidder eligibility
+  const checkBidderEligibility = (): { canBid: boolean; reason?: string } => {
+    if (!user) {
+      return { canBid: true }; // Allow non-logged in users to see bid form (will be blocked on submit)
+    }
+
+    if (auction.allowNewBidder === false) {
+      const totalReviews = user.positiveReviews + user.negativeReviews;
+
+      // Check if user has no ratings
+      if (totalReviews === 0) {
+        return {
+          canBid: false,
+          reason:
+            "This auction does not allow new bidders. You must have at least one rating to participate.",
+        };
+      }
+
+      // Check if user has less than 80% positive rating
+      const positivePercentage = (user.positiveReviews / totalReviews) * 100;
+      if (positivePercentage < 80) {
+        return {
+          canBid: false,
+          reason: `This auction requires bidders to have at least 80% positive ratings. Your current rating is ${positivePercentage.toFixed(
+            1
+          )}%.`,
+        };
+      }
+    }
+
+    return { canBid: true };
+  };
+
+  const eligibility = checkBidderEligibility();
 
   const handlePlaceBid = async () => {
     // Client-side check for authentication
@@ -80,6 +118,9 @@ export function ProductBidding({
         if (message === "API request failed" || message.includes("401")) {
           message = "You need to login to use this feature";
         }
+
+        // Display error to user
+        notify.error(message);
       } finally {
         setLoading(false);
       }
@@ -151,37 +192,50 @@ export function ProductBidding({
             </div>
           </div>
 
-          {/* Bid Form */}
-          <div className="space-y-3">
-            <Label htmlFor="maxBid">Your Maximum Bid</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  $
-                </span>
-                <Input
-                  id="maxBid"
-                  type="number"
-                  placeholder="Enter amount"
-                  value={bidAmount}
-                  onChange={(e) => setBidAmount(e.target.value)}
-                  className="pl-7"
-                  min={minBid}
-                />
+          {/* Bid Form or Ineligibility Warning */}
+          {!eligibility.canBid ? (
+            <Alert
+              variant="destructive"
+              className="border-destructive bg-destructive/10"
+            >
+              <XCircle className="h-4 w-4" />
+              <AlertTitle>Unable to Bid</AlertTitle>
+              <AlertDescription className="text-sm">
+                {eligibility.reason}
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-3">
+              <Label htmlFor="maxBid">Your Maximum Bid</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    id="maxBid"
+                    type="number"
+                    placeholder="Enter amount"
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    className="pl-7"
+                    min={minBid}
+                  />
+                </div>
+                <Button
+                  onClick={handlePlaceBid}
+                  disabled={!bidAmount || parseFloat(bidAmount) < minBid}
+                  className="px-8"
+                >
+                  <Zap className="mr-2 h-4 w-4" />
+                  {loading ? "Placing Bid..." : "Place Bid"}
+                </Button>
               </div>
-              <Button
-                onClick={handlePlaceBid}
-                disabled={!bidAmount || parseFloat(bidAmount) < minBid}
-                className="px-8"
-              >
-                <Zap className="mr-2 h-4 w-4" />
-                {loading ? "Placing Bid..." : "Place Bid"}
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Minimum bid: ${minBid.toLocaleString()}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Minimum bid: ${minBid.toLocaleString()}
-            </p>
-          </div>
+          )}
 
           <Separator />
 

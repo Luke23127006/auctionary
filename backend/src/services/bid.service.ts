@@ -21,6 +21,38 @@ export const placeBid = async (
       throw new BadRequestError("Cannot place bid on inactive product");
     }
 
+    // Check if user meets bidder requirements based on product config
+    if (product.allow_new_bidder === false) {
+      // Fetch user's rating information
+      const user = await trx("users")
+        .where({ id: userId })
+        .select("positive_reviews", "negative_reviews")
+        .first();
+
+      if (!user) {
+        throw new NotFoundError("User not found");
+      }
+
+      const totalReviews = user.positive_reviews + user.negative_reviews;
+
+      // Check if user has no ratings (new bidder)
+      if (totalReviews === 0) {
+        throw new BadRequestError(
+          "This auction does not allow new bidders. You must have at least one rating to participate."
+        );
+      }
+
+      // Check if user has less than 80% positive rating
+      const positivePercentage = (user.positive_reviews / totalReviews) * 100;
+      if (positivePercentage < 80) {
+        throw new BadRequestError(
+          `This auction requires bidders to have at least 80% positive ratings. Your current rating is ${positivePercentage.toFixed(
+            1
+          )}%.`
+        );
+      }
+    }
+
     const currentPrice = Number(product.current_price);
     const stepPrice = Number(product.step_price);
     const startPrice = Number(product.start_price);
@@ -53,10 +85,7 @@ export const placeBid = async (
         trx
       );
 
-      await productRepository.increaseProductBidCount(
-        productId,
-        trx
-      );
+      await productRepository.increaseProductBidCount(productId, trx);
     }
 
     let newPrice = startPrice;
@@ -86,12 +115,7 @@ export const placeBid = async (
     }
 
     if (shouldCreateBid) {
-      await bidRepository.createBid(
-        productId,
-        winner.bidder_id,
-        newPrice,
-        trx
-      );
+      await bidRepository.createBid(productId, winner.bidder_id, newPrice, trx);
 
       await productRepository.updateProductBidStats(
         productId,
