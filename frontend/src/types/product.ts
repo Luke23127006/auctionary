@@ -197,8 +197,9 @@ export interface Step2Data {
   duration: number;
   description: string;
   autoExtend: boolean;
+  allowNewBidder: boolean;
 }
-export interface AuctionFormData extends Step1Data, Step2Data { }
+export interface AuctionFormData extends Step1Data, Step2Data {}
 
 export interface CreateProductPayload {
   name: string;

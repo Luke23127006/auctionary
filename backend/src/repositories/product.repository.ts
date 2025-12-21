@@ -2,7 +2,10 @@ import { Knex } from "knex";
 import db from "../database/db";
 import { toSlug } from "../utils/slug.util";
 import { getCategoryIds } from "./category.repository";
-import { SortOption } from "../api/dtos/requests/product.schema";
+import {
+  SortOption,
+  UpdateProductConfig,
+} from "../api/dtos/requests/product.schema";
 import { toNum } from "../utils/number.util";
 
 function escapeQuery(q: string) {
@@ -15,11 +18,7 @@ function escapeQuery(q: string) {
 export const getProductBasicInfoById = async (productId: number) => {
   const product = await db("products")
     .where("products.id", productId)
-    .select(
-      "products.id",
-      "products.name",
-      "products.status"
-    )
+    .select("products.id", "products.name", "products.status")
     .first();
 
   if (!product) {
@@ -40,8 +39,11 @@ export const searchProducts = async (
 ): Promise<{ data: any[]; total: number }> => {
   const offset = (page - 1) * limit;
 
-  let query = db("products")
-    .whereIn("products.status", ["active", "sold", "expired"]);
+  let query = db("products").whereIn("products.status", [
+    "active",
+    "sold",
+    "expired",
+  ]);
 
   if (q) {
     const safeQ = escapeQuery(q);
@@ -76,10 +78,7 @@ export const searchProducts = async (
     query = query.whereNotIn("products.id", excludeProductIds);
   }
 
-  const countQuery = query
-    .clone()
-    .count("products.id as total")
-    .first();
+  const countQuery = query.clone().count("products.id as total").first();
 
   // Order by status priority first: active > sold > expired
   query = query.orderByRaw(
@@ -98,12 +97,12 @@ export const searchProducts = async (
         item.field === "endTime"
           ? "products.end_time"
           : item.field === "price"
-            ? "products.current_price"
-            : item.field === "bidCount"
-              ? "products.bid_count"
-              : item.field === "createdAt"
-                ? "products.created_at"
-                : "products.created_at";
+          ? "products.current_price"
+          : item.field === "bidCount"
+          ? "products.bid_count"
+          : item.field === "createdAt"
+          ? "products.created_at"
+          : "products.created_at";
       query = query.orderBy(dbField, item.direction);
     });
   } else {
@@ -149,6 +148,7 @@ export const createProduct = async (data: {
   description: string;
   thumbnail_url: string;
   image_urls: string[];
+  allow_new_bidder?: boolean;
 }) => {
   return await db.transaction(async (tx) => {
     const [product] = await tx("products")
@@ -166,6 +166,11 @@ export const createProduct = async (data: {
         status: "active",
       })
       .returning("*");
+
+    await tx("product_configs").insert({
+      product_id: product.id,
+      allow_new_bidder: data.allow_new_bidder ?? true,
+    });
 
     await tx("product_descriptions").insert({
       product_id: product.id,
@@ -369,7 +374,7 @@ export const appendProductQuestion = async (
     user_id: questionerId,
     content: content,
   });
-}
+};
 
 export const appendProductAnswer = async (
   productId: number,
@@ -381,9 +386,9 @@ export const appendProductAnswer = async (
     product_id: productId,
     user_id: answererId,
     content: content,
-    parent_id: questionId
+    parent_id: questionId,
   });
-}
+};
 
 export const getProductBidInfo = async (
   productId: number,
@@ -391,7 +396,13 @@ export const getProductBidInfo = async (
 ) => {
   const product = await (trx || db)("products")
     .where({ id: productId })
-    .select("step_price", "start_price", "current_price", "highest_bidder_id", "status")
+    .select(
+      "step_price",
+      "start_price",
+      "current_price",
+      "highest_bidder_id",
+      "status"
+    )
     .forUpdate()
     .first();
 
@@ -426,13 +437,16 @@ export const getProductDetailById = async (productId: number) => {
   return product;
 };
 
-export const getProductBidCount = async (productId: number, trx?: Knex.Transaction): Promise<number> => {
+export const getProductBidCount = async (
+  productId: number,
+  trx?: Knex.Transaction
+): Promise<number> => {
   const product = await (trx || db)("products")
     .where({ id: productId })
     .select("products.bid_count")
     .first();
   return product?.bid_count || 0;
-}
+};
 
 export const getProductImages = async (productId: number) => {
   return await db("product_images")
@@ -616,4 +630,13 @@ export const getProductBidHistory = async (
   }
 
   return { bids, total };
+};
+
+export const updateProductConfig = async (
+  productId: number,
+  body: UpdateProductConfig
+) => {
+  await db("product_configs").where({ product_id: productId }).update({
+    allow_new_bidder: body.allowNewBidder,
+  });
 };

@@ -47,6 +47,7 @@ export const createProductSchema = z.object({
   description: z.string().min(1),
   endTime: z.coerce.date(),
   autoExtend: z.boolean(),
+  allowNewBidder: z.boolean().default(true),
 });
 
 export const appendProductDescriptionSchema = z.object({
@@ -65,14 +66,16 @@ export const appendProductAnswerSchema = z.object({
   content: z.string().min(1),
 });
 
+export const updateProductConfigSchema = z.object({
+  allowNewBidder: z.boolean().default(true),
+});
+
 export type ProductsSearchQuery = z.infer<typeof searchProductsSchema>;
 export type SortOption = z.infer<typeof sortOptionSchema>;
 export type CreateProduct = z.infer<typeof createProductSchema>;
 export type AppendProductDescription = z.infer<
   typeof appendProductDescriptionSchema
 >;
-export type AppendProductQuestion = z.infer<
-  typeof appendProductQuestionSchema
->;
+export type AppendProductQuestion = z.infer<typeof appendProductQuestionSchema>;
 export type AppendProductAnswer = z.infer<typeof appendProductAnswerSchema>;
-
+export type UpdateProductConfig = z.infer<typeof updateProductConfigSchema>;

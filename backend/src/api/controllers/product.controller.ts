@@ -8,6 +8,7 @@ import {
   AppendProductDescription,
   AppendProductQuestion,
   AppendProductAnswer,
+  UpdateProductConfig,
 } from "../dtos/requests/product.schema";
 
 interface AuthenticatedRequest extends Request {
@@ -57,6 +58,8 @@ export const createProduct = async (
       description: body.description,
       endTime: new Date(body.endTime),
       autoExtend: body.autoExtend === "true" || body.autoExtend === true,
+      allowNewBidder:
+        body.allowNewBidder === "true" || body.allowNewBidder === true,
     };
 
     const result = await productService.createProduct(productData, files);
@@ -200,16 +203,12 @@ export const appendQuestion = async (
 
     await productService.appendProductQuestion(productId, body);
 
-    response
-      .status(200)
-      .message("Question append successfully")
-      .json(null);
-
+    response.status(200).message("Question append successfully").json(null);
   } catch (error) {
     logger.error("ProductController", "Failed to append question", error);
     next(error);
   }
-}
+};
 
 export const appendAnswer = async (
   request: Request,
@@ -222,13 +221,30 @@ export const appendAnswer = async (
 
     await productService.appendProductAnswer(productId, body);
 
-    response
-      .status(200)
-      .message("Question append successfully")
-      .json(null);
-
+    response.status(200).message("Question append successfully").json(null);
   } catch (error) {
     logger.error("ProductController", "Failed to append question", error);
     next(error);
   }
-}
+};
+
+export const updateProductConfig = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const productId = Number(request.params.id);
+    const body = request.body as UpdateProductConfig;
+
+    await productService.updateProductConfig(productId, body);
+
+    response
+      .status(200)
+      .message("Product config updated successfully")
+      .json(null);
+  } catch (error) {
+    logger.error("ProductController", "Failed to update product config", error);
+    next(error);
+  }
+};

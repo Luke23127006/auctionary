@@ -61,7 +61,8 @@ export function PostAuctionStep2({
   const [buyNowPrice, setBuyNowPrice] = useState("");
   const [duration, setDuration] = useState("7");
   const [description, setDescription] = useState("");
-  const [autoExtend, setAutoExtend] = useState(false);
+  const [autoExtend, setAutoExtend] = useState(true);
+  const [allowNewBidder, setAllowNewBidder] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handlePriceChange = (
@@ -114,6 +115,7 @@ export function PostAuctionStep2({
         duration: parseInt(duration),
         description,
         autoExtend,
+        allowNewBidder,
       });
     }
   };
@@ -358,6 +360,30 @@ export function PostAuctionStep2({
                 </p>
               </div>
             </div>
+
+            {/* Allow New Bidder */}
+            <div className="md:col-span-2 flex items-start space-x-3 p-4 rounded-lg border border-border bg-secondary/30">
+              <Checkbox
+                id="allowNewBidder"
+                checked={allowNewBidder}
+                onCheckedChange={(checked) =>
+                  setAllowNewBidder(checked as boolean)
+                }
+              />
+              <div className="flex-1">
+                <label
+                  htmlFor="allowNewBidder"
+                  className="text-sm cursor-pointer font-medium"
+                >
+                  Allow New Bidders
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  When enabled, bidders with no ratings (0 positive and 0
+                  negative) can place bids. When disabled, only bidders with at
+                  least 80% positive ratings can participate in this auction.
+                </p>
+              </div>
+            </div>
           </div>
 
           <Alert className="border-accent/30 bg-accent/5">
@@ -443,6 +469,7 @@ export function PostAuctionStep2({
                     </div>
                   )}
                   <div>Auto Extend: {autoExtend ? "Yes" : "No"}</div>
+                  <div>Allow New Bidders: {allowNewBidder ? "Yes" : "No"}</div>
                 </div>
               </div>
             </div>

@@ -5,7 +5,8 @@ import {
   CreateProduct,
   AppendProductDescription,
   AppendProductQuestion,
-  AppendProductAnswer
+  AppendProductAnswer,
+  UpdateProductConfig,
 } from "../api/dtos/requests/product.schema";
 import { toNum } from "../utils/number.util";
 import {
@@ -41,18 +42,18 @@ export const searchProducts = async (
   );
 
   const soldProductIds = result.data
-    .filter(item => item.status === 'sold')
-    .map(item => item.id);
+    .filter((item) => item.status === "sold")
+    .map((item) => item.id);
 
   let transactionMap = new Map<number, { id: number; canAccess: boolean }>();
 
   if (soldProductIds.length > 0 && userId) {
-    const transactions = await transactionRepository.findTransactionsByProductIds(soldProductIds);
+    const transactions =
+      await transactionRepository.findTransactionsByProductIds(soldProductIds);
 
-    transactions.forEach(transaction => {
+    transactions.forEach((transaction) => {
       const canAccess =
-        userId === transaction.seller_id ||
-        userId === transaction.buyer_id;
+        userId === transaction.seller_id || userId === transaction.buyer_id;
 
       transactionMap.set(transaction.product_id, {
         id: transaction.id,
@@ -61,8 +62,8 @@ export const searchProducts = async (
     });
   }
 
-  result.data.forEach(item => {
-    if (item.status === 'sold' && transactionMap.has(item.id)) {
+  result.data.forEach((item) => {
+    if (item.status === "sold" && transactionMap.has(item.id)) {
       item.transaction = transactionMap.get(item.id);
     }
   });
@@ -151,7 +152,7 @@ export const appendProductDescription = async (
     throw new Error("Product not found");
   }
 
-  if (product.status !== 'active') {
+  if (product.status !== "active") {
     throw new BadRequestError("Can only append description to active products");
   }
 
@@ -174,31 +175,40 @@ export const appendProductQuestion = async (
     throw new Error("Product not found");
   }
 
-  if (product.status !== 'active') {
+  if (product.status !== "active") {
     throw new BadRequestError("Can only append description to active products");
   }
 
-  await productRepository.appendProductQuestion(productId, questionerId, content);
-}
+  await productRepository.appendProductQuestion(
+    productId,
+    questionerId,
+    content
+  );
+};
 
 export const appendProductAnswer = async (
   productId: number,
   body: AppendProductAnswer
 ): Promise<void> => {
   const { questionId, answererId, content } = body;
-  
+
   const product = await productRepository.getProductBasicInfoById(productId);
 
   if (!product) {
     throw new Error("Product not found");
   }
 
-  if (product.status !== 'active') {
+  if (product.status !== "active") {
     throw new BadRequestError("Can only reply to questions on active products");
   }
 
-  await productRepository.appendProductAnswer(productId, questionId, answererId, content);
-}
+  await productRepository.appendProductAnswer(
+    productId,
+    questionId,
+    answererId,
+    content
+  );
+};
 
 // Product Detail Page
 export const getProductDetail = async (
@@ -273,10 +283,12 @@ export const getProductDetail = async (
       slug: product.slug || product.category_slug, // Use product slug (fallback to category slug for old products)
       thumbnailUrl: product.thumbnail_url || "",
       images: images.map((img: any) => img.image_url),
-      descriptions: (Array.isArray(description) ? description : []).map((d: any) => ({
-        content: d.content,
-        createdAt: d.created_at,
-      })),
+      descriptions: (Array.isArray(description) ? description : []).map(
+        (d: any) => ({
+          content: d.content,
+          createdAt: d.created_at,
+        })
+      ),
       category: {
         id: product.category_id,
         name: product.category_name,
@@ -362,10 +374,10 @@ export const getProductQuestions = async (
       askedAt: q.created_at,
       answer: q.answer
         ? {
-          answer: q.answer.answer,
-          answeredBy: q.answer.answerer_name,
-          answeredAt: q.answer.answered_at,
-        }
+            answer: q.answer.answer,
+            answeredBy: q.answer.answerer_name,
+            answeredAt: q.answer.answered_at,
+          }
         : null,
     })),
     pagination: {
@@ -377,4 +389,9 @@ export const getProductQuestions = async (
   };
 };
 
-
+export const updateProductConfig = async (
+  productId: number,
+  body: UpdateProductConfig
+) => {
+  await productRepository.updateProductConfig(productId, body);
+};
