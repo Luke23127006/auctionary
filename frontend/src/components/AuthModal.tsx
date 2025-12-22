@@ -6,7 +6,13 @@ import FacebookLogin from "@greatsumini/react-facebook-login";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { notify } from "../utils/notify";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -259,9 +265,24 @@ export function AuthModal({
         if (!newOpen) resetState();
       }}
     >
-      <DialogContent className="sm:max-w-[420px] max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="sm:max-w-[420px]"
+        onInteractOutside={(e) => {
+          // Prevent dialog from closing when clicking on reCAPTCHA
+          const target = e.target as HTMLElement;
+          if (
+            target.closest(".grecaptcha-badge") ||
+            target.closest('iframe[src*="google.com/recaptcha"]')
+          ) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl text-center">Auctionary</DialogTitle>
+          <DialogDescription className="sr-only">
+            Authentication modal for login, signup, and password recovery
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs
@@ -271,7 +292,7 @@ export function AuthModal({
             setError(null);
             setForgotStep("request_email");
           }}
-          className="w-full"
+          className="w-full max-h-[calc(90vh-120px)] overflow-y-auto"
         >
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="login">Login</TabsTrigger>
@@ -309,11 +330,13 @@ export function AuthModal({
               </div>
 
               <div className="flex justify-center">
-                <ReCAPTCHA
-                  theme={theme === "tactical" ? "dark" : "light"}
-                  ref={loginRecaptchaRef}
-                  sitekey={RECAPTCHA_SITE_KEY}
-                />
+                <div id="login-recaptcha-container">
+                  <ReCAPTCHA
+                    theme={theme === "tactical" ? "dark" : "light"}
+                    ref={loginRecaptchaRef}
+                    sitekey={RECAPTCHA_SITE_KEY}
+                  />
+                </div>
               </div>
 
               {error && (
@@ -443,11 +466,13 @@ export function AuthModal({
               />
 
               <div className="flex justify-center">
-                <ReCAPTCHA
-                  theme={theme === "tactical" ? "dark" : "light"}
-                  ref={signupRecaptchaRef}
-                  sitekey={RECAPTCHA_SITE_KEY}
-                />
+                <div id="signup-recaptcha-container">
+                  <ReCAPTCHA
+                    theme={theme === "tactical" ? "dark" : "light"}
+                    ref={signupRecaptchaRef}
+                    sitekey={RECAPTCHA_SITE_KEY}
+                  />
+                </div>
               </div>
 
               {error && (

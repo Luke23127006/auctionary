@@ -383,3 +383,14 @@ select:focus {
 .no-scroll {
   overflow: hidden;
 }
+
+/* ReCAPTCHA z-index fix for modals */
+.grecaptcha-badge {
+  z-index: 9999 !important;
+}
+
+/* Ensure reCAPTCHA challenge iframe is clickable */
+iframe[src*="google.com/recaptcha"] {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
