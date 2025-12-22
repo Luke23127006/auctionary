@@ -26,3 +26,67 @@ body,
     padding: 0 2rem;
   }
 }
+
+/* Toast Stacking Styles */
+[data-sonner-toaster],
+[data-sonner-toast] {
+  will-change: transform, opacity;
+}
+
+/* Smooth entrance animation */
+@keyframes toast-enter {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Exit animation */
+@keyframes toast-exit {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* Apply stacking effect */
+.toast-stack-container {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Individual toast styling for stack */
+[role="status"] {
+  animation: toast-enter 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+  transform-origin: right center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effect to lift toast */
+[role="status"]:hover {
+  transform: scale(1.02) translateX(-4px);
+  z-index: 9999 !important;
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Stack offset for multiple toasts */
+[role="status"]:not(:first-child) {
+  margin-top: 8px;
+}
+
+/* Reduce opacity for older toasts in stack (optional) */
+[role="status"]:nth-child(n + 4) {
+  opacity: 0.85;
+}
+
+[role="status"]:nth-child(n + 5) {
+  opacity: 0.7;
+}

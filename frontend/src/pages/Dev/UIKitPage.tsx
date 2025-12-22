@@ -599,30 +599,99 @@ export default function UIKitPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => notify.success("Success message")}
-                  >
-                    Success
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => notify.error("Error message")}
-                  >
-                    Error
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      notify.undo("Undo message", () =>
-                        console.log("Undo action")
-                      )
-                    }
-                  >
-                    Undo
-                  </Button>
+                <div className="space-y-3">
+                  <h4 className="text-sm text-muted-foreground">
+                    Toast Notifications (with close buttons)
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        notify.success("Operation completed successfully!")
+                      }
+                    >
+                      Success
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => notify.error("An error occurred!")}
+                    >
+                      Error
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        notify.warning("This action cannot be undone!")
+                      }
+                    >
+                      Warning
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        notify.info("New features are now available!")
+                      }
+                    >
+                      Info
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => notify.loading("Processing request...")}
+                    >
+                      Loading
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        notify.undo("Item deleted", () =>
+                          notify.success("Item restored!")
+                        )
+                      }
+                    >
+                      Undo
+                    </Button>
+                  </div>
                 </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <h4 className="text-sm text-muted-foreground">
+                    Test Stack Effect
+                  </h4>
+                  <Button
+                    onClick={() => {
+                      notify.success("First notification");
+                      setTimeout(() => notify.info("Second notification"), 200);
+                      setTimeout(
+                        () => notify.warning("Third notification"),
+                        400
+                      );
+                      setTimeout(
+                        () => notify.error("Fourth notification"),
+                        600
+                      );
+                      setTimeout(
+                        () => notify.loading("Fifth notification"),
+                        800
+                      );
+                    }}
+                  >
+                    Show Multiple Toasts
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Click to see the smooth stacking effect with multiple
+                    notifications
+                  </p>
+                </div>
+
+                <Separator />
                 <div className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card">
                   <div className="p-2 rounded-md bg-accent/20">
                     <DollarSign className="h-4 w-4 text-accent" />
