@@ -72,9 +72,9 @@ export function ProductBidding({
       return { canBid: true }; // Allow non-logged in users to see bid form (will be blocked on submit)
     }
 
-    if (auction.allowNewBidder === false) {
-      const totalReviews = user.positiveReviews + user.negativeReviews;
+    const totalReviews = user.positiveReviews + user.negativeReviews;
 
+    if (auction.allowNewBidder === false) {
       // Check if user has no ratings
       if (totalReviews === 0) {
         return {
@@ -83,17 +83,16 @@ export function ProductBidding({
             "This auction does not allow new bidders. You must have at least one rating to participate.",
         };
       }
-
-      // Check if user has less than 80% positive rating
-      const positivePercentage = (user.positiveReviews / totalReviews) * 100;
-      if (positivePercentage < 80) {
-        return {
-          canBid: false,
-          reason: `This auction requires bidders to have at least 80% positive ratings. Your current rating is ${positivePercentage.toFixed(
-            1
-          )}%.`,
-        };
-      }
+    }
+    // Check if user has less than 80% positive rating
+    const positivePercentage = (user.positiveReviews / totalReviews) * 100;
+    if (positivePercentage < 80) {
+      return {
+        canBid: false,
+        reason: `This auction requires bidders to have at least 80% positive ratings. Your current rating is ${positivePercentage.toFixed(
+          1
+        )}%.`,
+      };
     }
 
     if (userStatus?.isRejected) {
@@ -101,7 +100,6 @@ export function ProductBidding({
         canBid: false,
         reason:
           "You have been rejected from bidding on this auction.\nReason: " +
-          "\n" +
           userStatus.rejectionReason,
       };
     }
@@ -222,11 +220,11 @@ export function ProductBidding({
           {!eligibility.canBid ? (
             <Alert
               variant="destructive"
-              className="border-destructive bg-destructive/10"
+              className="border-destructive bg-destructive/5"
             >
               <XCircle className="h-4 w-4" />
               <AlertTitle>Unable to Bid</AlertTitle>
-              <AlertDescription className="text-sm">
+              <AlertDescription className="text-sm whitespace-pre-line">
                 {eligibility.reason}
               </AlertDescription>
             </Alert>
