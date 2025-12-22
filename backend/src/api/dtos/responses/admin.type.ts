@@ -46,6 +46,7 @@ export interface UpgradeRequestActionResponse {
   userId: number;
   status: "approved" | "rejected";
   approvedAt?: string;
+  expiredAt?: string;
 }
 
 export interface SuspendUserResponse {

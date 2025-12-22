@@ -114,35 +114,35 @@ export const placeBid = async (
     }
 
     // Check if user meets bidder requirements based on product config
+    // Fetch user's rating information
+    const user = await trx("users")
+      .where({ id: userId })
+      .select("positive_reviews", "negative_reviews")
+      .first();
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const totalReviews = user.positive_reviews + user.negative_reviews;
+
     if (product.allow_new_bidder === false) {
-      // Fetch user's rating information
-      const user = await trx("users")
-        .where({ id: userId })
-        .select("positive_reviews", "negative_reviews")
-        .first();
-
-      if (!user) {
-        throw new NotFoundError("User not found");
-      }
-
-      const totalReviews = user.positive_reviews + user.negative_reviews;
-
       // Check if user has no ratings (new bidder)
       if (totalReviews === 0) {
         throw new BadRequestError(
           "This auction does not allow new bidders. You must have at least one rating to participate."
         );
       }
+    }
 
-      // Check if user has less than 80% positive rating
-      const positivePercentage = (user.positive_reviews / totalReviews) * 100;
-      if (positivePercentage < 80) {
-        throw new BadRequestError(
-          `This auction requires bidders to have at least 80% positive ratings. Your current rating is ${positivePercentage.toFixed(
-            1
-          )}%.`
-        );
-      }
+    // Check if user has less than 80% positive rating
+    const positivePercentage = (user.positive_reviews / totalReviews) * 100;
+    if (positivePercentage < 80) {
+      throw new BadRequestError(
+        `This auction requires bidders to have at least 80% positive ratings. Your current rating is ${positivePercentage.toFixed(
+          1
+        )}%.`
+      );
     }
 
     const currentPrice = Number(product.current_price);

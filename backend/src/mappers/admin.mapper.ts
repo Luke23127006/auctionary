@@ -89,6 +89,7 @@ export const mapUpgradeRequestActionResponse = (
     userId: data.user_id,
     status: data.status,
     approvedAt: data.approved_at,
+    expiredAt: data.expires_at,
   };
 };
 

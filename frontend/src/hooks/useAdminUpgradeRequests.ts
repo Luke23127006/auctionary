@@ -3,7 +3,7 @@ import * as adminService from "../services/adminService";
 import type { UpgradeRequest } from "../types/admin";
 import { toast } from "sonner";
 
-export const useUpgradeRequests = () => {
+export const useAdminUpgradeRequests = () => {
   const [requests, setRequests] = useState<UpgradeRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

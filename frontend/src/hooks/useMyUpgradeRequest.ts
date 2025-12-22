@@ -3,7 +3,7 @@ import * as upgradeRequestService from "../services/upgradeRequestService";
 import type { UpgradeRequest } from "../types/upgradeRequest";
 import { notify } from "../utils/notify";
 
-export const useUpgradeRequest = () => {
+export const useMyUpgradeRequest = () => {
   const [requestStatus, setRequestStatus] = useState<UpgradeRequest | null>(
     null
   );

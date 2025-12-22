@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { usePermission } from "../../hooks/usePermission";
 import { useTheme } from "../../hooks/useTheme";
-import { useUpgradeRequest } from "../../hooks/useUpgradeRequest";
+import { useMyUpgradeRequest } from "../../hooks/useMyUpgradeRequest";
 import {
   LogIn,
   LogOut,
@@ -45,7 +45,7 @@ const Header: React.FC = () => {
     fetchStatus,
     submitRequest,
     cancelRequest,
-  } = useUpgradeRequest();
+  } = useMyUpgradeRequest();
 
   const [showUpgradeModal, setShowUpgradeModal] = React.useState(false);
   const [showStatusModal, setShowStatusModal] = React.useState(false);

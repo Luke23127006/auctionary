@@ -48,7 +48,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useAdminUsers } from "../../../hooks/useAdminUsers";
-import { useUpgradeRequests } from "../../../hooks/useUpgradeRequests";
+import { useAdminUpgradeRequests } from "../../../hooks/useAdminUpgradeRequests";
 import { Pagination } from "../../../components/common/Pagination";
 import { notify } from "../../../utils/notify";
 
@@ -103,7 +103,7 @@ export function UserManagement() {
     error: requestsError,
     handleApproveRequest,
     handleRejectRequest,
-  } = useUpgradeRequests();
+  } = useAdminUpgradeRequests();
 
   const handleViewUserProfile = (_userId: number) => {
     notify.error("Not implemented yet");
