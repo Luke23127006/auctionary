@@ -98,3 +98,40 @@ export const deleteUserBids = async (
   if (trx) query.transacting(trx);
   await query;
 };
+
+export const deleteBidsAboveAmount = async (
+  productId: number,
+  amount: number,
+  trx?: Knex.Transaction
+) => {
+  await (trx || db)("bids")
+    .where({ product_id: productId })
+    .andWhere("amount", ">", amount)
+    .del();
+};
+
+export const findBidByDetails = async (
+  productId: number,
+  bidderId: number | null,
+  amount: number,
+  trx?: Knex.Transaction
+) => {
+  return (trx || db)("bids")
+    .where({
+      product_id: productId,
+      bidder_id: bidderId,
+      amount: amount,
+    })
+    .first();
+};
+
+export const getBidCount = async (
+  productId: number,
+  trx?: Knex.Transaction
+): Promise<number> => {
+  const result = await (trx || db)("bids")
+    .where({ product_id: productId })
+    .count("id as count")
+    .first();
+  return result ? Number(result.count) : 0;
+};

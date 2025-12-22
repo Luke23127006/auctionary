@@ -6,13 +6,13 @@ import * as bidMapper from "../mappers/bid.mapper";
 import { PlaceBidResponse } from "../api/dtos/responses/place-bid.type";
 
 export const recalculateAuctionState = async (productId: number, trx: any) => {
-  const product = await trx("products").where({ id: productId }).first();
+  // Get product basic data using repository
+  const product = await productRepository.getProductBasicData(productId, trx);
   const stepPrice = Number(product.step_price);
   const startPrice = Number(product.start_price);
 
-  const autoBids = await trx("auto_bids")
-    .where({ product_id: productId })
-    .orderBy("max_amount", "desc");
+  // Get auto bids using repository
+  const autoBids = await bidRepository.getAutoBidsByProductId(productId, trx);
 
   let newWinnerId = null;
   let newCurrentPrice = startPrice;
@@ -32,28 +32,40 @@ export const recalculateAuctionState = async (productId: number, trx: any) => {
     const runnerUp = autoBids[1]; // Top 2
 
     newWinnerId = winner.bidder_id;
-
     const priceToBeatRunnerUp = Number(runnerUp.max_amount) + stepPrice;
-
     newCurrentPrice = Math.min(priceToBeatRunnerUp, Number(winner.max_amount));
-
     newCurrentPrice = Math.max(newCurrentPrice, startPrice);
   }
 
-  await trx("products").where({ id: productId }).update({
-    highest_bidder_id: newWinnerId,
-    current_price: newCurrentPrice,
-    bid_count: autoBids.length,
-  });
+  // Delete bids above new current price using repository
+  await bidRepository.deleteBidsAboveAmount(productId, newCurrentPrice, trx);
 
-  if (newWinnerId) {
-    await trx("bids").insert({
-      product_id: productId,
-      bidder_id: newWinnerId,
-      amount: newCurrentPrice,
-      created_at: new Date(),
-    });
+  // Check if bid already exists using repository
+  const existingBid = await bidRepository.findBidByDetails(
+    productId,
+    newWinnerId,
+    newCurrentPrice,
+    trx
+  );
+
+  // Create new bid if needed using repository
+  if (newWinnerId && !existingBid) {
+    await bidRepository.createBid(productId, newWinnerId, newCurrentPrice, trx);
   }
+
+  // Get bid count using repository
+  const realBidCount = await bidRepository.getBidCount(productId, trx);
+
+  // Update product auction state using repository
+  await productRepository.updateProductAuctionState(
+    productId,
+    {
+      highest_bidder_id: newWinnerId,
+      current_price: newCurrentPrice,
+      bid_count: realBidCount,
+    },
+    trx
+  );
 
   return { newWinnerId, newCurrentPrice };
 };
@@ -66,9 +78,12 @@ export const rejectBidder = async (
 ) => {
   return await db.transaction(async (trx) => {
     // 1. Check Seller
-    const product = await productRepository.getProductBidInfo(productId, trx);
-    if (!product) throw new NotFoundError("Product not found");
-    if (product.seller_id !== sellerId) {
+    const _sellerId = await productRepository.getProductSellerId(
+      productId,
+      trx
+    );
+    if (!_sellerId) throw new NotFoundError("Product not found");
+    if (_sellerId !== sellerId) {
       throw new ForbiddenError("Only seller can reject bidders");
     }
 

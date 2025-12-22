@@ -17,9 +17,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../../components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../components/ui/dropdown-menu";
 import { Textarea } from "../../../components/ui/textarea";
 import { Label } from "../../../components/ui/label";
-import { TrendingUp, Crown, Ban, Loader2 } from "lucide-react";
+import { TrendingUp, Crown, Ban, Loader2, MoreVertical } from "lucide-react";
 import { notify } from "../../../utils/notify";
 
 interface BidHistoryItem {
@@ -172,17 +178,24 @@ export function BidHistory({
                     </TableCell>
                     {showActions && (
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() =>
-                            handleRejectClick(bid.bidderId, bid.bidder)
-                          }
-                        >
-                          <Ban className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive group focus:text-destructive focus:bg-destructive/10"
+                              onClick={() =>
+                                handleRejectClick(bid.bidderId, bid.bidder)
+                              }
+                            >
+                              <Ban className="mr-2 h-4 w-4 group-focus:text-destructive" />
+                              Reject Bidder
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     )}
                   </TableRow>

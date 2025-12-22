@@ -664,3 +664,37 @@ export const updateProductConfig = async (
     allow_new_bidder: body.allowNewBidder,
   });
 };
+
+export const getProductSellerId = async (
+  productId: number,
+  trx?: Knex.Transaction
+) => {
+  const product = await (trx || db)("products")
+    .where({ id: productId })
+    .select("seller_id")
+    .first();
+  return product?.seller_id ?? null;
+};
+
+export const getProductBasicData = async (
+  productId: number,
+  trx?: Knex.Transaction
+) => {
+  const product = await (trx || db)("products")
+    .where({ id: productId })
+    .select("step_price", "start_price")
+    .first();
+  return product;
+};
+
+export const updateProductAuctionState = async (
+  productId: number,
+  data: {
+    highest_bidder_id: number | null;
+    current_price: number;
+    bid_count: number;
+  },
+  trx?: Knex.Transaction
+): Promise<void> => {
+  await (trx || db)("products").where({ id: productId }).update(data);
+};
