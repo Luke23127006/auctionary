@@ -41,6 +41,7 @@ interface BidHistoryProps {
   bids: BidHistoryItem[];
   isSeller?: boolean;
   auctionStatus?: string;
+  currentUserId?: number;
   onRejectBidder?: (bidderId: number, reason: string) => Promise<void>;
 }
 
@@ -48,6 +49,7 @@ export function BidHistory({
   bids,
   isSeller = false,
   auctionStatus = "active",
+  currentUserId,
   onRejectBidder,
 }: BidHistoryProps) {
   const [rejectDialog, setRejectDialog] = useState<{
@@ -129,77 +131,95 @@ export function BidHistory({
                   </TableCell>
                 </TableRow>
               ) : (
-                bids.map((bid, index) => (
-                  <TableRow
-                    key={bid.id}
-                    className={
-                      bid.isTopBid ? "bg-accent/5 hover:bg-accent/10" : ""
-                    }
-                  >
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(bid.timestamp).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                        hour12: false,
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{bid.bidder}</span>
-                        {bid.isTopBid && (
-                          <Badge
-                            variant="outline"
-                            className="border-accent text-accent text-xs"
-                          >
-                            <Crown className="h-3 w-3 mr-1" />
-                            Top Bid
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <span
-                          className={`${
-                            bid.isTopBid ? "text-accent" : "text-foreground"
-                          }`}
-                        >
-                          ${bid.amount.toLocaleString()}
-                        </span>
-                        {index < bids.length - 1 &&
-                          bids[index + 1].amount < bid.amount && (
-                            <TrendingUp className="h-3.5 w-3.5 text-green-500" />
-                          )}
-                      </div>
-                    </TableCell>
-                    {showActions && (
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              className="text-destructive group focus:text-destructive focus:bg-destructive/10"
-                              onClick={() =>
-                                handleRejectClick(bid.bidderId, bid.bidder)
-                              }
-                            >
-                              <Ban className="mr-2 h-4 w-4 group-focus:text-destructive" />
-                              Reject Bidder
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                bids.map((bid, index) => {
+                  const isCurrentUser =
+                    currentUserId && bid.bidderId === currentUserId;
+                  const isTopBid = bid.isTopBid;
+
+                  return (
+                    <TableRow
+                      key={bid.id}
+                      className={
+                        isCurrentUser
+                          ? "bg-blue-500/10 hover:bg-blue-500/15 border-l-2 border-l-blue-500"
+                          : isTopBid
+                          ? "bg-accent/5 hover:bg-accent/10"
+                          : ""
+                      }
+                    >
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(bid.timestamp).toLocaleString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: false,
+                        })}
                       </TableCell>
-                    )}
-                  </TableRow>
-                ))
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">{bid.bidder}</span>
+                          {bid.isTopBid && (
+                            <Badge
+                              variant="outline"
+                              className="border-accent text-accent text-xs"
+                            >
+                              <Crown className="h-3 w-3 mr-1" />
+                              Top Bid
+                            </Badge>
+                          )}
+                          {isCurrentUser && (
+                            <Badge
+                              variant="outline"
+                              className="border-blue-500 text-blue-500 text-xs"
+                            >
+                              Me
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <span
+                            className={`${
+                              bid.isTopBid ? "text-accent" : "text-foreground"
+                            }`}
+                          >
+                            ${bid.amount.toLocaleString()}
+                          </span>
+                          {index < bids.length - 1 &&
+                            bids[index + 1].amount < bid.amount && (
+                              <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+                            )}
+                        </div>
+                      </TableCell>
+                      {showActions && (
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                className="text-destructive group focus:text-destructive focus:bg-destructive/10"
+                                onClick={() =>
+                                  handleRejectClick(bid.bidderId, bid.bidder)
+                                }
+                              >
+                                <Ban className="mr-2 h-4 w-4 group-focus:text-destructive" />
+                                Reject Bidder
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

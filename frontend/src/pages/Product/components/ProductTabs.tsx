@@ -323,6 +323,7 @@ export function ProductTabs({
               }))}
               isSeller={isSellerOfProduct}
               auctionStatus={auctionStatus}
+              currentUserId={user?.id}
               onRejectBidder={onRejectBidder}
             />
           </CardContent>
