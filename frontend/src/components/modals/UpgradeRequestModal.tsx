@@ -141,6 +141,7 @@ export function UpgradeRequestModal({
               disabled={
                 charCount < MIN_LENGTH || charCount > MAX_LENGTH || isSubmitting
               }
+              isLoading={isSubmitting}
             >
               <TrendingUp className="mr-2 h-5 w-5" />
               {isSubmitting ? "Submitting..." : "Submit Request"}

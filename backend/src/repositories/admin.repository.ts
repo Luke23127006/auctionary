@@ -55,8 +55,8 @@ export const approveUpgradeRequest = async (requestId: number) => {
     .where({ id: requestId })
     .update({
       status: "approved",
-      approved_at: db.fn.now(),
-      expires_at: db.raw("NOW() + INTERVAL '7 days'"),
+      approved_at: new Date(),
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
     .returning(["id", "user_id", "status", "approved_at", "expires_at"]);
 

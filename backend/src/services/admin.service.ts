@@ -141,6 +141,8 @@ export const approveUpgradeRequest = async (
   // Update user status to active
   await adminRepository.updateUserStatus(request.user_id, "active");
 
+  // TODO: Send email to user
+
   return mapUpgradeRequestActionResponse(result);
 };
 
@@ -163,6 +165,11 @@ export const rejectUpgradeRequest = async (
   }
 
   const result = await adminRepository.rejectUpgradeRequest(requestId);
+
+  await adminRepository.updateUserStatus(request.user_id, "active");
+
+  // TODO: Send email to user
+
   return mapUpgradeRequestActionResponse(result);
 };
 

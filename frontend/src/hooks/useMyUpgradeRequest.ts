@@ -2,8 +2,10 @@ import { useState, useCallback } from "react";
 import * as upgradeRequestService from "../services/upgradeRequestService";
 import type { UpgradeRequest } from "../types/upgradeRequest";
 import { notify } from "../utils/notify";
+import { useAuth } from "./useAuth";
 
 export const useMyUpgradeRequest = () => {
+  const { refreshUser } = useAuth();
   const [requestStatus, setRequestStatus] = useState<UpgradeRequest | null>(
     null
   );
@@ -41,6 +43,8 @@ export const useMyUpgradeRequest = () => {
           message
         );
         notify.success(response.message);
+        // Refresh user data to update status in the UI
+        await refreshUser();
         // Refresh status after submission
         await fetchStatus();
         return true;
@@ -67,6 +71,8 @@ export const useMyUpgradeRequest = () => {
       setError(null);
       const response = await upgradeRequestService.cancelUpgradeRequest();
       notify.success(response.message);
+      // Refresh user data to update status in the UI
+      await refreshUser();
       // Refresh status after cancellation
       await fetchStatus();
       return true;

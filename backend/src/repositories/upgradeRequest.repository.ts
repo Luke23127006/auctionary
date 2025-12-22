@@ -10,6 +10,8 @@ export const createUpgradeRequest = async (userId: number, message: string) => {
       user_id: userId,
       message,
       status: "pending",
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
     .returning("*");
 

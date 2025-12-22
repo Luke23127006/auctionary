@@ -42,6 +42,7 @@ export interface AuthContextType {
 
   loginWithGoogle: (credential: string) => Promise<AuthResponse>;
   loginWithFacebook: (accessToken: string) => Promise<AuthResponse>;
+  refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -208,6 +209,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return authService.resetPasswordWithOTP(email, otp, newPassword);
   };
 
+  const refreshUser = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const updatedUser = await authService.getMe();
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error("Failed to refresh user data:", error);
+      throw error;
+    }
+  };
+
   const value: AuthContextType = useMemo(
     () => ({
       user,
@@ -222,6 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithGoogle,
       loginWithFacebook,
       logout,
+      refreshUser,
     }),
     [user, isLoading]
   );
