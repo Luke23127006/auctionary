@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { formatTimeLeft } from "../../../utils/time";
 
 export const ActiveBidsTab = () => {
   const navigate = useNavigate();
@@ -105,13 +106,21 @@ export const ActiveBidsTab = () => {
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         <span>
-                          {new Date(bid.end_time).toLocaleDateString()}
+                          {(() => {
+                            const endTimeMs = new Date(bid.end_time).getTime();
+                            const timeLeftMs = Math.max(
+                              0,
+                              endTimeMs - Date.now()
+                            );
+                            return timeLeftMs > 0
+                              ? formatTimeLeft(timeLeftMs)
+                              : "Ended";
+                          })()}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right text-sm text-muted-foreground">
-                      {/* Bid count not currently in MyBid type, maybe irrelevant or needs backend update if needed */}
-                      -
+                      {bid.bid_count}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

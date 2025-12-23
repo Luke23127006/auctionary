@@ -37,19 +37,23 @@ export interface MyBid {
   end_time: string; // Dates often string in JSON
   slug: string;
   status: string;
+  bid_count: number;
   my_max_bid: number;
   current_highest_bid: number;
   highest_bidder_id: number;
 }
 
 export interface WonAuction {
-  order_id: number;
+  // Transaction fields
+  id: number;
   product_id: number;
-  winner_id: number;
-  amount: number;
+  buyer_id: number;
+  seller_id: number;
+  final_price: number;
+  status: string; // transaction status (payment_pending, shipping_pending, delivered, completed, cancelled)
   created_at: string;
-  payment_status: string;
-  shipping_status: string;
+
+  // Joined fields from products table
   product_name: string;
   thumbnail_url: string;
 }

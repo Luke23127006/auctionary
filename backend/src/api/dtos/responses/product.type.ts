@@ -34,6 +34,10 @@ export interface ProductDetailResponse {
   seller: SellerInfo;
   auction: AuctionInfo;
   userProductStatus?: UserProductStatus;
+  transaction?: {
+    id: number;
+    canAccess: boolean;
+  };
 }
 
 export interface ProductInfo {

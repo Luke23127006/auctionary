@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -37,6 +38,7 @@ import {
   Heart,
   XCircle,
   ShoppingCart,
+  ArrowRight,
 } from "lucide-react";
 import type { AuctionInfo, UserProductStatus } from "../../../types/product";
 import { notify } from "../../../utils/notify";
@@ -48,6 +50,8 @@ interface ProductBiddingProps {
   onPlaceBid: (amount: number) => Promise<any>;
   onToggleWatchlist: () => void;
   isWatchlisted: boolean;
+  sellerId?: number;
+  transactionId?: number;
 }
 
 export function ProductBidding({
@@ -56,12 +60,15 @@ export function ProductBidding({
   onPlaceBid,
   onToggleWatchlist,
   isWatchlisted,
+  sellerId,
+  transactionId,
 }: ProductBiddingProps) {
   const [bidAmount, setBidAmount] = useState("");
   const [bidPlaced, setBidPlaced] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const currentPrice = auction.currentPrice;
   const minBid = currentPrice + auction.stepPrice;
@@ -155,6 +162,13 @@ export function ProductBidding({
 
   const isOutbid = userStatus?.isOutbid || false;
 
+  // Check if user can access transaction (winner or seller)
+  const isSold = auction.status === "sold";
+  const isWinner = userStatus?.isTopBidder || false;
+  const isSeller = user && sellerId && user.id === sellerId;
+  const canAccessTransaction =
+    isSold && (isWinner || isSeller) && transactionId;
+
   return (
     <div className="space-y-6">
       {/* Outbid Alert */}
@@ -216,8 +230,30 @@ export function ProductBidding({
             </AlertDescription>
           </Alert>
 
-          {/* Bid Form or Ineligibility Warning */}
-          {!eligibility.canBid ? (
+          {/* Transaction Navigation for Sold Products */}
+          {canAccessTransaction ? (
+            <div className="space-y-4">
+              <Alert className="border-success bg-success/10">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+                <AlertTitle className="text-success">
+                  {isWinner ? "Congratulations! You Won!" : "Auction Completed"}
+                </AlertTitle>
+                <AlertDescription className="text-success/90">
+                  {isWinner
+                    ? "You are the winner of this auction. Please proceed to the transaction room to complete your purchase."
+                    : "This auction has ended. Please proceed to the transaction room to manage the sale."}
+                </AlertDescription>
+              </Alert>
+              <Button
+                onClick={() => navigate(`/transactions/${transactionId}`)}
+                className="w-full bg-success hover:bg-success/90 text-white"
+                size="lg"
+              >
+                Go to Transaction Room
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          ) : !eligibility.canBid ? (
             <Alert
               variant="destructive"
               className="border-destructive bg-destructive/5"

@@ -9,10 +9,45 @@ import {
 } from "../../../components/ui/table";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock, Package, XCircle } from "lucide-react";
 import { useMyWonAuctions } from "../../../hooks/useMyWonAuctions";
+import { useNavigate } from "react-router-dom";
+
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "completed":
+      return (
+        <Badge className="bg-success/20 text-success border-success/50">
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          Completed
+        </Badge>
+      );
+    case "cancelled":
+      return (
+        <Badge variant="destructive">
+          <XCircle className="h-3 w-3 mr-1" />
+          Cancelled
+        </Badge>
+      );
+    case "delivered":
+      return (
+        <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">
+          <Package className="h-3 w-3 mr-1" />
+          Delivered
+        </Badge>
+      );
+    default:
+      return (
+        <Badge className="bg-accent/20 text-accent border-accent/50">
+          <Clock className="h-3 w-3 mr-1" />
+          {status.replace(/_/g, " ")}
+        </Badge>
+      );
+  }
+};
 
 export const WonAuctionsTab = () => {
+  const navigate = useNavigate();
   const { wonAuctions, isLoading } = useMyWonAuctions();
 
   if (isLoading) return <div>Loading won auctions...</div>;
@@ -43,13 +78,13 @@ export const WonAuctionsTab = () => {
             </TableHeader>
             <TableBody>
               {wonAuctions.map((auction) => (
-                <TableRow key={auction.order_id}>
+                <TableRow key={auction.id}>
                   <TableCell>
                     <div className="text-sm">{auction.product_name}</div>
                   </TableCell>
                   <TableCell className="text-right">
                     <span className="text-accent">
-                      ${Number(auction.amount).toLocaleString()}
+                      ${Number(auction.final_price).toLocaleString()}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -59,24 +94,16 @@ export const WonAuctionsTab = () => {
                   </TableCell>
                   <TableCell>
                     <span className="text-sm font-mono text-muted-foreground">
-                      AUC-{auction.order_id}
+                      AUC-{auction.id}
                     </span>
                   </TableCell>
-                  <TableCell>
-                    {auction.payment_status === "completed" ? (
-                      <Badge className="bg-success/20 text-success border-success/50">
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Completed
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-accent/20 text-accent border-accent/50">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {auction.payment_status}
-                      </Badge>
-                    )}
-                  </TableCell>
+                  <TableCell>{getStatusBadge(auction.status)}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/transactions/${auction.id}`)}
+                    >
                       View Transaction
                     </Button>
                   </TableCell>

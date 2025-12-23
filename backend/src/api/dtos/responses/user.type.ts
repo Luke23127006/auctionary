@@ -21,6 +21,7 @@ export interface MyBid {
   end_time: Date;
   slug: string;
   status: string;
+  bid_count: number;
 
   // Bid specific fields from query
   my_max_bid: number;

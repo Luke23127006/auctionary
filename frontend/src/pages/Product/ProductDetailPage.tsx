@@ -24,6 +24,7 @@ export default function ProductDetailPage() {
     seller,
     auction,
     userStatus,
+    transaction,
     bids,
     questions,
     loading,
@@ -210,6 +211,10 @@ export default function ProductDetailPage() {
                 onPlaceBid={placeBid}
                 onToggleWatchlist={handleToggleWatchlist}
                 isWatchlisted={isCurrentlyWatchlisted}
+                sellerId={seller.id}
+                transactionId={
+                  transaction?.canAccess ? transaction.id : undefined
+                }
               />
             )}
           </div>

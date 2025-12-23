@@ -326,6 +326,23 @@ export const getProductDetail = async (
     userProductStatus,
   };
 
+  // If product is sold and user is logged in, check for transaction access
+  if (product.status === "sold" && userId) {
+    const transaction = await transactionRepository.findTransactionByProductId(
+      product.id
+    );
+
+    if (transaction) {
+      const canAccess =
+        userId === transaction.seller_id || userId === transaction.buyer_id;
+
+      response.transaction = {
+        id: transaction.id,
+        canAccess,
+      };
+    }
+  }
+
   return response;
 };
 

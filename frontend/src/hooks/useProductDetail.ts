@@ -87,6 +87,7 @@ export const useProductDetail = () => {
     seller: productData?.seller,
     auction: productData?.auction,
     userStatus: productData?.userProductStatus,
+    transaction: productData?.transaction,
     bids: bidsData,
     questions: questionsData,
     loading,
