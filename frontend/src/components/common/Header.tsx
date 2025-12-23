@@ -12,13 +12,13 @@ import {
   Sparkles,
   BadgeDollarSign,
   User,
-  CircleUserRound,
   BookA,
   Sun,
   Moon,
   UserStar,
   Clock,
 } from "lucide-react";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
@@ -148,7 +148,13 @@ const Header: React.FC = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="cursor-pointer outline-none">
-                        <CircleUserRound className="h-10 w-10 text-muted-foreground hover:text-foreground transition-colors" />
+                        <Avatar className="h-10 w-10 border-2 border-border hover:border-accent transition-colors">
+                          <AvatarFallback className="bg-accent/10 text-accent font-semibold">
+                            {(user?.fullName || user?.email || "U")
+                              .substring(0, 2)
+                              .toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="max-w-60">

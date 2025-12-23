@@ -1,8 +1,4 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../../components/ui/avatar";
+import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 import { Badge } from "../../../components/ui/badge";
 import { Star } from "lucide-react";
 import type { SellerInfo } from "../../../types/product";
@@ -25,9 +21,6 @@ export function SellerCard({ seller }: SellerCardProps) {
   return (
     <div className="flex items-center gap-3">
       <Avatar className="h-12 w-12 border-2 border-border">
-        <AvatarImage
-          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${seller.name}`}
-        />
         <AvatarFallback>
           {seller.name.substring(0, 2).toUpperCase()}
         </AvatarFallback>
