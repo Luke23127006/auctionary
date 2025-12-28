@@ -23,7 +23,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({
   messages,
   onSendMessage,
-  currentUserName = "You",
+  //   currentUserName = "You",
   otherUserName = "Seller",
 }: ChatInterfaceProps) {
   const [messageInput, setMessageInput] = useState("");
