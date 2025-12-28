@@ -35,7 +35,7 @@ app.use(
       "http://localhost:5173",
       "https://auctionary.io.vn",
       "https://www.auctionary.io.vn",
-      //   "https://auctionary.vercel.app",
+      "https://auctionary-ashen.vercel.app",
     ],
     credentials: true,
   })
