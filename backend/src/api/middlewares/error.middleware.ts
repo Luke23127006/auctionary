@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../../errors';
-import { ZodError } from 'zod';
-import { envConfig } from '../../configs/env.config';
-import { ErrorResponse } from '../dtos/responses/api-response.type';
+import { Request, Response, NextFunction } from "express";
+import { AppError } from "../../errors";
+import { ZodError } from "zod";
+import { envConfig } from "../../configs/env.config";
+import { ErrorResponse } from "../dtos/responses/api-response.type";
 
 /**
  * Global error handler middleware
@@ -15,8 +15,8 @@ export const errorHandler = (
 ): Response<ErrorResponse> => {
   let response: ErrorResponse = {
     success: false,
-    error: 'INTERNAL_SERVER_ERROR',
-    message: 'Something went wrong',
+    error: "INTERNAL_SERVER_ERROR",
+    message: "Something went wrong",
   };
 
   let statusCode = 500;
@@ -26,7 +26,7 @@ export const errorHandler = (
     statusCode = error.statusCode;
     response = {
       success: false,
-      error: error.constructor.name.replace('Error', '').toUpperCase(), // VD: BAD_REQUEST, NOT_FOUND
+      error: error.constructor.name.replace("Error", "").toUpperCase(), // VD: BAD_REQUEST, NOT_FOUND
       message: error.message,
     };
   }
@@ -36,57 +36,56 @@ export const errorHandler = (
     statusCode = 400;
     response = {
       success: false,
-      error: 'VALIDATION_ERROR',
-      message: 'Invalid input data',
+      error: "VALIDATION_ERROR",
+      message: error.issues[0]?.message || "Invalid input data",
       details: error.issues.map((err: any) => ({
-        field: err.path.join('.'),
+        field: err.path.join("."),
         message: err.message,
       })),
     };
   }
 
   // 3. JWT Errors
-  else if (error.name === 'JsonWebTokenError') {
+  else if (error.name === "JsonWebTokenError") {
     statusCode = 401;
     response = {
       success: false,
-      error: 'UNAUTHORIZED',
-      message: 'Invalid token',
+      error: "UNAUTHORIZED",
+      message: "Invalid token",
     };
-  }
-  else if (error.name === 'TokenExpiredError') {
+  } else if (error.name === "TokenExpiredError") {
     statusCode = 401;
     response = {
       success: false,
-      error: 'TOKEN_EXPIRED',
-      message: 'Token has expired',
+      error: "TOKEN_EXPIRED",
+      message: "Token has expired",
     };
   }
 
   // 4. PostgreSQL Errors
   else if ((error as any).code) {
     const pgError = error as any;
-    if (pgError.code === '23505') {
+    if (pgError.code === "23505") {
       statusCode = 409;
       response = {
         success: false,
-        error: 'DUPLICATE_ENTRY',
-        message: 'Resource already exists',
+        error: "DUPLICATE_ENTRY",
+        message: "Resource already exists",
         details: pgError.detail,
       };
-    } else if (pgError.code === '23503') {
+    } else if (pgError.code === "23503") {
       statusCode = 400;
       response = {
         success: false,
-        error: 'INVALID_REFERENCE',
-        message: 'Invalid reference ID',
+        error: "INVALID_REFERENCE",
+        message: "Invalid reference ID",
         details: pgError.detail,
       };
     }
   }
 
   // 5. Generic Errors (Dev mode details)
-  if (envConfig.NODE_ENV === 'development' && statusCode === 500) {
+  if (envConfig.NODE_ENV === "development" && statusCode === 500) {
     response.message = error.message;
     response.details = error.stack;
   }
@@ -106,7 +105,7 @@ export const notFoundHandler = (
 ): Response<ErrorResponse> => {
   const response: ErrorResponse = {
     success: false,
-    error: 'NOT_FOUND',
+    error: "NOT_FOUND",
     message: `Route ${req.method} ${req.path} not found`,
   };
   return res.status(404).json(response);

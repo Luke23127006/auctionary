@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
-import { toast } from "react-toastify";
+import { notify } from "../../utils/notify";
 import AuthLayout from "../../layouts/AuthLayout"; // 1. Import layout
 import { Button } from "../../components/ui/button"; // Assuming Button/Input are in ui/
 import { Input } from "../../components/ui/input";
@@ -23,18 +23,16 @@ export default function LoginPage() {
   // 3. Update state according to schema: username -> email
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     // Get reCAPTCHA token
     const recaptchaToken = recaptchaRef.current?.getValue();
     if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA.");
+      notify.error("Please complete the reCAPTCHA.");
       setIsLoading(false);
       return;
     }
@@ -42,10 +40,10 @@ export default function LoginPage() {
     try {
       await login(email, password, recaptchaToken);
 
-      toast.success("Welcome back!");
+      notify.success("Welcome back!");
       navigate("/");
     } catch (err: any) {
-      setError(err.message || "Login failed.");
+      notify.error(err.message || "Login failed.");
       recaptchaRef.current?.reset();
     } finally {
       setIsLoading(false);
@@ -59,16 +57,16 @@ export default function LoginPage() {
         setIsLoading(true);
         await loginWithGoogle(codeResponse.code);
 
-        toast.success("Login with Google successful!");
+        notify.success("Login with Google successful!");
         navigate("/");
       } catch (err: any) {
-        setError(err.message || "Google login failed.");
+        notify.error(err.message || "Google login failed.");
       } finally {
         setIsLoading(false);
       }
     },
     onError: () => {
-      toast.error("Google login failed.");
+      notify.error("Google login failed.");
     },
   });
 
@@ -121,12 +119,6 @@ export default function LoginPage() {
             sitekey={RECAPTCHA_SITE_KEY}
           />
         </div>
-
-        {error && (
-          <p className="animate-shake text-center text-[13px] text-destructive">
-            {error}
-          </p>
-        )}
 
         {/* Button Group */}
         <div className="mt-3 flex w-full gap-2.5">

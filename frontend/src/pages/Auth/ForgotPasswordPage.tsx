@@ -5,7 +5,7 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import InputOTP from "../../components/ui/input-otp";
 import { useAuth } from "../../hooks/useAuth";
-import { toast } from "react-toastify";
+import { notify } from "../../utils/notify";
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -20,7 +20,6 @@ export default function ForgotPasswordPage() {
     newPassword: "",
     confirmPassword: "",
   });
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,15 +33,13 @@ export default function ForgotPasswordPage() {
   const handleRequestOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     try {
       await forgotPassword(formData.email);
-      toast.success("An OTP has been sent to your email.");
+      notify.success("An OTP has been sent to your email.");
       setStep("submit_otp");
     } catch (error: any) {
-      setError(error.message || "An error occurred");
-      toast.error(error.message || "An error occurred");
+      notify.error(error.message || "An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -51,24 +48,22 @@ export default function ForgotPasswordPage() {
   const handleSubmitNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.newPassword !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      notify.error("Passwords do not match.");
       return;
     }
     if (formData.newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
+      notify.error("Password must be at least 8 characters.");
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     try {
       await resetPassword(formData.email, formData.otp, formData.newPassword);
-      toast.success("Password reset successfully! Please log in.");
+      notify.success("Password reset successfully! Please log in.");
       navigate("/login");
     } catch (err: any) {
-      toast.error(err.message || "Invalid OTP or failed to reset.");
-      setError(err.message);
+      notify.error(err.message || "Invalid OTP or failed to reset.");
     } finally {
       setIsLoading(false);
     }
@@ -93,11 +88,7 @@ export default function ForgotPasswordPage() {
             disabled={isLoading}
             required
           />
-          {error && (
-            <p className="animate-shake text-center text-[13px] text-destructive">
-              {error}
-            </p>
-          )}
+
           <div className="mt-3 flex w-full gap-2.5">
             <Button
               type="submit"
@@ -156,11 +147,6 @@ export default function ForgotPasswordPage() {
             required
           />
 
-          {error && (
-            <p className="animate-shake text-center text-[13px] text-destructive">
-              {error}
-            </p>
-          )}
           <div className="mt-3 flex w-full gap-2.5">
             <Button
               type="submit"

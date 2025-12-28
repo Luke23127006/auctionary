@@ -23,7 +23,6 @@ export default function SignupPage() {
     confirm_password: "",
     address: "",
   });
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,17 +32,16 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     const recaptchaToken = recaptchaRef.current?.getValue();
 
     if (formData.password !== formData.confirm_password) {
-      setError("Passwords do not match.");
+      notify.error("Passwords do not match.");
       setIsLoading(false);
       return;
     }
     if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA.");
+      notify.error("Please complete the reCAPTCHA.");
       setIsLoading(false);
       return;
     }
@@ -68,7 +66,7 @@ export default function SignupPage() {
         },
       });
     } catch (err: any) {
-      setError(err.message || "Signup failed.");
+      notify.error(err.message || "Signup failed.");
       recaptchaRef.current?.reset();
     } finally {
       setIsLoading(false);
@@ -128,8 +126,6 @@ export default function SignupPage() {
             sitekey={RECAPTCHA_SITE_KEY}
           />
         </div>
-
-        {error && <p className="auth-error">{error}</p>}
 
         <div className="button-group">
           <Button

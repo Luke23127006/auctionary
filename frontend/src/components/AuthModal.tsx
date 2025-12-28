@@ -47,7 +47,6 @@ export function AuthModal({
 
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Sync activeTab with defaultTab when modal opens
   useEffect(() => {
@@ -82,7 +81,6 @@ export function AuthModal({
   });
 
   const resetState = () => {
-    setError(null);
     setIsLoading(false);
     setLoginData({ email: "", password: "" });
     setSignupData({
@@ -101,12 +99,12 @@ export function AuthModal({
   // Login handlers
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     const recaptchaToken = loginRecaptchaRef.current?.getValue();
     if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA.");
+      notify.error("Please complete the reCAPTCHA.");
       setIsLoading(false);
       return;
     }
@@ -117,7 +115,7 @@ export function AuthModal({
       onOpenChange(false);
       resetState();
     } catch (err: any) {
-      setError(err.message || "Login failed.");
+      notify.error(err.message || "Login failed.");
       loginRecaptchaRef.current?.reset();
     } finally {
       setIsLoading(false);
@@ -127,18 +125,18 @@ export function AuthModal({
   // Signup handlers
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     const recaptchaToken = signupRecaptchaRef.current?.getValue();
 
     if (signupData.password !== signupData.confirm_password) {
-      setError("Passwords do not match.");
+      notify.error("Passwords do not match.");
       setIsLoading(false);
       return;
     }
     if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA.");
+      notify.error("Please complete the reCAPTCHA.");
       setIsLoading(false);
       return;
     }
@@ -161,7 +159,7 @@ export function AuthModal({
         },
       });
     } catch (err: any) {
-      setError(err.message || "Signup failed.");
+      notify.error(err.message || "Signup failed.");
       signupRecaptchaRef.current?.reset();
     } finally {
       setIsLoading(false);
@@ -171,15 +169,14 @@ export function AuthModal({
   // Forgot password handlers
   const handleRequestOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     try {
       await forgotPassword(forgotData.email);
       notify.success("An OTP has been sent to your email.");
       setForgotStep("submit_otp");
     } catch (error: any) {
-      setError(error.message || "An error occurred");
       notify.error(error.message || "An error occurred");
     } finally {
       setIsLoading(false);
@@ -190,16 +187,15 @@ export function AuthModal({
     e.preventDefault();
 
     if (forgotData.newPassword !== forgotData.confirmPassword) {
-      setError("Passwords do not match.");
+      notify.error("Passwords do not match.");
       return;
     }
     if (forgotData.newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
+      notify.error("Password must be at least 8 characters.");
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     try {
       await resetPassword(
@@ -213,7 +209,6 @@ export function AuthModal({
       setActiveTab("login");
     } catch (err: any) {
       notify.error(err.message || "Invalid OTP or failed to reset.");
-      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -230,7 +225,7 @@ export function AuthModal({
         onOpenChange(false);
         resetState();
       } catch (err: any) {
-        setError(err.message || "Google login failed.");
+        notify.error(err.message || "Google login failed.");
       } finally {
         setIsLoading(false);
       }
@@ -289,7 +284,6 @@ export function AuthModal({
           value={activeTab}
           onValueChange={(value: any) => {
             setActiveTab(value);
-            setError(null);
             setForgotStep("request_email");
           }}
           className="w-full max-h-[calc(90vh-120px)] overflow-y-auto"
@@ -338,10 +332,6 @@ export function AuthModal({
                   />
                 </div>
               </div>
-
-              {error && (
-                <p className="text-sm text-destructive text-center">{error}</p>
-              )}
 
               <Button
                 type="submit"
@@ -475,10 +465,6 @@ export function AuthModal({
                 </div>
               </div>
 
-              {error && (
-                <p className="text-sm text-destructive text-center">{error}</p>
-              )}
-
               <Button type="submit" className="w-full" isLoading={isLoading}>
                 {isLoading ? "Creating Account..." : "Sign Up"}
               </Button>
@@ -506,12 +492,6 @@ export function AuthModal({
                   disabled={isLoading}
                   required
                 />
-
-                {error && (
-                  <p className="text-sm text-destructive text-center">
-                    {error}
-                  </p>
-                )}
 
                 <Button type="submit" className="w-full" isLoading={isLoading}>
                   {isLoading ? "Sending..." : "Send Reset OTP"}
@@ -593,12 +573,6 @@ export function AuthModal({
                     required
                   />
                 </div>
-
-                {error && (
-                  <p className="text-sm text-destructive text-center">
-                    {error}
-                  </p>
-                )}
 
                 <Button type="submit" className="w-full" isLoading={isLoading}>
                   {isLoading ? "Resetting..." : "Reset Password"}
