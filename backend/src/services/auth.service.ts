@@ -22,6 +22,7 @@ import {
   AuthResult,
 } from "../api/dtos/responses/auth.type";
 import { OTP_EXPIRY_MINUTES } from "../configs/constants.config";
+import { envConfig } from "../configs/env.config";
 import {
   SignupSchema,
   LoginSchema,
@@ -189,7 +190,9 @@ export const loginUser = async (
   const tokenHash = hashToken(refreshToken);
   const expiresAt = getRefreshTokenExpiry();
 
-  console.log(accessToken);
+  if (envConfig.NODE_ENV !== "production") {
+    console.log(accessToken);
+  }
   await tokenRepo.createRefreshToken(
     mappedUser.id,
     tokenHash,
