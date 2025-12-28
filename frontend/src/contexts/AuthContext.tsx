@@ -163,7 +163,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authService.loginWithGoogle(code);
       localStorage.setItem("token", response.accessToken);
-      setUser(response.user);
+
+      try {
+        const user = await authService.getMe();
+        setUser(user);
+      } catch (error: any) {
+        console.error("Failed to fetch user data after Google login:", error);
+        // Fallback to the user data from login response (though it might be partial)
+        setUser(response.user);
+      }
+
       return response;
     } catch (error) {
       console.error("Google login error in context:", error);
@@ -177,7 +186,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authService.loginWithFacebook(accessToken);
       localStorage.setItem("token", response.accessToken);
-      setUser(response.user);
+
+      try {
+        const user = await authService.getMe();
+        setUser(user);
+      } catch (error: any) {
+        console.error("Failed to fetch user data after Facebook login:", error);
+        setUser(response.user);
+      }
+
       return response;
     } catch (error) {
       console.error("Facebook login error in context:", error);

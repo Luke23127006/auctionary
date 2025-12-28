@@ -7,17 +7,17 @@ import { Button } from "../../components/ui/button"; // Assuming Button/Input ar
 import { Input } from "../../components/ui/input";
 import { useAuth } from "../../hooks/useAuth"; // Assuming hook is in contexts/
 import { useGoogleLogin } from "@react-oauth/google";
-import FacebookLogin from "@greatsumini/react-facebook-login";
+// import FacebookLogin from "@greatsumini/react-facebook-login";
 import { useTheme } from "../../hooks/useTheme";
 
 // 2. Get Site Key from .env (Vite)
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
-const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
+// const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const { login, loginWithGoogle, loginWithFacebook } = useAuth();
+  const { login, loginWithGoogle /*, loginWithFacebook */ } = useAuth();
   const { theme } = useTheme();
 
   // 3. Update state according to schema: username -> email
@@ -72,7 +72,7 @@ export default function LoginPage() {
     },
   });
 
-  const responseFacebook = async (response: any) => {
+  /* const responseFacebook = async (response: any) => {
     if (response.accessToken) {
       try {
         setIsLoading(true);
@@ -91,7 +91,7 @@ export default function LoginPage() {
       // User hủy login hoặc lỗi
       console.log("FB Login cancelled or failed");
     }
-  };
+  }; */
 
   return (
     // 6. Use AuthLayout, pass in the title
@@ -165,7 +165,7 @@ export default function LoginPage() {
 
       <div className="my-4 flex w-full items-center text-center text-[13px] font-semibold uppercase text-muted-foreground">
         <div className="flex-1 border-b border-border"></div>
-        <span className="px-4">OR Continue with</span>
+        <span className="px-4">OR</span>
         <div className="flex-1 border-b border-border"></div>
       </div>
 
@@ -181,12 +181,12 @@ export default function LoginPage() {
             alt="G"
             className="mr-2 h-[18px] w-[18px]"
           />
-          Google
+          Continue with Google
         </Button>
 
         {/* Bỏ thẻ div style marginTop thừa thãi, dùng flex gap-2 là đủ */}
 
-        <FacebookLogin
+        {/* <FacebookLogin
           appId={FACEBOOK_APP_ID}
           onSuccess={responseFacebook}
           onFail={(error) => {
@@ -208,7 +208,7 @@ export default function LoginPage() {
               <span>Facebook</span>
             </Button>
           )}
-        />
+        /> */}
       </div>
     </AuthLayout>
   );

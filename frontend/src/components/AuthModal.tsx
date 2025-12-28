@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useGoogleLogin } from "@react-oauth/google";
-import FacebookLogin from "@greatsumini/react-facebook-login";
+// import FacebookLogin from "@greatsumini/react-facebook-login";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { notify } from "../utils/notify";
@@ -21,7 +21,7 @@ import { Separator } from "./ui/separator";
 import InputOTP from "./ui/input-otp";
 
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
-const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
+// const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
 
 interface AuthModalProps {
   open: boolean;
@@ -40,7 +40,7 @@ export function AuthModal({
     login,
     signup,
     loginWithGoogle,
-    loginWithFacebook,
+    // loginWithFacebook,
     forgotPassword,
     resetPassword,
   } = useAuth();
@@ -240,7 +240,7 @@ export function AuthModal({
     },
   });
 
-  const responseFacebook = async (response: any) => {
+  /* const responseFacebook = async (response: any) => {
     if (response.accessToken) {
       try {
         setIsLoading(true);
@@ -255,7 +255,7 @@ export function AuthModal({
         setIsLoading(false);
       }
     }
-  };
+  }; */
 
   return (
     <Dialog
@@ -359,14 +359,14 @@ export function AuthModal({
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
+                  OR
                 </span>
               </div>
             </div>
 
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => handleGoogleLogin()}
                 disabled={isLoading}
                 className="flex-1"
@@ -376,10 +376,10 @@ export function AuthModal({
                   alt="G"
                   className="mr-2 h-4 w-4"
                 />
-                Google
+                Continue with Google
               </Button>
 
-              <FacebookLogin
+              {/* <FacebookLogin
                 appId={FACEBOOK_APP_ID}
                 onSuccess={responseFacebook}
                 onFail={(error) => {
@@ -401,7 +401,7 @@ export function AuthModal({
                     Facebook
                   </Button>
                 )}
-              />
+              /> */}
             </div>
           </TabsContent>
 
