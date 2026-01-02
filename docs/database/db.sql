@@ -78,6 +78,12 @@ CREATE TABLE public.product_comments (
   CONSTRAINT product_comments_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
   CONSTRAINT product_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+CREATE TABLE public.product_configs (
+  product_id integer NOT NULL,
+  allow_new_bidder boolean NOT NULL DEFAULT true,
+  CONSTRAINT product_configs_pkey PRIMARY KEY (product_id),
+  CONSTRAINT product_configs_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id)
+);
 CREATE TABLE public.product_descriptions (
   id integer NOT NULL DEFAULT nextval('product_descriptions_description_id_seq'::regclass),
   product_id integer NOT NULL,

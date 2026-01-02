@@ -111,6 +111,14 @@ export function ProductBidding({
       };
     }
 
+    const ended = auction.endTime < new Date().toISOString();
+    if (ended) {
+      return {
+        canBid: false,
+        reason: "This auction has ended.",
+      };
+    }
+
     return { canBid: true };
   };
 
@@ -238,7 +246,7 @@ export function ProductBidding({
                 <AlertTitle className="text-success">
                   {isWinner ? "Congratulations! You Won!" : "Auction Completed"}
                 </AlertTitle>
-                <AlertDescription className="text-success/90">
+                <AlertDescription className="text-success">
                   {isWinner
                     ? "You are the winner of this auction. Please proceed to the transaction room to complete your purchase."
                     : "This auction has ended. Please proceed to the transaction room to manage the sale."}

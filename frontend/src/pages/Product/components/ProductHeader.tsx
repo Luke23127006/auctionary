@@ -5,7 +5,7 @@ import { Separator } from "../../../components/ui/separator";
 
 interface ProductHeaderProps {
   title: string;
-  categoryName: string,
+  categoryName: string;
   timeLeft: string; // This should be calculated from endTime
   isWatchlisted: boolean;
   onToggleWatchlist: () => void;
@@ -36,12 +36,16 @@ export function ProductHeader({
 
       <div className="flex items-center gap-4 mb-4">
         <Badge variant="secondary">{categoryName}</Badge>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Clock className="h-4 w-4 text-accent" />
-          <span>
-            Ends in <span className="text-accent">{timeLeft}</span>
-          </span>
-        </div>
+        {timeLeft === "Auction ended" ? (
+          <Badge variant="destructive">Auction Ended</Badge>
+        ) : (
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4 text-accent" />
+            <span>
+              Ends in <span className="text-accent">{timeLeft}</span>
+            </span>
+          </div>
+        )}
       </div>
 
       <Separator className="my-4" />
