@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as React from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "../../components/ui/button";
-import { TransactionRoom } from "./components/TransactionRoomPayment";
+import { TransactionRoomPayment } from "./components/TransactionRoomPayment";
 import { TransactionRoomShipping } from "./components/TransactionRoomShipping";
 import { TransactionRoomDelivery } from "./components/TransactionRoomDelivery";
 import { TransactionRoomComplete } from "./components/TransactionRoomComplete";
@@ -105,21 +105,24 @@ const getTransactionSteps = (status: TransactionStatus): TransactionStep[] => {
       label: "Payment",
       icon: CreditCard,
       status: "upcoming",
-      description: "Payment confirmed",
+      description: "Complete the payment form",
+      doneMessage: "Payment confirmed",
     },
     {
       id: 2,
       label: "Shipping",
       icon: Package,
       status: "upcoming",
-      description: "Package shipped",
+      description: "Tracking your shipment",
+      doneMessage: "Package shipped",
     },
     {
       id: 3,
       label: "Delivery",
       icon: Truck,
       status: "upcoming",
-      description: "Successfully delivered",
+      description: "Item in transit to you",
+      doneMessage: "Successfully delivered",
     },
     {
       id: 4,
@@ -127,6 +130,7 @@ const getTransactionSteps = (status: TransactionStatus): TransactionStep[] => {
       icon: CheckCircle2,
       status: "upcoming",
       description: "Transaction complete",
+      doneMessage: "Transaction completed",
     },
   ];
 
@@ -161,9 +165,9 @@ const getProgressPercentage = (status: TransactionStatus): number => {
     case "payment_pending":
       return 0;
     case "shipping_pending":
-      return 33;
+      return 30;
     case "delivered":
-      return 66;
+      return 55;
     case "completed":
       return 100;
     case "cancelled":
@@ -661,7 +665,7 @@ export default function TransactionRoomPage() {
                     />
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
-                    <TransactionRoom
+                    <TransactionRoomPayment
                       mode={stepStates.payment}
                       transaction={transaction}
                       onPaymentProof={handlePaymentProof}

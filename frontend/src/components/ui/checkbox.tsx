@@ -30,8 +30,9 @@ const Checkbox = React.forwardRef<
       {...props}
     >
       <CheckboxPrimitive.Indicator
+        forceMount
         data-slot="checkbox-indicator"
-        className="flex items-center justify-center text-current transition-none"
+        className="flex items-center justify-center text-current opacity-0 scale-50 transition-all duration-200 data-[state=checked]:opacity-100 data-[state=checked]:scale-100"
       >
         {indeterminate ? (
           <MinusIcon className="size-3.5" />

@@ -13,16 +13,28 @@ import { Users, DollarSign, TrendingUp, Zap, Info } from "lucide-react";
 import type { AuctionInfo } from "../../../types/product";
 import { notify } from "../../../utils/notify";
 
+import { useNavigate } from "react-router-dom";
+import { Button } from "../../../components/ui/button";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "../../../components/ui/alert";
+import { CheckCircle2, ArrowRight } from "lucide-react";
+
 interface SellerCommandCenterProps {
   auction: AuctionInfo;
   onToggleAllowNewBidder: (value: boolean) => Promise<void>;
+  transactionId?: number;
 }
 
 export function SellerCommandCenter({
   auction,
   onToggleAllowNewBidder,
+  transactionId,
 }: SellerCommandCenterProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const navigate = useNavigate();
 
   const handleToggleAllowNewBidder = async (checked: boolean) => {
     try {
@@ -40,6 +52,10 @@ export function SellerCommandCenter({
       setIsUpdating(false);
     }
   };
+
+  const isSold = auction.status === "sold";
+  const isEnded = auction.endTime < new Date().toISOString();
+  const showTransaction = isSold || isEnded;
 
   return (
     <div className="space-y-6">
@@ -75,6 +91,38 @@ export function SellerCommandCenter({
           </div>
 
           <Separator />
+
+          {/* Transaction Access for Ended/Sold Auctions */}
+          {showTransaction && (
+            <>
+              <div className="space-y-4">
+                <Alert className="border-success bg-success/10">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                  <AlertTitle className="text-success">
+                    Auction Completed
+                  </AlertTitle>
+                  <AlertDescription className="text-success">
+                    This auction has ended. Please proceed to the transaction
+                    room to manage the sale.
+                  </AlertDescription>
+                </Alert>
+                <Button
+                  onClick={() =>
+                    transactionId && navigate(`/transactions/${transactionId}`)
+                  }
+                  disabled={!transactionId}
+                  className="w-full bg-success hover:bg-success/90 text-white"
+                  size="lg"
+                >
+                  {transactionId
+                    ? "Go to Transaction Room"
+                    : "Processing Transaction..."}
+                  {transactionId && <ArrowRight className="ml-2 h-5 w-5" />}
+                </Button>
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4 text-center">

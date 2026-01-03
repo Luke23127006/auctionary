@@ -9,7 +9,11 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
-import { Alert, AlertDescription } from "../../../components/ui/alert";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "../../../components/ui/alert";
 import {
   Check,
   AlertCircle,
@@ -22,6 +26,7 @@ import {
   MapPin,
   Clock,
   Loader2,
+  CircleCheck,
 } from "lucide-react";
 import type { TransactionDetailResponse } from "../../../types/transaction";
 import { formatTime } from "../../../utils/dateUtils";
@@ -31,21 +36,30 @@ type StepState = "completed" | "active-actor" | "active-observer" | "locked";
 interface TransactionRoomProps {
   mode: StepState;
   transaction: TransactionDetailResponse;
-  onPaymentProof: (file: File, shippingInfo: {
-    fullName: string;
-    address: string;
-    city: string;
-    phone: string;
-  }) => void;
+  onPaymentProof: (
+    file: File,
+    shippingInfo: {
+      fullName: string;
+      address: string;
+      city: string;
+      phone: string;
+    }
+  ) => void;
   isSeller: boolean;
   isLoading?: boolean;
 }
 
-export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, isLoading = false }: TransactionRoomProps) {
+export function TransactionRoomPayment({
+  mode,
+  transaction,
+  onPaymentProof,
+  isSeller,
+  isLoading = false,
+}: TransactionRoomProps) {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const [shippingAddress, setShippingAddress] = useState({
     fullName: transaction.shippingInfo.fullName || "",
     address: transaction.shippingInfo.address || "",
@@ -112,7 +126,8 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
       if (!shippingAddress.phone.trim()) {
         newErrors.phone = "Phone number is required";
       } else if (!/^(0|\+84)(\d{9,10})$/.test(shippingAddress.phone.trim())) {
-        newErrors.phone = "Invalid Vietnamese phone number (e.g., 0901234567 or +84901234567)";
+        newErrors.phone =
+          "Invalid Vietnamese phone number (e.g., 0901234567 or +84901234567)";
       }
     }
 
@@ -131,10 +146,13 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
       <div className="lg:col-span-2 space-y-6">
         {/* Completion Alert */}
         <Alert className="border-green-500/30 bg-green-500/5">
-          <Shield className="h-4 w-4 text-green-500" />
-          <AlertDescription className="text-sm text-green-500/90">
-            <strong>Payment Confirmed:</strong> Payment was verified and confirmed on{" "}
-            {transaction.payment.confirmedAt && formatTime(transaction.payment.confirmedAt)}.
+          <CircleCheck className="h-4 w-4 text-success" />
+          <AlertTitle className="text-success">Payment Confirmed</AlertTitle>
+          <AlertDescription className="text-sm text-success">
+            Payment was verified and confirmed on{" "}
+            {transaction.payment.confirmedAt &&
+              formatTime(transaction.payment.confirmedAt)}
+            .
           </AlertDescription>
         </Alert>
 
@@ -155,19 +173,29 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
               <div className="col-span-2">
-                <div className="text-xs text-muted-foreground mb-1">Amount Paid</div>
-                <div className="text-3xl text-green-500 font-bold">${transaction.finalPrice.toFixed(2)}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">Payment Uploaded</div>
-                <div className="text-sm">
-                  {transaction.payment.uploadedAt && formatTime(transaction.payment.uploadedAt)}
+                <div className="text-xs text-muted-foreground mb-1">
+                  Amount Paid
+                </div>
+                <div className="text-3xl text-green-500 font-bold">
+                  ${transaction.finalPrice.toFixed(2)}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Confirmed At</div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Payment Uploaded
+                </div>
                 <div className="text-sm">
-                  {transaction.payment.confirmedAt && formatTime(transaction.payment.confirmedAt)}
+                  {transaction.payment.uploadedAt &&
+                    formatTime(transaction.payment.uploadedAt)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Confirmed At
+                </div>
+                <div className="text-sm">
+                  {transaction.payment.confirmedAt &&
+                    formatTime(transaction.payment.confirmedAt)}
                 </div>
               </div>
             </div>
@@ -204,7 +232,9 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
             <CardContent className="space-y-2">
               <div className="p-4 rounded-lg bg-secondary/50 border border-border">
                 <div className="space-y-1 text-sm">
-                  <div><strong>{transaction.shippingInfo.fullName}</strong></div>
+                  <div>
+                    <strong>{transaction.shippingInfo.fullName}</strong>
+                  </div>
                   <div>{transaction.shippingInfo.address}</div>
                   <div>{transaction.shippingInfo.city}</div>
                   <div>{transaction.shippingInfo.phoneNumber}</div>
@@ -230,8 +260,11 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
             {/* Review Alert */}
             <Alert className="border-accent/30 bg-accent/5">
               <Shield className="h-4 w-4 text-accent" />
-              <AlertDescription className="text-sm text-accent/90">
-                <strong>Payment Proof Received:</strong> The buyer has submitted payment proof and shipping address.
+              <AlertTitle className="text-accent">
+                Payment Proof Received
+              </AlertTitle>
+              <AlertDescription className="text-sm text-accent">
+                The buyer has submitted payment proof and shipping address.
               </AlertDescription>
             </Alert>
 
@@ -246,13 +279,20 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
                   <div className="col-span-2">
-                    <div className="text-xs text-muted-foreground mb-1">Amount to Verify</div>
-                    <div className="text-3xl text-accent font-bold">${transaction.finalPrice.toFixed(2)}</div>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Amount to Verify
+                    </div>
+                    <div className="text-3xl text-accent font-bold">
+                      ${transaction.finalPrice.toFixed(2)}
+                    </div>
                   </div>
                   <div className="col-span-2">
-                    <div className="text-xs text-muted-foreground mb-1">Uploaded At</div>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Uploaded At
+                    </div>
                     <div className="text-sm">
-                      {transaction.payment.uploadedAt && formatTime(transaction.payment.uploadedAt)}
+                      {transaction.payment.uploadedAt &&
+                        formatTime(transaction.payment.uploadedAt)}
                     </div>
                   </div>
                 </div>
@@ -275,7 +315,9 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                     <Label>Shipping Address Provided</Label>
                     <div className="p-4 rounded-lg bg-secondary/50 border border-border">
                       <div className="space-y-1 text-sm">
-                        <div><strong>{transaction.shippingInfo.fullName}</strong></div>
+                        <div>
+                          <strong>{transaction.shippingInfo.fullName}</strong>
+                        </div>
                         <div>{transaction.shippingInfo.address}</div>
                         <div>{transaction.shippingInfo.city}</div>
                         <div>{transaction.shippingInfo.phoneNumber}</div>
@@ -294,8 +336,9 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
         <div className="lg:col-span-2 space-y-6">
           <Alert className="border-accent/30 bg-accent/5">
             <Clock className="h-4 w-4 text-accent" />
-            <AlertDescription className="text-sm text-accent/90">
-              <strong>Awaiting Payment:</strong> Waiting for the buyer to complete the payment transfer.
+            <AlertTitle className="text-accent">Awaiting Payment</AlertTitle>
+            <AlertDescription className="text-sm text-accent">
+              Waiting for the buyer to complete the payment transfer.
             </AlertDescription>
           </Alert>
 
@@ -315,10 +358,11 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                 <div className="space-y-3">
                   <h2 className="text-2xl">Waiting for Buyer Payment</h2>
                   <p className="text-sm text-muted-foreground max-w-md">
-                    The buyer is processing the payment transfer. You'll be notified once the payment proof is submitted.
+                    The buyer is processing the payment transfer. You'll be
+                    notified once the payment proof is submitted.
                   </p>
                 </div>
-                <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+                <Badge className="bg-accent/20 text-accent border-accent/50">
                   <Clock className="h-3 w-3 mr-1" />
                   Awaiting Payment Proof
                 </Badge>
@@ -337,8 +381,10 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
       <div className="lg:col-span-2 space-y-6">
         <Alert className="border-accent/30 bg-accent/5">
           <Shield className="h-4 w-4 text-accent" />
-          <AlertDescription className="text-sm text-accent/90">
-            <strong>Payment Required:</strong> Please complete the payment transfer and upload your payment receipt.
+          <AlertTitle className="text-accent">Payment Required</AlertTitle>
+          <AlertDescription className="text-sm text-accent">
+            Please complete the payment transfer and upload your payment
+            receipt.
           </AlertDescription>
         </Alert>
 
@@ -359,8 +405,12 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
               <div className="col-span-2">
-                <div className="text-xs text-muted-foreground mb-1">Total Amount to Transfer</div>
-                <div className="text-3xl text-accent font-bold">${transaction.finalPrice.toFixed(2)}</div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Total Amount to Transfer
+                </div>
+                <div className="text-3xl text-accent font-bold">
+                  ${transaction.finalPrice.toFixed(2)}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -378,7 +428,8 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
             <Alert className="border-border bg-secondary/30">
               <Info className="h-4 w-4" />
               <AlertDescription className="text-xs">
-                After completing the payment, upload a screenshot or photo of your payment receipt for verification.
+                After completing the payment, upload a screenshot or photo of
+                your payment receipt for verification.
               </AlertDescription>
             </Alert>
 
@@ -409,7 +460,9 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                   Drag and drop your receipt here, or{" "}
                   <span className="text-accent">click to browse</span>
                 </p>
-                <p className="text-xs text-muted-foreground">PNG, JPG or WEBP (Max 5MB)</p>
+                <p className="text-xs text-muted-foreground">
+                  PNG, JPG or WEBP (Max 5MB)
+                </p>
               </div>
             </div>
 
@@ -449,7 +502,8 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
               <Alert className="border-border bg-secondary/30">
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-xs">
-                  Please provide your delivery address. This will be shared with the seller for shipping.
+                  Please provide your delivery address. This will be shared with
+                  the seller for shipping.
                 </AlertDescription>
               </Alert>
 
@@ -463,14 +517,19 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                     placeholder="John Doe"
                     value={shippingAddress.fullName}
                     onChange={(e) => {
-                      setShippingAddress({ ...shippingAddress, fullName: e.target.value });
+                      setShippingAddress({
+                        ...shippingAddress,
+                        fullName: e.target.value,
+                      });
                       setErrors((prev) => ({ ...prev, fullName: "" }));
                     }}
                     className={errors.fullName ? "border-destructive" : ""}
                     required
                   />
                   {errors.fullName && (
-                    <p className="text-xs text-destructive">{errors.fullName}</p>
+                    <p className="text-xs text-destructive">
+                      {errors.fullName}
+                    </p>
                   )}
                 </div>
 
@@ -483,7 +542,10 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                     placeholder="123 Main Street"
                     value={shippingAddress.address}
                     onChange={(e) => {
-                      setShippingAddress({ ...shippingAddress, address: e.target.value });
+                      setShippingAddress({
+                        ...shippingAddress,
+                        address: e.target.value,
+                      });
                       setErrors((prev) => ({ ...prev, address: "" }));
                     }}
                     className={errors.address ? "border-destructive" : ""}
@@ -504,7 +566,10 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                       placeholder="New York"
                       value={shippingAddress.city}
                       onChange={(e) => {
-                        setShippingAddress({ ...shippingAddress, city: e.target.value });
+                        setShippingAddress({
+                          ...shippingAddress,
+                          city: e.target.value,
+                        });
                         setErrors((prev) => ({ ...prev, city: "" }));
                       }}
                       className={errors.city ? "border-destructive" : ""}
@@ -524,7 +589,10 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                       placeholder="0901234567 or +84901234567"
                       value={shippingAddress.phone}
                       onChange={(e) => {
-                        setShippingAddress({ ...shippingAddress, phone: e.target.value });
+                        setShippingAddress({
+                          ...shippingAddress,
+                          phone: e.target.value,
+                        });
                         setErrors((prev) => ({ ...prev, phone: "" }));
                       }}
                       className={errors.phone ? "border-destructive" : ""}
@@ -540,10 +608,10 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
           </Card>
         )}
 
-        <Button 
-          className="w-full" 
-          size="lg" 
-          disabled={!paymentProof || isLoading} 
+        <Button
+          className="w-full"
+          size="lg"
+          disabled={!paymentProof || isLoading}
           onClick={handleSubmit}
           isLoading={isLoading}
         >

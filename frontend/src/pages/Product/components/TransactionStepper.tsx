@@ -15,6 +15,7 @@ export interface TransactionStep {
   icon: React.ElementType;
   status: StepStatus;
   description: string;
+  doneMessage: string;
 }
 
 interface TransactionStepperProps {
@@ -39,9 +40,7 @@ export function TransactionStepper({
             style={{ width: "calc(100% - 40px)", marginLeft: "20px" }}
           >
             <div
-              className={`h-full transition-all duration-500 ${
-                progressPercentage === 100 ? "bg-green-500" : "bg-accent"
-              }`}
+              className={`h-full transition-all duration-500 bg-green-500`}
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
@@ -94,7 +93,7 @@ export function TransactionStepper({
 
                   {/* Description */}
                   <div className="text-xs text-muted-foreground max-w-[120px]">
-                    {step.description}
+                    {isCompleted ? step.doneMessage : step.description}
                   </div>
 
                   {/* Active Indicator */}

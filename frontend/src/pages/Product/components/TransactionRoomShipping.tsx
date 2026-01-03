@@ -8,7 +8,12 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
-import { Alert, AlertDescription } from "../../../components/ui/alert";
+import { Checkbox } from "../../../components/ui/checkbox";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "../../../components/ui/alert";
 import {
   Check,
   Clock,
@@ -22,6 +27,7 @@ import {
   MapPin,
   CreditCard,
   AlertCircle,
+  CircleCheck,
 } from "lucide-react";
 import type { TransactionDetailResponse } from "../../../types/transaction";
 import { formatTime } from "../../../utils/dateUtils";
@@ -107,10 +113,13 @@ export function TransactionRoomShipping({
       <div className="lg:col-span-2 space-y-6">
         {/* Completion Alert */}
         <Alert className="border-green-500/30 bg-green-500/5">
-          <Shield className="h-4 w-4 text-green-500" />
-          <AlertDescription className="text-sm text-green-500/90">
-            <strong>Shipping Confirmed:</strong> Package was shipped on{" "}
-            {transaction.fulfillment.shippedConfirmedAt && formatTime(transaction.fulfillment.shippedConfirmedAt)}.
+          <CircleCheck className="h-4 w-4 text-success" />
+          <AlertTitle className="text-success">Shipping Confirmed</AlertTitle>
+          <AlertDescription className="text-sm text-success">
+            Package was shipped on{" "}
+            {transaction.fulfillment.shippedConfirmedAt &&
+              formatTime(transaction.fulfillment.shippedConfirmedAt)}
+            .
           </AlertDescription>
         </Alert>
 
@@ -131,15 +140,21 @@ export function TransactionRoomShipping({
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Shipped At</div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Shipped At
+                </div>
                 <div className="text-sm">
-                  {transaction.fulfillment.uploadedAt && formatTime(transaction.fulfillment.uploadedAt)}
+                  {transaction.fulfillment.uploadedAt &&
+                    formatTime(transaction.fulfillment.uploadedAt)}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Confirmed At</div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  Confirmed At
+                </div>
                 <div className="text-sm">
-                  {transaction.fulfillment.shippedConfirmedAt && formatTime(transaction.fulfillment.shippedConfirmedAt)}
+                  {transaction.fulfillment.shippedConfirmedAt &&
+                    formatTime(transaction.fulfillment.shippedConfirmedAt)}
                 </div>
               </div>
             </div>
@@ -176,7 +191,9 @@ export function TransactionRoomShipping({
             <CardContent className="space-y-2">
               <div className="p-4 rounded-lg bg-secondary/50 border border-border">
                 <div className="space-y-1 text-sm">
-                  <div><strong>{transaction.shippingInfo.fullName}</strong></div>
+                  <div>
+                    <strong>{transaction.shippingInfo.fullName}</strong>
+                  </div>
                   <div>{transaction.shippingInfo.address}</div>
                   <div>{transaction.shippingInfo.city}</div>
                   <div>{transaction.shippingInfo.phoneNumber}</div>
@@ -199,8 +216,9 @@ export function TransactionRoomShipping({
         <div className="lg:col-span-2 space-y-6">
           <Alert className="border-accent/30 bg-accent/5">
             <Clock className="h-4 w-4 text-accent" />
-            <AlertDescription className="text-sm text-accent/90">
-              <strong>Payment Confirmed:</strong> Waiting for the seller to ship the item.
+            <AlertTitle className="text-accent">Payment Confirmed</AlertTitle>
+            <AlertDescription className="text-sm text-accent">
+              Waiting for the seller to ship the item.
             </AlertDescription>
           </Alert>
 
@@ -220,8 +238,8 @@ export function TransactionRoomShipping({
                 <div className="space-y-3">
                   <h2 className="text-2xl">Waiting for Seller</h2>
                   <p className="text-sm text-muted-foreground max-w-md">
-                    The seller is verifying your payment and preparing to ship the item. 
-                    You'll be notified once the package is shipped.
+                    The seller is verifying your payment and preparing to ship
+                    the item. You'll be notified once the package is shipped.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-2">
@@ -250,7 +268,9 @@ export function TransactionRoomShipping({
               <CardContent className="space-y-2">
                 <div className="p-4 rounded-lg bg-secondary/50 border border-border">
                   <div className="space-y-1 text-sm">
-                    <div><strong>{transaction.shippingInfo.fullName}</strong></div>
+                    <div>
+                      <strong>{transaction.shippingInfo.fullName}</strong>
+                    </div>
                     <div>{transaction.shippingInfo.address}</div>
                     <div>{transaction.shippingInfo.city}</div>
                     <div>{transaction.shippingInfo.phoneNumber}</div>
@@ -268,8 +288,9 @@ export function TransactionRoomShipping({
       <div className="lg:col-span-2 space-y-6">
         <Alert className="border-accent/30 bg-accent/5">
           <Clock className="h-4 w-4 text-accent" />
-          <AlertDescription className="text-sm text-accent/90">
-            <strong>Awaiting Address:</strong> Waiting for the buyer to provide shipping address.
+          <AlertTitle className="text-accent">Awaiting Address</AlertTitle>
+          <AlertDescription className="text-sm text-accent">
+            Waiting for the buyer to provide shipping address.
           </AlertDescription>
         </Alert>
 
@@ -289,7 +310,8 @@ export function TransactionRoomShipping({
               <div className="space-y-3">
                 <h2 className="text-2xl">Waiting for Shipping Address</h2>
                 <p className="text-sm text-muted-foreground max-w-md">
-                  The buyer needs to provide their shipping address before you can ship the item.
+                  The buyer needs to provide their shipping address before you
+                  can ship the item.
                 </p>
               </div>
             </div>
@@ -309,8 +331,9 @@ export function TransactionRoomShipping({
         <div className="lg:col-span-2 space-y-6">
           <Alert className="border-accent/30 bg-accent/5">
             <Shield className="h-4 w-4 text-accent" />
-            <AlertDescription className="text-sm text-accent/90">
-              <strong>Action Required:</strong> Confirm payment received and upload proof of shipment.
+            <AlertTitle className="text-accent">Action Required</AlertTitle>
+            <AlertDescription className="text-sm text-accent">
+              Confirm payment received and upload proof of shipment.
             </AlertDescription>
           </Alert>
 
@@ -326,19 +349,27 @@ export function TransactionRoomShipping({
               <Alert className="border-border bg-secondary/30">
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-xs">
-                  Please verify the payment proof before confirming. Make sure the amount matches.
+                  Please verify the payment proof before confirming. Make sure
+                  the amount matches.
                 </AlertDescription>
               </Alert>
 
               <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
                 <div className="col-span-2">
-                  <div className="text-xs text-muted-foreground mb-1">Amount to Verify</div>
-                  <div className="text-3xl text-accent font-bold">${transaction.finalPrice.toFixed(2)}</div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Amount to Verify
+                  </div>
+                  <div className="text-3xl text-accent font-bold">
+                    ${transaction.finalPrice.toFixed(2)}
+                  </div>
                 </div>
                 <div className="col-span-2">
-                  <div className="text-xs text-muted-foreground mb-1">Payment Uploaded At</div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Payment Uploaded At
+                  </div>
                   <div className="text-sm">
-                    {transaction.payment.uploadedAt && formatTime(transaction.payment.uploadedAt)}
+                    {transaction.payment.uploadedAt &&
+                      formatTime(transaction.payment.uploadedAt)}
                   </div>
                 </div>
               </div>
@@ -363,27 +394,33 @@ export function TransactionRoomShipping({
 
               {/* Payment Confirmation Checkbox */}
               <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-accent/30 bg-accent/5">
-                <input
-                  type="checkbox"
+                <Checkbox
                   id="payment-confirmation"
                   checked={paymentConfirmed}
-                  onChange={(e) => {
-                    setPaymentConfirmed(e.target.checked);
+                  onCheckedChange={(checked) => {
+                    setPaymentConfirmed(checked as boolean);
                     setErrors((prev) => ({ ...prev, paymentConfirmed: "" }));
                   }}
-                  className={`mt-1 h-5 w-5 rounded border-accent text-accent focus:ring-accent cursor-pointer ${
+                  className={
                     errors.paymentConfirmed ? "border-destructive" : ""
-                  }`}
+                  }
                 />
-                <label htmlFor="payment-confirmation" className="flex-1 cursor-pointer">
+                <label
+                  htmlFor="payment-confirmation"
+                  className="flex-1 cursor-pointer"
+                >
                   <div className="font-medium text-accent mb-1">
-                    Tôi xác nhận đã nhận đủ tiền
+                    I confirm that I have received the full payment
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    By checking this box, you confirm that you have received the full payment of ${transaction.finalPrice.toFixed(2)} from the buyer.
+                    By checking this box, you confirm that you have received the
+                    full payment of ${transaction.finalPrice.toFixed(2)} from
+                    the buyer.
                   </div>
                   {errors.paymentConfirmed && (
-                    <p className="text-xs text-destructive mt-1">{errors.paymentConfirmed}</p>
+                    <p className="text-xs text-destructive mt-1">
+                      {errors.paymentConfirmed}
+                    </p>
                   )}
                 </label>
               </div>
@@ -403,12 +440,15 @@ export function TransactionRoomShipping({
                 <Alert className="border-border bg-secondary/30">
                   <Info className="h-4 w-4" />
                   <AlertDescription className="text-xs">
-                    Ship the item to this address and upload proof of shipment below.
+                    Ship the item to this address and upload proof of shipment
+                    below.
                   </AlertDescription>
                 </Alert>
                 <div className="p-4 rounded-lg bg-secondary/50 border border-border">
                   <div className="space-y-1 text-sm">
-                    <div><strong>{transaction.shippingInfo.fullName}</strong></div>
+                    <div>
+                      <strong>{transaction.shippingInfo.fullName}</strong>
+                    </div>
                     <div>{transaction.shippingInfo.address}</div>
                     <div>{transaction.shippingInfo.city}</div>
                     <div>{transaction.shippingInfo.phoneNumber}</div>
@@ -430,7 +470,8 @@ export function TransactionRoomShipping({
               <Alert className="border-border bg-secondary/30">
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-xs">
-                  Upload a photo of the shipping receipt or tracking number to proceed.
+                  Upload a photo of the shipping receipt or tracking number to
+                  proceed.
                 </AlertDescription>
               </Alert>
 
@@ -461,7 +502,9 @@ export function TransactionRoomShipping({
                     Drag and drop shipping receipt here, or{" "}
                     <span className="text-accent">click to browse</span>
                   </p>
-                  <p className="text-xs text-muted-foreground">PNG, JPG or WEBP (Max 5MB)</p>
+                  <p className="text-xs text-muted-foreground">
+                    PNG, JPG or WEBP (Max 5MB)
+                  </p>
                 </div>
               </div>
 
@@ -510,7 +553,13 @@ export function TransactionRoomShipping({
             <Alert className="border-yellow-500/30 bg-yellow-500/5">
               <AlertCircle className="h-4 w-4 text-yellow-500" />
               <AlertDescription className="text-xs text-yellow-500/90">
-                Please {!shippingProof && !paymentConfirmed ? "upload shipping proof and confirm payment received" : !shippingProof ? "upload shipping proof" : "confirm payment received"} to continue.
+                Please{" "}
+                {!shippingProof && !paymentConfirmed
+                  ? "upload shipping proof and confirm payment received"
+                  : !shippingProof
+                  ? "upload shipping proof"
+                  : "confirm payment received"}{" "}
+                to continue.
               </AlertDescription>
             </Alert>
           )}

@@ -203,6 +203,9 @@ export default function ProductDetailPage() {
               <SellerCommandCenter
                 auction={auction}
                 onToggleAllowNewBidder={toggleAllowNewBidder}
+                transactionId={
+                  transaction?.canAccess ? transaction.id : undefined
+                }
               />
             ) : (
               <ProductBidding

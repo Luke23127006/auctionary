@@ -176,6 +176,7 @@ export function ProductBidding({
   const isSeller = user && sellerId && user.id === sellerId;
   const canAccessTransaction =
     isSold && (isWinner || isSeller) && transactionId;
+  console.log(canAccessTransaction);
 
   return (
     <div className="space-y-6">

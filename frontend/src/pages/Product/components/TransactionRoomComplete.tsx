@@ -9,7 +9,11 @@ import { Badge } from "../../../components/ui/badge";
 import { Separator } from "../../../components/ui/separator";
 import { Label } from "../../../components/ui/label";
 import { Textarea } from "../../../components/ui/textarea";
-import { Alert, AlertDescription } from "../../../components/ui/alert";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "../../../components/ui/alert";
 import {
   Download,
   Calendar,
@@ -17,7 +21,6 @@ import {
   PartyPopper,
   ThumbsUp,
   ThumbsDown,
-  AlertCircle,
   MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -315,28 +318,30 @@ export function TransactionRoomComplete({
                     rating === "positive" ? "green" : "red"
                   }-500/30 bg-${rating === "positive" ? "green" : "red"}-500/5`}
                 >
-                  <AlertCircle
-                    className={`h-4 w-4 text-${
+                  <AlertTitle
+                    className={`text-${
                       rating === "positive" ? "green" : "red"
                     }-500`}
-                  />
+                  >
+                    {rating === "positive"
+                      ? "Positive feedback (+1)"
+                      : "Negative feedback (-1)"}
+                  </AlertTitle>
                   <AlertDescription
                     className={`text-xs text-${
                       rating === "positive" ? "green" : "red"
-                    }-500/90`}
+                    }-500`}
                   >
                     {rating === "positive" ? (
-                      <>
-                        <strong>Positive feedback (+1)</strong> will increase
-                        the {partnerType}'s reputation score and help them build
-                        trust in the community.
-                      </>
+                      <div>
+                        will increase the {partnerType}'s reputation score and
+                        help them build trust in the community.
+                      </div>
                     ) : (
-                      <>
-                        <strong>Negative feedback (-1)</strong> will decrease
-                        the {partnerType}'s reputation score. Please provide
-                        details to help them improve.
-                      </>
+                      <div>
+                        will decrease the {partnerType}'s reputation score.
+                        Please provide details to help them improve.
+                      </div>
                     )}
                   </AlertDescription>
                 </Alert>
