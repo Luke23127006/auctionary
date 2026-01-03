@@ -761,7 +761,7 @@ export default function TransactionRoomPage() {
 
                 <AccordionItem
                   value="complete"
-                  className={`border rounded-lg ${
+                  className={`border !border-b rounded-lg ${
                     stepStates.complete === "completed"
                       ? "border-green-500/30"
                       : stepStates.complete === "active-actor"

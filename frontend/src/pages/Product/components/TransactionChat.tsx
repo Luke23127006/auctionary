@@ -48,7 +48,7 @@ export function TransactionChat({
 
   return (
     <Card className="border-border sticky top-24">
-      <CardHeader className="pb-4">
+      <CardHeader className="p-3">
         <CardTitle className="text-lg">Transaction Chat</CardTitle>
         <p className="text-xs text-muted-foreground">
           Communicate securely with the seller
@@ -127,7 +127,9 @@ export function TransactionChat({
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">{footerText}</p>
+          <p className="text-xs text-muted-foreground mt-2 -mb-4">
+            {footerText}
+          </p>
         </form>
       </CardContent>
     </Card>

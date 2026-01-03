@@ -303,7 +303,7 @@ export function TransactionRoomComplete({
                   value={review}
                   onChange={(e) => setReview(e.target.value)}
                   rows={4}
-                  className="resize-none"
+                  className="resize-none border-border"
                   maxLength={500}
                 />
                 <div className="text-xs text-muted-foreground">
