@@ -7,6 +7,7 @@ import {
   appendProductAnswerSchema,
   updateProductConfigSchema,
   rejectBidderSchema,
+  setProductEndTimeSchema,
 } from "../dtos/requests/product.schema";
 import { placeBidSchema } from "../dtos/requests/place-bid.schema";
 import { authorize } from "../middlewares/authorize.middleware";
@@ -85,7 +86,14 @@ router.post(
   "/:id/reject-bidder",
   requireAuth,
   validate(rejectBidderSchema, "body"),
+  validate(rejectBidderSchema, "body"),
   productController.rejectBidder
+);
+
+router.post(
+  "/:id/end-time",
+  validate(setProductEndTimeSchema, "body"),
+  productController.setProductEndTime
 );
 
 export default router;

@@ -280,3 +280,23 @@ export const rejectBidder = async (
     next(error);
   }
 };
+
+export const setProductEndTime = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const productId = Number(req.params.id);
+    const { duration } = req.body;
+
+    await productService.setProductEndTime(productId, duration);
+
+    res.status(200).json({
+      success: true,
+      message: "Product end time updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

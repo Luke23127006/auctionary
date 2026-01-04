@@ -75,6 +75,15 @@ export const rejectBidderSchema = z.object({
   reason: z.string().min(1),
 });
 
+export const setProductEndTimeSchema = z.object({
+  duration: z
+    .string()
+    .regex(
+      /^((?:\d+h\s*)?(?:\d+m\s*)?(?:\d+s)?)$/,
+      "Invalid format. Use format like '1h 30m 30s' or '30s'"
+    ),
+});
+
 export type ProductsSearchQuery = z.infer<typeof searchProductsSchema>;
 export type SortOption = z.infer<typeof sortOptionSchema>;
 export type CreateProduct = z.infer<typeof createProductSchema>;
@@ -85,3 +94,4 @@ export type AppendProductQuestion = z.infer<typeof appendProductQuestionSchema>;
 export type AppendProductAnswer = z.infer<typeof appendProductAnswerSchema>;
 export type UpdateProductConfig = z.infer<typeof updateProductConfigSchema>;
 export type RejectBidder = z.infer<typeof rejectBidderSchema>;
+export type SetProductEndTime = z.infer<typeof setProductEndTimeSchema>;

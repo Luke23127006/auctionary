@@ -710,3 +710,12 @@ export const getProductSeller = async (productId: number) => {
 export const getProductQuestionById = async (questionId: number) => {
   return await db("product_comments").where("id", questionId).first();
 };
+
+export const updateProductEndTime = async (
+  productId: number,
+  newEndTime: Date
+) => {
+  await db("products")
+    .where({ id: productId })
+    .update({ end_time: newEndTime });
+};

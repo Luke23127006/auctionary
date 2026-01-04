@@ -27,7 +27,7 @@ import {
 } from "../mappers/product.mapper";
 import { toSlug } from "../utils/slug.util";
 import * as storageService from "../services/storage.service";
-import { BadRequestError } from "../errors";
+import { BadRequestError, NotFoundError, ForbiddenError } from "../errors";
 
 export const searchProducts = async (
   query: ProductsSearchQuery,
@@ -457,6 +457,37 @@ export const getProductQuestions = async (
       totalPages: Math.ceil(total / limit),
     },
   };
+};
+
+export const setProductEndTime = async (
+  productId: number,
+  duration: string
+) => {
+  const product = await productRepository.getProductBasicInfoById(productId);
+
+  if (!product) {
+    throw new NotFoundError("Product not found");
+  }
+
+  if (product.status !== "active") {
+    throw new BadRequestError("Can only update end time for active products");
+  }
+
+  // Parse duration
+  const hours = duration.match(/(\d+)h/)?.[1] || "0";
+  const minutes = duration.match(/(\d+)m/)?.[1] || "0";
+  const seconds = duration.match(/(\d+)s/)?.[1] || "0";
+
+  const totalSeconds =
+    parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+
+  if (totalSeconds <= 0) {
+    throw new BadRequestError("Duration must be greater than 0");
+  }
+
+  const newEndTime = new Date(Date.now() + totalSeconds * 1000);
+
+  await productRepository.updateProductEndTime(productId, newEndTime);
 };
 
 export const updateProductConfig = async (
