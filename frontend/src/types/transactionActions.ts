@@ -21,3 +21,7 @@ export interface ReviewSubmitData {
   rating: 1 | -1;
   comment: string;
 }
+
+export interface CancelTransactionData {
+  reason: string;
+}

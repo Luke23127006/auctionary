@@ -8,6 +8,7 @@ import {
   TransactionDeliveryConfirmSchema,
   TransactionReviewSubmitSchema,
   SendTransactionMessageSchema,
+  TransactionCancelSchema,
 } from "../dtos/requests/transaction.schema";
 
 import * as TransactionController from "../controllers/transaction.controller";
@@ -70,6 +71,18 @@ router.post(
   verifyTransactionOwnership,
   validate(SendTransactionMessageSchema, "body"),
   TransactionController.sendMessage
+);
+
+/**
+ * Cancel a transaction
+ * POST /transactions/:id/cancel
+ */
+router.post(
+  "/:id/cancel",
+  requireAuth,
+  verifyTransactionOwnership,
+  validate(TransactionCancelSchema, "body"),
+  TransactionController.cancelTransaction
 );
 
 export default router;

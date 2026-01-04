@@ -5,12 +5,14 @@ import {
   confirmDelivery,
   submitReview,
   sendTransactionMessage,
+  cancelTransaction,
 } from "../services/transactionService";
 import type {
   PaymentSubmitData,
   ShippingSubmitData,
   DeliveryConfirmData,
   ReviewSubmitData,
+  CancelTransactionData,
 } from "../types/transactionActions";
 
 export const useTransactionActions = () => {
@@ -113,12 +115,31 @@ export const useTransactionActions = () => {
     }
   };
 
+  const handleCancelTransaction = async (
+    transactionId: number,
+    data: CancelTransactionData
+  ) => {
+    setIsUpdating(true);
+    setError(null);
+    try {
+      await cancelTransaction(transactionId, data);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to cancel transaction";
+      setError(msg);
+      throw err;
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return {
     handleSubmitPayment,
     handleConfirmAndShip,
     handleConfirmDelivery,
     handleSubmitReview,
     handleSendMessage,
+    handleCancelTransaction,
     isUpdating,
     error,
   };

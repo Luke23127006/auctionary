@@ -306,3 +306,18 @@ export const updateTransactionReview = async (
 
   await db("transactions").where({ id: transactionId }).update(updateData);
 };
+
+export const cancelTransaction = async (
+  transactionId: number,
+  reason: string
+): Promise<void> => {
+  const now = new Date();
+  await db("transactions").where({ id: transactionId }).update({
+    status: "cancelled",
+    cancelled_at: now,
+    cancel_reason: reason,
+    seller_rating: -1,
+    buyer_rating: -1, // As per warning, buyer gets -1
+    updated_at: now,
+  });
+};

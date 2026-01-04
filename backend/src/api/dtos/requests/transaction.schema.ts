@@ -71,3 +71,12 @@ export const SendTransactionMessageSchema = z.object({
 export type SendTransactionMessageRequest = z.infer<
   typeof SendTransactionMessageSchema
 >;
+
+export const TransactionCancelSchema = z.object({
+  reason: z
+    .string()
+    .min(1, "Reason is required")
+    .max(500, "Reason cannot exceed 500 characters"),
+});
+
+export type TransactionCancelRequest = z.infer<typeof TransactionCancelSchema>;

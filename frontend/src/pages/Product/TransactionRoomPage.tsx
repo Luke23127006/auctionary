@@ -367,6 +367,7 @@ export default function TransactionRoomPage() {
     handleConfirmDelivery,
     handleSubmitReview,
     handleSendMessage,
+    handleCancelTransaction,
     isUpdating,
   } = useTransactionActions();
   const { user } = useAuth();
@@ -500,12 +501,22 @@ export default function TransactionRoomPage() {
     }
   };
 
-  const handleCancelTransaction = () => {
-    console.log("Transaction cancelled");
-    toast.error("Transaction Cancelled", {
-      description:
-        "The transaction has been cancelled and buyer rating will be decreased.",
-    });
+  const onCancelTransaction = async (reason: string) => {
+    if (!transaction) return;
+
+    try {
+      await handleCancelTransaction(transaction.id, { reason });
+
+      await refetch();
+
+      toast.success("Transaction Cancelled", {
+        description: "The transaction has been cancelled.",
+      });
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : "Failed to cancel transaction"
+      );
+    }
   };
 
   const handleOpenFeedback = () => {
@@ -616,7 +627,7 @@ export default function TransactionRoomPage() {
             transactionId={`TXN-${transaction.id}`}
             isSeller={isSeller}
             currentScreen={transaction.status}
-            onCancelTransaction={handleCancelTransaction}
+            onCancelTransaction={onCancelTransaction}
           />
 
           <TransactionProductSummary

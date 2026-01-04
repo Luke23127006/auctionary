@@ -1,17 +1,8 @@
 import { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../../components/ui/alert-dialog";
 import { Check, Copy, XCircle } from "lucide-react";
+import { CancelTransactionModal } from "./CancelTransactionModal";
 
 interface TransactionRoomHeaderProps {
   statusBadge: {
@@ -23,7 +14,7 @@ interface TransactionRoomHeaderProps {
   transactionId: string;
   isSeller: boolean;
   currentScreen: string;
-  onCancelTransaction: () => void;
+  onCancelTransaction: (reason: string) => void;
 }
 
 export function TransactionRoomHeader({
@@ -43,13 +34,16 @@ export function TransactionRoomHeader({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleCancelConfirm = () => {
-    onCancelTransaction();
+  const handleCancelConfirm = (reason: string) => {
+    onCancelTransaction(reason);
     setCancelDialogOpen(false);
   };
 
   const StatusIcon = statusBadge.icon;
-  const showCancelButton = isSeller && currentScreen !== "transaction-room-complete";
+  const showCancelButton =
+    isSeller &&
+    currentScreen !== "transaction-room-complete" &&
+    currentScreen !== "cancelled";
 
   return (
     <>
@@ -92,30 +86,11 @@ export function TransactionRoomHeader({
       </div>
 
       {/* Cancel Confirmation Dialog */}
-      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Transaction?</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                Are you sure you want to cancel this transaction? This action cannot be undone.
-              </p>
-              <p className="font-medium text-destructive">
-                Warning: Cancelling will result in a -1 rating for the buyer and may affect your seller reputation.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>No, Keep Transaction</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleCancelConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Yes, Cancel Transaction
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <CancelTransactionModal
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        onConfirm={handleCancelConfirm}
+      />
     </>
   );
 }

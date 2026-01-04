@@ -6,6 +6,7 @@ import {
   TransactionDeliveryConfirmRequest,
   TransactionReviewSubmitRequest,
   SendTransactionMessageRequest,
+  TransactionCancelRequest,
 } from "../dtos/requests/transaction.schema";
 
 interface AuthenticatedRequest extends Request {
@@ -162,6 +163,41 @@ export const sendMessage = async (
       success: true,
       data: message,
       message: "Message sent successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Cancel a transaction
+ * POST /transactions/:id/cancel
+ */
+export const cancelTransaction = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const transactionId = Number(request.params.id);
+    const userId = (request as AuthenticatedRequest).user?.id;
+
+    if (!userId) {
+      return next(new Error("User not authenticated"));
+    }
+
+    // Cast request body to DTO type
+    const data = request.body as TransactionCancelRequest;
+
+    await TransactionService.cancelTransaction(
+      transactionId,
+      userId,
+      data.reason
+    );
+
+    response.status(200).json({
+      success: true,
+      message: "Transaction cancelled successfully",
     });
   } catch (error) {
     next(error);

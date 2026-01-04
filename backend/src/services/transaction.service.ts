@@ -246,3 +246,34 @@ export const sendTransactionMessage = async (
     transaction.seller_id
   );
 };
+
+export const cancelTransaction = async (
+  transactionId: number,
+  userId: number | string,
+  reason: string
+): Promise<void> => {
+  const transaction = await TransactionRepository.findTransactionById(
+    transactionId
+  );
+
+  if (!transaction) {
+    throw new NotFoundError("Transaction not found");
+  }
+
+  // Only seller can cancel (based on current requirement logic)
+  if (transaction.seller_id !== userId) {
+    throw new ForbiddenError("Only seller can cancel the transaction");
+  }
+
+  // Double check user owns transaction (redundant but safe)
+  if (transaction.seller_id !== userId) {
+    throw new ForbiddenError("User does not own this transaction");
+  }
+
+  await TransactionRepository.cancelTransaction(transactionId, reason);
+
+  // Update buyer's review score (negative)
+  if (transaction.buyer_id) {
+    await UserRepository.updateUserReviewScore(transaction.buyer_id, false);
+  }
+};

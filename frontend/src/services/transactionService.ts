@@ -8,6 +8,7 @@ import type {
   ShippingSubmitData,
   DeliveryConfirmData,
   ReviewSubmitData,
+  CancelTransactionData,
 } from "../types/transactionActions";
 
 export const getTransactionById = async (
@@ -95,4 +96,11 @@ export const sendTransactionMessage = async (
     true
   );
   return response;
+};
+
+export const cancelTransaction = async (
+  transactionId: number,
+  data: CancelTransactionData
+): Promise<void> => {
+  await apiClient.post(`/transactions/${transactionId}/cancel`, data, true);
 };
