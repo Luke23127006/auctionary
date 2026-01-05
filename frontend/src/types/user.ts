@@ -57,3 +57,47 @@ export interface WonAuction {
   product_name: string;
   thumbnail_url: string;
 }
+
+// Rating types
+export interface RatingItem {
+  // Transaction metadata
+  transactionId: number;
+  transactionDate: string; // ISO date
+  completedAt: string | null; // ISO date
+
+  // Rating data
+  rating: 1 | -1; // 1 = positive, -1 = negative
+  comment: string | null;
+
+  // Reviewer info (the person who gave the rating)
+  reviewer: {
+    id: number;
+    fullName: string;
+  };
+
+  // Product context
+  product: {
+    id: number;
+    name: string;
+    slug: string;
+    thumbnailUrl: string | null;
+  };
+
+  // Transaction context
+  finalPrice: number;
+
+  // Role context: was the profile user a "buyer" or "seller" in this transaction
+  userRole: "buyer" | "seller";
+}
+
+export interface RatingSummary {
+  totalPositive: number;
+  totalNegative: number;
+  positivePercentage: number;
+}
+
+export interface RatingsResponse {
+  ratings: RatingItem[];
+  total: number;
+  summary: RatingSummary;
+}

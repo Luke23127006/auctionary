@@ -184,3 +184,86 @@ export const updateUserReviewScore = async (
 
   await db("users").where({ id: userId }).increment(field, 1);
 };
+
+/**
+ * Get ratings received by a user (as buyer or seller)
+ * @param userId - The user whose ratings we want to fetch
+ * @param role - Filter by user's role in transaction: "buyer", "seller", or "all"
+ * @returns Array of raw rating data with transaction, product, and reviewer info
+ */
+export const getUserRatings = async (
+  userId: number,
+  role: "buyer" | "seller" | "all" = "all"
+) => {
+  const results: any[] = [];
+
+  // Query for ratings when user was the buyer (received from seller)
+  if (role === "buyer" || role === "all") {
+    const buyerRatings = await db("transactions as t")
+      .join("products as p", "t.product_id", "p.id")
+      .join("users as seller", "t.seller_id", "seller.id")
+      .where("t.buyer_id", userId)
+      .where("t.status", "completed")
+      .whereNotNull("t.seller_rating")
+      .select(
+        "t.id as transaction_id",
+        "t.seller_rating as rating",
+        "t.seller_comment as comment",
+        "seller.id as reviewer_id",
+        "seller.full_name as reviewer_full_name",
+        db.raw("'buyer' as user_role"),
+        "t.created_at as transaction_date",
+        "t.completed_at",
+        "t.updated_at",
+        "t.final_price",
+        "p.id as product_id",
+        "p.name as product_name",
+        "p.slug as product_slug",
+        "p.thumbnail_url as product_thumbnail_url"
+      );
+    results.push(...buyerRatings);
+  }
+
+  // Query for ratings when user was the seller (received from buyer)
+  if (role === "seller" || role === "all") {
+    const sellerRatings = await db("transactions as t")
+      .join("products as p", "t.product_id", "p.id")
+      .join("users as buyer", "t.buyer_id", "buyer.id")
+      .where("t.seller_id", userId)
+      .where("t.status", "completed")
+      .whereNotNull("t.buyer_rating")
+      .select(
+        "t.id as transaction_id",
+        "t.buyer_rating as rating",
+        "t.buyer_comment as comment",
+        "buyer.id as reviewer_id",
+        "buyer.full_name as reviewer_full_name",
+        db.raw("'seller' as user_role"),
+        "t.created_at as transaction_date",
+        "t.completed_at",
+        "t.updated_at",
+        "t.final_price",
+        "p.id as product_id",
+        "p.name as product_name",
+        "p.slug as product_slug",
+        "p.thumbnail_url as product_thumbnail_url"
+      );
+    results.push(...sellerRatings);
+  }
+
+  // Sort by latest timestamp (completed_at, updated_at, or created_at)
+  results.sort((a, b) => {
+    const getLatestTimestamp = (row: any) => {
+      const timestamps = [
+        row.completed_at ? new Date(row.completed_at).getTime() : 0,
+        row.updated_at ? new Date(row.updated_at).getTime() : 0,
+        new Date(row.transaction_date).getTime(),
+      ];
+      return Math.max(...timestamps);
+    };
+
+    return getLatestTimestamp(b) - getLatestTimestamp(a); // DESC order
+  });
+
+  return results;
+};

@@ -98,3 +98,19 @@ export const changePassword = async (
     next(error);
   }
 };
+
+export const getRatings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = (req as any).user?.id;
+    const { role = "all" } = req.query as { role?: "buyer" | "seller" | "all" };
+
+    const ratings = await userService.getRatings(userId, role);
+    res.message("Ratings retrieved successfully").json(ratings);
+  } catch (error) {
+    next(error);
+  }
+};

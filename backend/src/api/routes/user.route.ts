@@ -6,6 +6,7 @@ import {
   updateProfileSchema,
   updateEmailSchema,
   changePasswordSchema,
+  getRatingsQuerySchema,
 } from "../dtos/requests/user.schema";
 
 const router = Router();
@@ -13,6 +14,12 @@ const router = Router();
 router.get("/me/stats", requireAuth, userController.getStats);
 router.get("/me/bids", requireAuth, userController.getActiveBids);
 router.get("/me/won-auctions", requireAuth, userController.getWonAuctions);
+router.get(
+  "/me/ratings",
+  requireAuth,
+  validate(getRatingsQuerySchema, "query"),
+  userController.getRatings
+);
 
 router.patch(
   "/me/profile",

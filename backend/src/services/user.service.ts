@@ -1,5 +1,5 @@
 import * as userRepository from "../repositories/user.repository";
-import { UserStatsResponse } from "../api/dtos/responses/user.type";
+import { RatingsResponse, UserStatsResponse } from "../api/dtos/responses/user.type";
 import { NotFoundError } from "../errors";
 import { hashPassword, comparePassword } from "../utils/hash.util";
 
@@ -101,4 +101,35 @@ export const changePassword = async (
   return userRepository.updateUser(userId, {
     password: hashedNewPassword,
   });
+};
+
+export const getRatings = async (
+  userId: number,
+  role: "buyer" | "seller" | "all" = "all"
+): Promise<RatingsResponse> => {
+  // Import mapper
+  const { mapRatingToResponse } = await import("../mappers/user.mapper");
+
+  // Fetch raw ratings from repository
+  const rawRatings = await userRepository.getUserRatings(userId, role);
+
+  // Transform to response format
+  const ratings = rawRatings.map(mapRatingToResponse);
+
+  // Calculate summary
+  const totalPositive = ratings.filter((r) => r.rating === 1).length;
+  const totalNegative = ratings.filter((r) => r.rating === -1).length;
+  const totalReviews = totalPositive + totalNegative;
+  const positivePercentage =
+    totalReviews > 0 ? Math.round((totalPositive / totalReviews) * 100) : 0;
+
+  return {
+    ratings,
+    total: ratings.length,
+    summary: {
+      totalPositive,
+      totalNegative,
+      positivePercentage,
+    },
+  };
 };

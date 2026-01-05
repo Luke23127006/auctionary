@@ -1,5 +1,11 @@
 import apiClient from "./apiClient";
-import type { UserStatsResponse, User, MyBid, WonAuction } from "../types/user";
+import type {
+  UserStatsResponse,
+  User,
+  MyBid,
+  WonAuction,
+  RatingsResponse,
+} from "../types/user";
 
 export const getStats = async (): Promise<UserStatsResponse> => {
   return apiClient.get("/users/me/stats", true);
@@ -11,6 +17,12 @@ export const getActiveBids = async (): Promise<MyBid[]> => {
 
 export const getWonAuctions = async (): Promise<WonAuction[]> => {
   return apiClient.get("/users/me/won-auctions", true);
+};
+
+export const getRatings = async (
+  role: "buyer" | "seller" | "all" = "all"
+): Promise<RatingsResponse> => {
+  return apiClient.get(`/users/me/ratings?role=${role}`, true);
 };
 
 export const getMyListings = async () => {

@@ -1,4 +1,4 @@
-import { Heart, Gavel, Trophy, Settings } from "lucide-react";
+import { Heart, Gavel, Trophy, Settings, Star } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -12,6 +12,7 @@ import { WatchlistTab } from "./components/WatchlistTab";
 import { ActiveBidsTab } from "./components/ActiveBidsTab";
 import { WonAuctionsTab } from "./components/WonAuctionsTab";
 import { SettingsTab } from "./components/SettingsTab";
+import { RatingsTab } from "./components/RatingsTab";
 
 export default function UserProfilePage() {
   const { user, stats, isLoading } = useProfile();
@@ -35,7 +36,7 @@ export default function UserProfilePage() {
 
         {/* Navigation Tabs */}
         <Tabs defaultValue="watchlist" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
             <TabsTrigger value="watchlist">
               <Heart className="h-4 w-4 mr-2" />
               Watchlist
@@ -47,6 +48,10 @@ export default function UserProfilePage() {
             <TabsTrigger value="won">
               <Trophy className="h-4 w-4 mr-2" />
               Won Auctions
+            </TabsTrigger>
+            <TabsTrigger value="ratings">
+              <Star className="h-4 w-4 mr-2" />
+              Ratings
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
@@ -67,6 +72,11 @@ export default function UserProfilePage() {
           {/* Won Auctions Tab */}
           <TabsContent value="won">
             <WonAuctionsTab />
+          </TabsContent>
+
+          {/* Ratings Tab */}
+          <TabsContent value="ratings">
+            <RatingsTab />
           </TabsContent>
 
           {/* Settings Tab */}

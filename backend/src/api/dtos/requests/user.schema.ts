@@ -23,6 +23,13 @@ export const updateEmailSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const getRatingsQuerySchema = z.object({
+  role: z.enum(["buyer", "seller", "all"]).optional().default("all"),
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(20),
+});
+
 export type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;
 export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>;
 export type UpdateEmailSchema = z.infer<typeof updateEmailSchema>;
+export type GetRatingsQuerySchema = z.infer<typeof getRatingsQuerySchema>;
