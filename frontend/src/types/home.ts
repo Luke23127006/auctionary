@@ -7,6 +7,7 @@
  */
 export interface HomeAuctionItem {
   id: string;
+  slug?: string;
   title: string;
   image: string;
   currentBid: number;
@@ -16,7 +17,7 @@ export interface HomeAuctionItem {
   endTime: string; // ISO 8601 timestamp
   timeLeft: string;
   status: string;
-  isHot?: boolean; // Client-side calculated (bidCount >= 15)
+  isNewArrival?: boolean; // From backend (createdAt < 1 day)
 }
 
 /**

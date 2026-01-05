@@ -120,10 +120,7 @@ export default function HomePage() {
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {sections.endingSoon.map((auction) => (
                   <div key={auction.id} className="flex-shrink-0 w-[280px]">
-                    <ProductListCard
-                      {...auction}
-                      isNewArrival={auction.isHot}
-                    />
+                    <ProductListCard {...auction} />
                   </div>
                 ))}
               </div>
@@ -170,10 +167,7 @@ export default function HomePage() {
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {sections.mostActive.map((auction) => (
                   <div key={auction.id} className="flex-shrink-0 w-[280px]">
-                    <ProductListCard
-                      {...auction}
-                      isNewArrival={auction.isHot}
-                    />
+                    <ProductListCard {...auction} />
                   </div>
                 ))}
               </div>
@@ -220,10 +214,7 @@ export default function HomePage() {
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {sections.highestPrice.map((auction) => (
                   <div key={auction.id} className="flex-shrink-0 w-[280px]">
-                    <ProductListCard
-                      {...auction}
-                      isNewArrival={auction.isHot}
-                    />
+                    <ProductListCard {...auction} />
                   </div>
                 ))}
               </div>
