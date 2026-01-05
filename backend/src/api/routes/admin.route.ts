@@ -3,12 +3,18 @@ import { requireAuth } from "../middlewares/require-auth.middleware";
 import { authorize } from "../middlewares/authorize.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import * as adminController from "../controllers/admin.controller";
+import * as categoryController from "../controllers/category.controller";
 import {
   upgradeRequestActionSchema,
   suspendUserSchema,
   removeProductSchema,
   resetUserPasswordParamSchema,
 } from "../dtos/requests/admin.schema";
+import {
+  createCategorySchema,
+  updateCategorySchema,
+  categoryIdParamSchema,
+} from "../dtos/requests/category.schema";
 
 const router = Router();
 
@@ -59,6 +65,38 @@ router.delete(
   adminAuth,
   validate(removeProductSchema, "params"),
   adminController.removeProduct
+);
+
+// Category management
+router.get(
+  "/categories",
+  adminAuth,
+  categoryController.getAllCategoriesForAdmin
+);
+router.get(
+  "/categories/:id",
+  adminAuth,
+  validate(categoryIdParamSchema, "params"),
+  categoryController.getCategoryById
+);
+router.post(
+  "/categories",
+  adminAuth,
+  validate(createCategorySchema, "body"),
+  categoryController.createCategory
+);
+router.patch(
+  "/categories/:id",
+  adminAuth,
+  validate(categoryIdParamSchema, "params"),
+  validate(updateCategorySchema, "body"),
+  categoryController.updateCategory
+);
+router.delete(
+  "/categories/:id",
+  adminAuth,
+  validate(categoryIdParamSchema, "params"),
+  categoryController.deleteCategory
 );
 
 export default router;

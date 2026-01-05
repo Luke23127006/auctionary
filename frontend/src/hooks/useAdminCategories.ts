@@ -5,7 +5,7 @@ import type {
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from "../types/category";
-import { toast } from "sonner";
+import { notify } from "../utils/notify";
 
 interface AdminCategoriesState {
   categories: AdminCategory[];
@@ -85,7 +85,7 @@ export const useAdminCategories = () => {
     async (data: CreateCategoryRequest) => {
       try {
         await categoryService.createCategory(data);
-        toast.success("Category created successfully!");
+        notify.success("Category created successfully!");
         await fetchCategories(); // Refresh list
       } catch (error: any) {
         console.error("Failed to create category:", error);
@@ -93,7 +93,7 @@ export const useAdminCategories = () => {
           error.response?.data?.message ||
           error.message ||
           "Failed to create category";
-        toast.error(errorMessage);
+        notify.error(errorMessage);
         throw error; // Re-throw for component to handle (e.g., keep dialog open)
       }
     },
@@ -107,7 +107,7 @@ export const useAdminCategories = () => {
     async (id: number, data: UpdateCategoryRequest) => {
       try {
         await categoryService.updateCategory(id, data);
-        toast.success("Category updated successfully!");
+        notify.success("Category updated successfully!");
         await fetchCategories(); // Refresh list
       } catch (error: any) {
         console.error("Failed to update category:", error);
@@ -115,7 +115,7 @@ export const useAdminCategories = () => {
           error.response?.data?.message ||
           error.message ||
           "Failed to update category";
-        toast.error(errorMessage);
+        notify.error(errorMessage);
         throw error;
       }
     },
@@ -129,7 +129,7 @@ export const useAdminCategories = () => {
     async (id: number, name: string) => {
       try {
         await categoryService.deleteCategory(id);
-        toast.success(`Category "${name}" deleted successfully!`);
+        notify.success(`Category "${name}" deleted successfully!`);
         await fetchCategories(); // Refresh list
       } catch (error: any) {
         console.error("Failed to delete category:", error);
@@ -137,7 +137,7 @@ export const useAdminCategories = () => {
           error.response?.data?.message ||
           error.message ||
           "Failed to delete category";
-        toast.error(errorMessage);
+        notify.error(errorMessage);
         throw error;
       }
     },

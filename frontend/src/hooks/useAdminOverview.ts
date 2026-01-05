@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import * as adminService from "../services/adminService";
 import type { AdminOverviewResponse } from "../types/admin";
-import { toast } from "sonner";
+import { notify } from "../utils/notify";
 
 /**
  * Custom hook for Admin Overview dashboard
@@ -22,7 +22,7 @@ export const useAdminOverview = () => {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch admin overview";
       setError(errorMessage);
-      toast.error(errorMessage);
+      notify.error(errorMessage);
       console.error("Failed to fetch admin overview:", err);
     } finally {
       setIsLoading(false);

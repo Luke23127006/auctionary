@@ -17,7 +17,6 @@ import {
   TransactionChat,
   type ChatMessage,
 } from "./components/TransactionChat";
-import { toast } from "sonner";
 import MainLayout from "../../layouts/MainLayout";
 import { Clock, CreditCard, Package, Truck, CheckCircle2 } from "lucide-react";
 import {
@@ -509,9 +508,7 @@ export default function TransactionRoomPage() {
 
       await refetch();
 
-      toast.success("Transaction Cancelled", {
-        description: "The transaction has been cancelled.",
-      });
+      notify.success("Transaction Cancelled");
     } catch (error) {
       notify.error(
         error instanceof Error ? error.message : "Failed to cancel transaction"
@@ -540,9 +537,7 @@ export default function TransactionRoomPage() {
 
       await refetch();
 
-      toast.success("Feedback Submitted!", {
-        description: `You gave a ${rating} rating.`,
-      });
+      notify.success("Feedback Submitted!");
     } catch (error) {
       notify.error(
         error instanceof Error ? error.message : "Failed to submit feedback"
@@ -561,10 +556,7 @@ export default function TransactionRoomPage() {
 
       await refetch();
 
-      toast.success("Receipt Confirmed!", {
-        description:
-          "Funds have been released to the seller. Transaction complete.",
-      });
+      notify.success("Receipt Confirmed!");
     } catch (error) {
       notify.error(
         error instanceof Error ? error.message : "Failed to confirm delivery"
@@ -573,9 +565,7 @@ export default function TransactionRoomPage() {
   };
 
   const handleReportIssue = () => {
-    toast.info("Issue Reported", {
-      description: "Our support team will contact you shortly.",
-    });
+    notify.info("Issue Reported, our support team will contact you shortly.");
   };
 
   const onSendMessage = async (message: string): Promise<void> => {

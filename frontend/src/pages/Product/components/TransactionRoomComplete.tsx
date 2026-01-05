@@ -23,10 +23,10 @@ import {
   ThumbsDown,
   MessageSquare,
 } from "lucide-react";
-import { toast } from "sonner";
 import type { TransactionDetailResponse } from "../../../types/transaction";
 import { formatTime } from "../../../utils/dateUtils";
 import { useState } from "react";
+import { notify } from "../../../utils/notify";
 
 interface TransactionRoomCompleteProps {
   transaction: TransactionDetailResponse;
@@ -72,9 +72,7 @@ export function TransactionRoomComplete({
   };
 
   const handleDownloadInvoice = () => {
-    toast.success("Invoice Downloaded", {
-      description: "Transaction invoice saved to your downloads.",
-    });
+    notify.success("Invoice Downloaded");
   };
 
   return (

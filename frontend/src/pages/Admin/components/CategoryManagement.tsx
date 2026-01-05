@@ -24,6 +24,7 @@ import {
   ChevronDown,
   Trash2,
   Package,
+  Edit,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -48,15 +49,26 @@ export function CategoryManagement() {
     expandedCategories,
     toggleExpanded,
     handleCreate,
+    handleUpdate,
     handleDelete,
     refetch,
   } = useAdminCategories();
+
   // Local UI state for add dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryParent, setNewCategoryParent] = useState<number | null>(
     null
   );
+
+  // Local UI state for edit dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<{
+    id: number;
+    name: string;
+    parentId: number | null;
+  } | null>(null);
+  const [isUpdatingCategory, setIsUpdatingCategory] = useState(false);
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
@@ -72,6 +84,35 @@ export function CategoryManagement() {
       setAddDialogOpen(false);
     } catch (error) {
       // Error toast is handled by hook, keep dialog open
+    }
+  };
+
+  const handleEditClick = (category: {
+    id: number;
+    name: string;
+    parentId: number | null;
+  }) => {
+    setEditingCategory(category);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditCategory = async () => {
+    if (!editingCategory) return;
+    if (!editingCategory.name.trim()) return;
+
+    setIsUpdatingCategory(true);
+    try {
+      await handleUpdate(editingCategory.id, {
+        name: editingCategory.name,
+        parentId: editingCategory.parentId,
+      });
+      // Success toast is handled by hook
+      setEditDialogOpen(false);
+      setEditingCategory(null);
+    } catch (error) {
+      // Error toast is handled by hook, keep dialog open
+    } finally {
+      setIsUpdatingCategory(false);
     }
   };
 
@@ -352,12 +393,26 @@ export function CategoryManagement() {
                     </div>
 
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-accent hover:bg-accent/10"
+                        onClick={() =>
+                          handleEditClick({
+                            id: category.id,
+                            name: category.name,
+                            parentId: category.parentId,
+                          })
+                        }
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-destructive"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -414,12 +469,26 @@ export function CategoryManagement() {
                             </div>
 
                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-accent hover:bg-accent/10 hover:text-accent"
+                                onClick={() =>
+                                  handleEditClick({
+                                    id: sub.id,
+                                    name: sub.name,
+                                    parentId: sub.parentId,
+                                  })
+                                }
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-destructive"
+                                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
@@ -460,6 +529,87 @@ export function CategoryManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Category Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="bg-card border-accent/30">
+          <DialogHeader>
+            <DialogTitle>Edit Category</DialogTitle>
+            <DialogDescription>
+              Update the category name or change its parent
+            </DialogDescription>
+          </DialogHeader>
+          {editingCategory && (
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="editCategoryName">
+                  Category Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="editCategoryName"
+                  placeholder="e.g., Smartphones"
+                  value={editingCategory.name}
+                  onChange={(e) =>
+                    setEditingCategory({
+                      ...editingCategory,
+                      name: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="editParentCategory">
+                  Parent Category (Optional)
+                </Label>
+                <select
+                  id="editParentCategory"
+                  value={editingCategory.parentId ?? ""}
+                  onChange={(e) =>
+                    setEditingCategory({
+                      ...editingCategory,
+                      parentId: e.target.value ? Number(e.target.value) : null,
+                    })
+                  }
+                  className="w-full h-10 px-3 rounded-lg bg-background border border-border text-sm"
+                >
+                  <option value="">None (Main Category)</option>
+                  {categories
+                    .filter((cat) => cat.id !== editingCategory.id)
+                    .map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  Leave blank to make this a main category
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditDialogOpen(false);
+                    setEditingCategory(null);
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleEditCategory}
+                  className="flex-1"
+                  isLoading={isUpdatingCategory}
+                >
+                  Update Category
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

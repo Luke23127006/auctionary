@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import * as adminService from "../services/adminService";
 import type { AdminProduct } from "../types/admin";
-import { toast } from "sonner";
+import { notify } from "../utils/notify";
 
 interface ProductStats {
   total: number;
@@ -36,7 +36,7 @@ export const useAdminProducts = () => {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch products";
       setError(errorMessage);
-      toast.error(errorMessage);
+      notify.error(errorMessage);
       console.error("Failed to fetch products:", err);
     } finally {
       setIsLoading(false);
@@ -102,13 +102,13 @@ export const useAdminProducts = () => {
   ) => {
     try {
       await adminService.removeProduct(productId);
-      toast.success(`Product "${productTitle}" has been removed`);
+      notify.success(`Product "${productTitle}" has been removed`);
       // Refresh products list
       await fetchProducts();
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to remove product";
-      toast.error(errorMessage);
+      notify.error(errorMessage);
       console.error("Failed to remove product:", err);
     }
   };

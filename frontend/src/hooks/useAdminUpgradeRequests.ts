@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import * as adminService from "../services/adminService";
 import type { UpgradeRequest } from "../types/admin";
-import { toast } from "sonner";
+import { notify } from "../utils/notify";
 
 export const useAdminUpgradeRequests = () => {
   const [requests, setRequests] = useState<UpgradeRequest[]>([]);
@@ -18,7 +18,7 @@ export const useAdminUpgradeRequests = () => {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch upgrade requests";
       setError(errorMessage);
-      toast.error(errorMessage);
+      notify.error(errorMessage);
       console.error("Failed to fetch upgrade requests:", err);
     } finally {
       setIsLoading(false);
@@ -32,13 +32,13 @@ export const useAdminUpgradeRequests = () => {
   const handleApproveRequest = async (requestId: number, userName: string) => {
     try {
       await adminService.approveUpgradeRequest(requestId);
-      toast.success(`Approved seller request for ${userName}!`);
+      notify.success(`Approved seller request for ${userName}!`);
       // Refresh requests list
       await fetchRequests();
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to approve request";
-      toast.error(errorMessage);
+      notify.error(errorMessage);
       console.error("Failed to approve request:", err);
     }
   };
@@ -46,13 +46,13 @@ export const useAdminUpgradeRequests = () => {
   const handleRejectRequest = async (requestId: number, userName: string) => {
     try {
       await adminService.rejectUpgradeRequest(requestId);
-      toast.error(`Rejected seller request for ${userName}`);
+      notify.error(`Rejected seller request for ${userName}`);
       // Refresh requests list
       await fetchRequests();
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to reject request";
-      toast.error(errorMessage);
+      notify.error(errorMessage);
       console.error("Failed to reject request:", err);
     }
   };

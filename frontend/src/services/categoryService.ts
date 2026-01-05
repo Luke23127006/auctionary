@@ -35,38 +35,38 @@ export const getCategories = async (): Promise<CategoryNode[]> => {
 
 /**
  * Get all categories with hierarchy and stats for admin dashboard
- * GET /categories/admin
+ * GET /admin/categories
  */
 export const getAllCategoriesForAdmin =
   async (): Promise<AdminCategoryListResponse> => {
-    return apiClient.get("/categories/admin", true);
+    return apiClient.get("/admin/categories", true);
   };
 
 /**
  * Create a new category
- * POST /categories/admin
+ * POST /admin/categories
  */
 export const createCategory = async (
   data: CreateCategoryRequest
 ): Promise<AdminCategoryResponse> => {
-  return apiClient.post("/categories/admin", data, true);
+  return apiClient.post("/admin/categories", data, true);
 };
 
 /**
  * Update an existing category
- * PATCH /categories/admin/:id
+ * PATCH /admin/categories/:id
  */
 export const updateCategory = async (
   id: number,
   data: UpdateCategoryRequest
 ): Promise<AdminCategoryResponse> => {
-  return apiClient.patch(`/categories/admin/${id}`, data, true);
+  return apiClient.patch(`/admin/categories/${id}`, data, true);
 };
 
 /**
  * Delete a category
- * DELETE /categories/admin/:id
+ * DELETE /admin/categories/:id
  */
 export const deleteCategory = async (id: number): Promise<void> => {
-  return apiClient.delete(`/categories/admin/${id}`, true);
+  return apiClient.delete(`/admin/categories/${id}`, true);
 };
