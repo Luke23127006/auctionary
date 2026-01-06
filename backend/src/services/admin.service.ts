@@ -316,17 +316,8 @@ export const adminResetUserPassword = async (
     temporaryPassword,
   });
 
-  // Use transporter directly for custom email
-  const nodemailer = await import("nodemailer");
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
+  // Use shared transporter from email service
+  const { transporter } = await import("./email.service");
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
