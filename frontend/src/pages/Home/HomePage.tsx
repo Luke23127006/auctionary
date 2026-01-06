@@ -15,8 +15,8 @@ import {
   Zap,
 } from "lucide-react";
 import { ChevronRight } from "lucide-react";
-import { ProductListCard } from "../Product/components/ProductListCard";
-import { AuctionCardSkeleton } from "./components/AuctionCardSkeleton";
+import { ProductListCard } from "../Product/components/ProductCard";
+import { ProductCardSkeleton } from "../Product/components/ProductCardSkeleton";
 import { EmptyState } from "./components/EmptyState";
 import { ErrorState } from "./components/ErrorState";
 import { DisclaimerModal } from "./components/DisclaimerModal";
@@ -111,7 +111,7 @@ export default function HomePage() {
             {isLoading ? (
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <AuctionCardSkeleton key={i} />
+                  <ProductCardSkeleton key={i} />
                 ))}
               </div>
             ) : error ? (
@@ -158,7 +158,7 @@ export default function HomePage() {
             {isLoading ? (
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <AuctionCardSkeleton key={i} />
+                  <ProductCardSkeleton key={i} />
                 ))}
               </div>
             ) : error ? (
@@ -205,7 +205,7 @@ export default function HomePage() {
             {isLoading ? (
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <AuctionCardSkeleton key={i} />
+                  <ProductCardSkeleton key={i} />
                 ))}
               </div>
             ) : error ? (

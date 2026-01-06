@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 import { CategoryFilter } from "./CategoryFilter";
+import { FilterSkeleton } from "./FilterSkeleton";
 import { Separator } from "../../../components/ui/separator";
 import { Slider } from "../../../components/ui/slider";
 import { SlidersHorizontal } from "lucide-react";
@@ -54,9 +55,7 @@ export function ProductFilters({
             <div>
               <h3 className="text-sm mb-3">Categories</h3>
               {categoriesLoading ? (
-                <div className="text-sm text-muted-foreground">
-                  Loading categories...
-                </div>
+                <FilterSkeleton />
               ) : (
                 <CategoryFilter
                   categories={categories}

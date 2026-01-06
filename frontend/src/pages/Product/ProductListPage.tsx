@@ -46,16 +46,6 @@ export default function ProductListPage() {
 
   return (
     <MainLayout>
-      {/* Loading Overlay */}
-      {productsLoading && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-accent border-t-transparent"></div>
-            <p className="text-sm text-muted-foreground">Loading products...</p>
-          </div>
-        </div>
-      )}
-
       {/* Main Layout */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-6">

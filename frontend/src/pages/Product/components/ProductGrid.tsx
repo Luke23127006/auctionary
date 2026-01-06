@@ -1,4 +1,5 @@
-import { ProductListCard } from "./ProductListCard";
+import { ProductListCard } from "./ProductCard";
+import { ProductCardSkeleton } from "./ProductCardSkeleton";
 import type { Product } from "../../../types/product";
 
 interface ProductGridProps {
@@ -8,7 +9,13 @@ interface ProductGridProps {
 
 export function ProductGrid({ products, loading }: ProductGridProps) {
   if (loading) {
-    return <div className="text-center py-12">Loading products...</div>;
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+        {Array.from({ length: 12 }).map((_, index) => (
+          <ProductCardSkeleton key={index} />
+        ))}
+      </div>
+    );
   }
 
   if (products.length === 0) {
