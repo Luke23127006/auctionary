@@ -2,6 +2,30 @@ import toast from "react-hot-toast";
 import { Button } from "../components/ui/button";
 import { RotateCcw, X } from "lucide-react";
 
+/**
+ * Calculate toast duration based on message length
+ * @param message - The message to display
+ * @param customDuration - Optional custom duration in milliseconds
+ * @returns Duration in milliseconds
+ */
+const calculateDuration = (
+  message: string,
+  customDuration?: number
+): number => {
+  if (customDuration !== undefined) {
+    return customDuration;
+  }
+
+  // Base duration: 3 seconds (3000ms)
+  // Add 50ms per character, with a minimum of 2s and maximum of 8s
+  const baseMs = 1000;
+  const msPerChar = 50;
+  const calculated = baseMs + message.length * msPerChar;
+
+  // Clamp between 2000ms (2s) and 8000ms (8s)
+  return Math.min(Math.max(calculated, 2000), 8000);
+};
+
 const baseStyle = {
   background: "#15161b",
   color: "#d1d5db",
@@ -14,7 +38,7 @@ const baseStyle = {
 };
 
 export const notify = {
-  success: (message: string) =>
+  success: (message: string, duration?: number) =>
     toast.success(
       (t) => (
         <div className="flex items-center justify-between w-full gap-3">
@@ -28,6 +52,7 @@ export const notify = {
         </div>
       ),
       {
+        duration: calculateDuration(message, duration),
         style: {
           ...baseStyle,
           borderLeft: "4px solid #00c950",
@@ -41,7 +66,7 @@ export const notify = {
       }
     ),
 
-  error: (message: string) =>
+  error: (message: string, duration?: number) =>
     toast.error(
       (t) => (
         <div className="flex items-center justify-between w-full gap-3">
@@ -55,6 +80,7 @@ export const notify = {
         </div>
       ),
       {
+        duration: calculateDuration(message, duration),
         style: {
           ...baseStyle,
           borderLeft: "4px solid #ef4444",
@@ -68,7 +94,7 @@ export const notify = {
       }
     ),
 
-  warning: (message: string) =>
+  warning: (message: string, duration?: number) =>
     toast(
       (t) => (
         <div className="flex items-center justify-between w-full gap-3">
@@ -82,6 +108,7 @@ export const notify = {
         </div>
       ),
       {
+        duration: calculateDuration(message, duration),
         style: {
           ...baseStyle,
           borderLeft: "4px solid #f59e0b",
@@ -92,7 +119,7 @@ export const notify = {
       }
     ),
 
-  info: (message: string) =>
+  info: (message: string, duration?: number) =>
     toast(
       (t) => (
         <div className="flex items-center justify-between w-full gap-3">
@@ -106,6 +133,7 @@ export const notify = {
         </div>
       ),
       {
+        duration: calculateDuration(message, duration),
         style: {
           ...baseStyle,
           borderLeft: "4px solid #3b82f6",
@@ -116,7 +144,7 @@ export const notify = {
       }
     ),
 
-  loading: (message: string) =>
+  loading: (message: string, duration?: number) =>
     toast.loading(
       (t) => (
         <div className="flex items-center justify-between w-full gap-3">
@@ -130,6 +158,7 @@ export const notify = {
         </div>
       ),
       {
+        duration: calculateDuration(message, duration),
         style: {
           ...baseStyle,
           borderLeft: "4px solid #6366f1",
@@ -217,7 +246,7 @@ export const notify = {
       }
     ),
 
-  undo: (message: string, onUndo: () => void) =>
+  undo: (message: string, onUndo: () => void, duration?: number) =>
     toast(
       (t) => (
         <div className="flex items-center justify-between w-full gap-4 min-w-[240px]">
@@ -247,7 +276,7 @@ export const notify = {
         </div>
       ),
       {
-        duration: 4000,
+        duration: duration !== undefined ? duration : 4000,
         style: {
           ...baseStyle,
           borderLeft: "4px solid #3b82f6",

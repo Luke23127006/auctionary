@@ -47,10 +47,12 @@ export const getSellerStats = async (sellerId: number) => {
 
 /**
  * Get seller's product listings for dashboard
+ * Includes transaction status for sold products
  */
 export const getSellerListings = async (sellerId: number) => {
   const listings = await db("products")
     .leftJoin("categories", "products.category_id", "categories.id")
+    .leftJoin("transactions", "products.id", "transactions.product_id")
     .where("products.seller_id", sellerId)
     .select(
       "products.id as id",
@@ -62,7 +64,9 @@ export const getSellerListings = async (sellerId: number) => {
       "products.bid_count as bidCount",
       "products.end_time as endTime",
       "products.status",
-      "products.created_at as createdAt"
+      "products.created_at as createdAt",
+      "transactions.status as transactionStatus",
+      "transactions.id as transactionId"
     )
     .orderBy("products.created_at", "desc");
 

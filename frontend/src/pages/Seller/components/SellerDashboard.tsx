@@ -60,7 +60,58 @@ const subscription = {
   daysLeft: 2,
 };
 
-const getStatusBadge = (status: ProductStatus) => {
+const getTransactionStatusBadge = (
+  transactionStatus: string | null | undefined
+) => {
+  switch (transactionStatus) {
+    case "payment_pending":
+      return (
+        <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+          Payment Pending
+        </Badge>
+      );
+    case "shipping_pending":
+      return (
+        <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+          Shipping Pending
+        </Badge>
+      );
+    case "delivered":
+      return (
+        <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">
+          Delivered
+        </Badge>
+      );
+    case "completed":
+      return (
+        <Badge className="bg-accent/20 text-accent border-accent/50">
+          Sold
+        </Badge>
+      );
+    case "cancelled":
+      return (
+        <Badge className="bg-destructive/20 text-destructive border-destructive/50">
+          Cancelled
+        </Badge>
+      );
+    default:
+      return (
+        <Badge className="bg-accent/20 text-accent border-accent/50">
+          Sold
+        </Badge>
+      );
+  }
+};
+
+const getStatusBadge = (
+  status: ProductStatus,
+  transactionStatus?: string | null
+) => {
+  // If product is sold, show transaction status instead
+  if (status === "sold" && transactionStatus) {
+    return getTransactionStatusBadge(transactionStatus);
+  }
+
   switch (status) {
     case "active":
       return (
@@ -642,7 +693,9 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                         <span>{calculateTimeLeft(item.endTime)}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                    <TableCell>
+                      {getStatusBadge(item.status, item.transactionStatus)}
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -659,8 +712,12 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                           </DropdownMenuItem>
                           {/* Show View Transaction if auction ended and has winner */}
                           <DropdownMenuItem
-                            onClick={() => navigate(`/transactions/${item.id}`)}
+                            onClick={() =>
+                              item.transactionId &&
+                              navigate(`/transactions/${item.transactionId}`)
+                            }
                             disabled={
+                              !item.transactionId ||
                               calculateTimeLeft(item.endTime) !== "Ended" ||
                               item.bidCount === 0
                             }

@@ -42,8 +42,8 @@ export const handleAuctionEnd = async (productId: number) => {
       console.error("Failed to send auction ended (no winner) email:", err)
     );
   } else {
-    // Case 2: Winner => pending
-    await productRepository.updateProductStatus(productId, "pending");
+    // Case 2: Winner => sold
+    await productRepository.updateProductStatus(productId, "sold");
 
     const winner = await userRepository.findById(product.highest_bidder_id);
 

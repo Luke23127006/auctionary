@@ -185,7 +185,7 @@ export default function ProductDetailPage() {
             <ProductHeader
               title={product.name}
               categoryName={product.category.name}
-              timeLeft={timeLeft}
+              endTime={auction.endTime}
               isWatchlisted={
                 isWatched(String(product.id)) ||
                 userStatus?.isWatchlisted ||

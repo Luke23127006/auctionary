@@ -16,6 +16,14 @@ export interface SellerDashboardListingResult {
   endTime: Date;
   status: "active" | "pending" | "sold" | "unsold";
   createdAt: Date;
+  transactionStatus:
+    | "payment_pending"
+    | "shipping_pending"
+    | "delivered"
+    | "completed"
+    | "cancelled"
+    | null;
+  transactionId: number | null;
 }
 
 export interface SellerDashboardResponse {

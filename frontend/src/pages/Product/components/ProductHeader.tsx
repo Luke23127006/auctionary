@@ -2,11 +2,13 @@ import { Badge } from "../../../components/ui/badge";
 import { Clock, Heart } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Separator } from "../../../components/ui/separator";
+import { useState, useEffect } from "react";
+import { formatTimeLeft } from "../../../utils/time";
 
 interface ProductHeaderProps {
   title: string;
   categoryName: string;
-  timeLeft: string; // This should be calculated from endTime
+  endTime: string; // ISO timestamp string
   isWatchlisted: boolean;
   onToggleWatchlist: () => void;
 }
@@ -14,11 +16,31 @@ interface ProductHeaderProps {
 export function ProductHeader({
   title,
   categoryName,
-  timeLeft,
+  endTime,
   isWatchlisted,
   onToggleWatchlist,
 }: ProductHeaderProps) {
-  // TODO: Implement real countdown logic based on endTime timestamp
+  const [timeLeft, setTimeLeft] = useState<string>("");
+
+  useEffect(() => {
+    // Calculate initial time left
+    const calculateTimeLeft = () => {
+      const endTimeMs = new Date(endTime).getTime();
+      const timeLeftMs = Math.max(0, endTimeMs - Date.now());
+      return formatTimeLeft(timeLeftMs);
+    };
+
+    // Set initial value
+    setTimeLeft(calculateTimeLeft());
+
+    // Update every second
+    const interval = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, [endTime]);
 
   return (
     <div>

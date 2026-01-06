@@ -9,7 +9,7 @@ import {
 } from "../../../components/ui/table";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { CheckCircle2, Clock, Package, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Package, Truck, XCircle } from "lucide-react";
 import { useMyWonAuctions } from "../../../hooks/useMyWonAuctions";
 import { useOtherUserWonAuctions } from "../../../hooks/useOtherUserWonAuctions";
 import { useNavigate } from "react-router-dom";
@@ -33,9 +33,23 @@ const getStatusBadge = (status: string) => {
       );
     case "delivered":
       return (
-        <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">
-          <Package className="h-3 w-3 mr-1" />
+        <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+          <Truck className="h-3 w-3 mr-1" />
           Delivered
+        </Badge>
+      );
+    case "payment_pending":
+      return (
+        <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+          <Clock className="h-3 w-3 mr-1" />
+          Payment Pending
+        </Badge>
+      );
+    case "shipping_pending":
+      return (
+        <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+          <Package className="h-3 w-3 mr-1" />
+          Shipping Pending
         </Badge>
       );
     default:

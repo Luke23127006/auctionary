@@ -23,6 +23,14 @@ export interface SellerDashboardListing {
   endTime: string;
   status: ProductStatus;
   createdAt: string;
+  transactionStatus:
+    | "payment_pending"
+    | "shipping_pending"
+    | "delivered"
+    | "completed"
+    | "cancelled"
+    | null;
+  transactionId: number | null;
 }
 
 export interface SellerDashboardData {

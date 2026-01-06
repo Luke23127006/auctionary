@@ -18,7 +18,14 @@ import {
   type ChatMessage,
 } from "./components/TransactionChat";
 import MainLayout from "../../layouts/MainLayout";
-import { Clock, CreditCard, Package, Truck, CheckCircle2 } from "lucide-react";
+import {
+  Clock,
+  CreditCard,
+  Package,
+  Truck,
+  CheckCircle2,
+  CircleX,
+} from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -69,7 +76,7 @@ const getStatusBadge = (status: TransactionStatus) => {
       };
     case "cancelled":
       return {
-        icon: Clock,
+        icon: CircleX,
         text: "Cancelled",
         className: "bg-red-500/20 text-red-500 border-red-500/50",
       };
