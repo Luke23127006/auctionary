@@ -48,7 +48,7 @@ export const useProducts = () => {
           sort: sortParam,
         });
 
-        if (result.data[0].transaction) {
+        if (result.data.length > 0 && result.data[0]?.transaction) {
           console.log("Transaction data found in products:", result.data[0].transaction);
         } else {
           console.log("No transaction data in products.");
@@ -89,7 +89,7 @@ export const useProducts = () => {
     updatedSlugs.forEach((slug) => newParams.append("category", slug));
 
     newParams.set("page", "1");
-    setSearchParams(newParams); 
+    setSearchParams(newParams);
   };
 
   const handleRemoveSearch = () => {
