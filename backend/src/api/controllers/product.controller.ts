@@ -200,7 +200,11 @@ export const appendQuestion = async (
 ) => {
   try {
     const productId = Number(request.params.id);
+    const userId = Number((request as AuthenticatedRequest).user?.id);
     const body = request.body as AppendProductQuestion;
+
+    // Enforce questionerId to be the authenticated user
+    body.questionerId = userId;
 
     await productService.appendProductQuestion(productId, body);
 

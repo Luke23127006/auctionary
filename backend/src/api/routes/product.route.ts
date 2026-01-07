@@ -61,7 +61,6 @@ router.post(
 router.post(
   "/:id/questions",
   requireAuth,
-  authorize("products.update"),
   validate(appendProductQuestionSchema, "body"),
   productController.appendQuestion
 );
