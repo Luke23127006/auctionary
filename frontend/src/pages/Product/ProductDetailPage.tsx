@@ -1,7 +1,8 @@
 import { ChevronLeft } from "lucide-react";
 import { Button, buttonVariants } from "../../components/ui/button";
 import { Separator } from "../../components/ui/separator";
-import { ProductListCard } from "./components/ProductListCard";
+import { ProductListCard } from "./components/ProductCard";
+import { ProductDetailSkeleton } from "./components/ProductDetailSkeleton";
 import MainLayout from "../../layouts/MainLayout";
 import { useProductDetail } from "../../hooks/useProductDetail";
 import { ProductHeader } from "./components/ProductHeader";
@@ -73,9 +74,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-20 flex justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-accent border-t-transparent"></div>
-        </div>
+        <ProductDetailSkeleton />
       </MainLayout>
     );
   }

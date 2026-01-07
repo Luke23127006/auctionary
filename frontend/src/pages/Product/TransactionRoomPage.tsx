@@ -17,6 +17,7 @@ import {
   TransactionChat,
   type ChatMessage,
 } from "./components/TransactionChat";
+import { TransactionRoomSkeleton } from "./components/TransactionRoomSkeleton";
 import MainLayout from "../../layouts/MainLayout";
 import {
   Clock,
@@ -431,9 +432,7 @@ export default function TransactionRoomPage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Loading transaction...</div>
-        </div>
+        <TransactionRoomSkeleton />
       </MainLayout>
     );
   }
