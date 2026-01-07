@@ -15,19 +15,18 @@ import { getPasswordResetTemplate } from "../mails/password-reset.template";
 import { getTransactionCancelledTemplate } from "../mails/transaction-cancelled.template";
 import { getWelcomeTemplate } from "../mails/welcome.template";
 
-export const transporter = nodemailer.createTransport({
-  service: "gmail",
-  pool: true,
-  maxConnections: 1,
-  maxMessages: 10,
-  auth: {
-    user: envConfig.EMAIL_USER,
-    pass: envConfig.EMAIL_PASSWORD,
-  },
-});
+// export const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   pool: true,
+//   maxConnections: 1,
+//   maxMessages: 10,
+//   auth: {
+//     user: envConfig.EMAIL_USER,
+//     pass: envConfig.EMAIL_PASSWORD,
+//   },
+// });
 
-/*
-const transporter = nodemailer.createTransport({
+export const transporter = nodemailer.createTransport({
   host: envConfig.EMAIL_HOST,
   port: envConfig.EMAIL_PORT,
   secure: false,
@@ -36,7 +35,6 @@ const transporter = nodemailer.createTransport({
     pass: envConfig.EMAIL_PASSWORD,
   },
 });
-*/
 
 export const sendOTPEmail = async (
   email: string,

@@ -416,34 +416,38 @@ export function ProductBidding({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Your Bid</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
-              <p>Please review your bid details before confirming:</p>
-              <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Your Maximum Bid:
-                  </span>
-                  <span className="font-semibold text-accent text-lg">
-                    ${parseFloat(bidAmount || "0").toLocaleString()}
-                  </span>
+            <AlertDialogDescription className="space-y-3" asChild>
+              <div className="text-muted-foreground text-sm">
+                <p>Please review your bid details before confirming:</p>
+                <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Your Maximum Bid:
+                    </span>
+                    <span className="font-semibold text-accent text-lg">
+                      ${parseFloat(bidAmount || "0").toLocaleString()}
+                    </span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Current Price:
+                    </span>
+                    <span>${currentPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Minimum Bid:</span>
+                    <span>${minBid.toLocaleString()}</span>
+                  </div>
                 </div>
-                <Separator />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Current Price:</span>
-                  <span>${currentPrice.toLocaleString()}</span>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                  <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <p>
+                    With proxy bidding, we'll automatically bid for you up to
+                    your maximum amount. You'll only pay slightly more than the
+                    next highest bid.
+                  </p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Minimum Bid:</span>
-                  <span>${minBid.toLocaleString()}</span>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <p>
-                  With proxy bidding, we'll automatically bid for you up to your
-                  maximum amount. You'll only pay slightly more than the next
-                  highest bid.
-                </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
