@@ -1,6 +1,5 @@
 import * as adminRepository from "../repositories/admin.repository";
-import * as EmailService from "./email.service";
-import { envConfig } from "../configs/env.config";
+import { transporter } from "./email.service";
 import {
   mapUserToAdminListItem,
   mapUpgradeRequestToListItem,
@@ -315,9 +314,6 @@ export const adminResetUserPassword = async (
     userName: user.full_name,
     temporaryPassword,
   });
-
-  // Use shared transporter from email service
-  const { transporter } = await import("./email.service");
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
