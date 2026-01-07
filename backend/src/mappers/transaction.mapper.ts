@@ -23,6 +23,7 @@ export const mapTransactionDetailToResponse = (
       id: raw.product_id,
       name: raw.product_name,
       thumbnailUrl: raw.product_thumbnail_url,
+      slug: raw.product_slug,
     },
 
     buyer: {

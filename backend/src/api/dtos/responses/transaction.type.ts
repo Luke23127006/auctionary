@@ -24,6 +24,7 @@ export interface ProductSnippet {
   id: number;
   name: string;
   thumbnailUrl: string;
+  slug: string;
 }
 
 export interface TransactionDetailResponse {

@@ -150,6 +150,7 @@ export const getActiveBids = async (userId: number) => {
     .join(subquery, "products.id", "my_bids.product_id")
     .select(
       "products.*",
+      "products.id as product_id",
       "my_bids.my_max_bid",
       db.raw(
         "(SELECT MAX(amount) FROM bids WHERE product_id = products.id) as current_highest_bid"

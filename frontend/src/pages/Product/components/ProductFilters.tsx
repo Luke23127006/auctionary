@@ -8,7 +8,6 @@ import {
 import { CategoryFilter } from "./CategoryFilter";
 import { FilterSkeleton } from "./FilterSkeleton";
 import { Separator } from "../../../components/ui/separator";
-import { Slider } from "../../../components/ui/slider";
 import { SlidersHorizontal } from "lucide-react";
 import type { CategoryNode } from "../../../types/category";
 
@@ -16,10 +15,8 @@ interface ProductFiltersProps {
   categories: CategoryNode[];
   categoriesLoading: boolean;
   selectedCategories: string[];
-  priceRange: number[];
   disabled: boolean;
   onCategoryChange: (categoryIds: string[], checked: boolean) => void;
-  onPriceRangeChange: (value: number[]) => void;
   onResetFilters: () => void;
 }
 
@@ -27,10 +24,8 @@ export function ProductFilters({
   categories,
   categoriesLoading,
   selectedCategories,
-  priceRange,
   disabled,
   onCategoryChange,
-  onPriceRangeChange,
   onResetFilters,
 }: ProductFiltersProps) {
   return (

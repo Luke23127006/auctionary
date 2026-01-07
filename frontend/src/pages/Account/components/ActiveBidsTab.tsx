@@ -130,13 +130,11 @@ export const ActiveBidsTab = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem disabled={isLeading}>
-                            <TrendingUp className="h-4 w-4 mr-2 focus:text-accent-foreground" />
-                            Increase Bid
-                          </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() =>
-                              navigate(`/product/${bid.slug}-${bid.product_id}`)
+                              navigate(
+                                `/products/${bid.product_id}`
+                              )
                             }
                           >
                             <Eye className="h-4 w-4 mr-2 focus:text-accent-foreground" />

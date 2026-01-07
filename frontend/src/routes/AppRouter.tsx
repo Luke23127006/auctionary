@@ -107,19 +107,25 @@ const AppRouter = () => {
         </Route>
 
         {/* ============================================== */}
-        {/* PROTECTED ROUTES - Seller & Admin */}
+        {/* PROTECTED ROUTES - Bidder & Seller */}
         {/* ============================================== */}
         <Route
           element={
-            <ProtectedRoute allowedRoles={[ROLES.SELLER, ROLES.ADMIN]} />
+            <ProtectedRoute allowedRoles={[ROLES.BIDDER, ROLES.SELLER]} />
           }
         >
+          <Route path="/transactions/:id" element={<TransactionRoomPage />} />
+        </Route>
+
+        {/* ============================================== */}
+        {/* PROTECTED ROUTES - Seller Only */}
+        {/* ============================================== */}
+        <Route element={<ProtectedRoute allowedRoles={[ROLES.SELLER]} />}>
           <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
           <Route
             path="/seller/auction/create"
             element={<CreateAuctionPage />}
           />
-          <Route path="/transactions/:id" element={<TransactionRoomPage />} />
         </Route>
 
         {/* ============================================== */}

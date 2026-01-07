@@ -633,6 +633,8 @@ export default function TransactionRoomPage() {
               endDate: "Auction Ended",
               category: "Product",
               winningBid: transaction.finalPrice,
+              id: transaction.product.id,
+              slug: transaction.product.slug,
             }}
           />
 

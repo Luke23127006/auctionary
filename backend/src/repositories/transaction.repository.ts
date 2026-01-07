@@ -52,6 +52,7 @@ export interface TransactionDetailRaw {
   product_id: number;
   product_name: string;
   product_thumbnail_url: string;
+  product_slug: string;
 
   // Buyer info (via JOIN)
   buyer_id: number;
@@ -126,6 +127,7 @@ export const findTransactionDetailById = async (
       "products.id as product_id",
       "products.name as product_name",
       "products.thumbnail_url as product_thumbnail_url",
+      "products.slug as product_slug",
 
       // Buyer info
       "buyer.id as buyer_id",
