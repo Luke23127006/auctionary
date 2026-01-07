@@ -1,19 +1,14 @@
 import { useState, useMemo } from "react";
 import { useRatings } from "../../../hooks/useRatings";
 import { useOtherUserRatings } from "../../../hooks/useOtherUserRatings";
-import {
-  Loader2,
-  MessageSquare,
-  ThumbsUp,
-  ThumbsDown,
-  Star,
-} from "lucide-react";
+import { MessageSquare, ThumbsUp, ThumbsDown, Star } from "lucide-react";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 import { Badge } from "../../../components/ui/badge";
 import { Pagination } from "../../../components/common/Pagination";
 import type { RatingItem } from "../../../types/user";
 import { Link } from "react-router-dom";
+import { RatingCardSkeleton } from "./RatingCardSkeleton";
 
 const getInitials = (name: string): string => {
   return name
@@ -169,8 +164,23 @@ export const RatingsTab = ({ userId }: RatingsTabProps = {}) => {
 
   if (isLoading && ratings.length === 0) {
     return (
-      <div className="flex items-center justify-center h-40 text-muted-foreground">
-        <Loader2 className="w-6 h-6 mr-2 animate-spin" /> Loading ratings...
+      <div className="space-y-4">
+        {/* Header Skeleton */}
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <h2 className="text-2xl mb-1">
+              {userId ? "Ratings" : "My Ratings"}
+            </h2>
+            <div className="h-4 w-32 bg-secondary/50 rounded animate-pulse" />
+          </div>
+        </div>
+
+        {/* Rating Cards Skeleton */}
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <RatingCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
   }

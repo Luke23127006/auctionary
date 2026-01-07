@@ -49,6 +49,7 @@ import {
 } from "lucide-react";
 import type { ProductStatus } from "../../../types/seller";
 import { useNavigate } from "react-router-dom";
+import { SellerDashboardSkeleton } from "./SellerDashboardSkeleton";
 
 interface SellerDashboardProps {
   onCreateAuction: () => void;
@@ -357,14 +358,7 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
   const navigate = useNavigate();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <SellerDashboardSkeleton />;
   }
 
   if (error) {
@@ -634,106 +628,141 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedListings.map((item) => (
-                  <TableRow
-                    key={item.id}
-                    className="border-border hover:bg-secondary/30"
-                  >
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      AUC-{item.id}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
-                          <ImageWithFallback
-                            src={item.thumbnailUrl || ""}
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                          />
+                {sortedListings.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="h-96 text-center">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <div className="bg-secondary/20 p-6 rounded-full mb-4">
+                          <Package className="h-12 w-12 opacity-50" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-sm truncate max-w-xs">
-                            {item.title}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {formatRelativeTime(item.createdAt)}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs">
-                        {item.categoryName}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ${item.startPrice.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.currentPrice > 0 ? (
-                        <span className="text-accent">
-                          ${item.currentPrice.toLocaleString()}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">No bids</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                        <span>{item.bidCount}</span>
-                      </div>
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm">
-                        {calculateTimeLeft(item.endTime) !== "Ended" && (
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                        )}
-                        <span>{calculateTimeLeft(item.endTime)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(item.status, item.transactionStatus)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
+                        <h3 className="text-lg font-medium mb-1">
+                          No listings found
+                        </h3>
+                        <p className="text-sm max-w-xs mx-auto mb-6">
+                          {searchQuery || selectedStatuses.length < 4
+                            ? "Try adjusting your filters or search query."
+                            : "You haven't created any auctions yet."}
+                        </p>
+                        {!(searchQuery || selectedStatuses.length < 4) && (
+                          <Button onClick={onCreateAuction}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create First Auction
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="max-w-48">
-                          <DropdownMenuItem
-                            onClick={() => navigate(`/products/${item.id}`)}
+                        )}
+                        {(searchQuery || selectedStatuses.length < 4) && (
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setSearchQuery("");
+                              selectAllStatuses();
+                            }}
                           >
-                            <Eye className="mr-2 h-4 w-4 focus:text-accent-foreground" />
-                            View Details
-                          </DropdownMenuItem>
-                          {/* Show View Transaction if auction ended and has winner */}
-                          <DropdownMenuItem
-                            onClick={() =>
-                              item.transactionId &&
-                              navigate(`/transactions/${item.transactionId}`)
-                            }
-                            disabled={
-                              !item.transactionId ||
-                              calculateTimeLeft(item.endTime) !== "Ended" ||
-                              item.bidCount === 0
-                            }
-                          >
-                            <ArrowRightLeft className="mr-2 h-4 w-4 focus:text-accent-foreground" />
-                            View Transaction
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                            <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                            Delete Auction
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            Clear Filters
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  sortedListings.map((item) => (
+                    <TableRow
+                      key={item.id}
+                      className="border-border hover:bg-secondary/30"
+                    >
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        AUC-{item.id}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
+                            <ImageWithFallback
+                              src={item.thumbnailUrl || ""}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm truncate max-w-xs">
+                              {item.title}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {formatRelativeTime(item.createdAt)}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">
+                          {item.categoryName}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ${item.startPrice.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {item.currentPrice > 0 ? (
+                          <span className="text-accent">
+                            ${item.currentPrice.toLocaleString()}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">No bids</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                          <span>{item.bidCount}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1 text-sm">
+                          {calculateTimeLeft(item.endTime) !== "Ended" && (
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                          )}
+                          <span>{calculateTimeLeft(item.endTime)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(item.status, item.transactionStatus)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="max-w-48">
+                            <DropdownMenuItem
+                              onClick={() => navigate(`/products/${item.id}`)}
+                            >
+                              <Eye className="mr-2 h-4 w-4 focus:text-accent-foreground" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                item.transactionId &&
+                                navigate(`/transactions/${item.transactionId}`)
+                              }
+                              disabled={
+                                !item.transactionId ||
+                                calculateTimeLeft(item.endTime) !== "Ended" ||
+                                item.bidCount === 0
+                              }
+                            >
+                              <ArrowRightLeft className="mr-2 h-4 w-4 focus:text-accent-foreground" />
+                              View Transaction
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                              <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                              Delete Auction
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

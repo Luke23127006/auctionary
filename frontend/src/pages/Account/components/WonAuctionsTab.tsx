@@ -14,6 +14,7 @@ import { useMyWonAuctions } from "../../../hooks/useMyWonAuctions";
 import { useOtherUserWonAuctions } from "../../../hooks/useOtherUserWonAuctions";
 import { useNavigate } from "react-router-dom";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
+import { TableSkeleton } from "../../../components/common/TableSkeleton";
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -83,7 +84,49 @@ export const WonAuctionsTab = ({ userId }: WonAuctionsTabProps = {}) => {
         isLoading: ownAuctions.isLoading,
       };
 
-  if (isLoading) return <div>Loading won auctions...</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl mb-1">Won Auctions</h2>
+        <TableSkeleton columnCount={6} rowCount={5} />
+      </div>
+    );
+  }
+
+  if (wonAuctions.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl mb-1">Won Auctions</h2>
+          <p className="text-sm text-muted-foreground">
+            Your auction win history
+          </p>
+        </div>
+        <div className="py-8 text-center text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground bg-secondary/20 rounded-lg border border-dashed border-border">
+            <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
+              <span className="text-2xl">🏆</span>
+            </div>
+            <h3 className="text-lg font-medium">No auctions won yet</h3>
+            <p className="mt-1 max-w-sm mx-auto">
+              {userId
+                ? "This user hasn't won any auctions yet."
+                : "Keep bidding! Your future wins will appear here."}
+            </p>
+            {!userId && (
+              <Button
+                variant="link"
+                onClick={() => navigate("/")}
+                className="mt-2 text-accent"
+              >
+                Find auctions to bid on
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

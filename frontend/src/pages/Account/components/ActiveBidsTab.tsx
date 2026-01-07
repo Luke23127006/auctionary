@@ -25,12 +25,49 @@ import {
 } from "../../../components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { formatTimeLeft } from "../../../utils/time";
+import { TableSkeleton } from "../../../components/common/TableSkeleton";
 
 export const ActiveBidsTab = () => {
   const navigate = useNavigate();
   const { bids, isLoading } = useMyBids();
 
-  if (isLoading) return <div>Loading active bids...</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl mb-1">Active Bids</h2>
+        <TableSkeleton columnCount={7} rowCount={5} />
+      </div>
+    );
+  }
+
+  if (bids.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl mb-1">Active Bids</h2>
+          <p className="text-sm text-muted-foreground">
+            Auctions you're currently bidding on
+          </p>
+        </div>
+        <div className="py-8 text-center text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground bg-secondary/20 rounded-lg border border-dashed border-border">
+            <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
+              <span className="text-2xl">🔨</span>
+            </div>
+            <h3 className="text-lg font-medium">No active bids</h3>
+            <p>You haven't placed any bids yet.</p>
+            <Button
+              variant="link"
+              onClick={() => navigate("/")}
+              className="mt-2 text-accent"
+            >
+              Start browsing auctions
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -132,9 +169,7 @@ export const ActiveBidsTab = () => {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() =>
-                              navigate(
-                                `/products/${bid.product_id}`
-                              )
+                              navigate(`/products/${bid.product_id}`)
                             }
                           >
                             <Eye className="h-4 w-4 mr-2 focus:text-accent-foreground" />

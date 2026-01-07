@@ -1,7 +1,8 @@
 import { WatchlistCard } from "./WatchlistCard";
 import { useWatchlist } from "../../../hooks/useWatchlist";
-import { Loader2, HeartCrack } from "lucide-react";
+import { HeartCrack } from "lucide-react";
 import type { WatchlistProduct } from "../../../types/watchlist";
+import { ProductCardSkeleton } from "../../Product/components/ProductCardSkeleton";
 
 export const WatchlistTab = () => {
   const { watchlist, isLoading, removeFromWatchlist } = useWatchlist();
@@ -12,8 +13,13 @@ export const WatchlistTab = () => {
 
   if (isLoading && watchlist.length === 0) {
     return (
-      <div className="flex items-center justify-center h-40 text-muted-foreground">
-        <Loader2 className="w-6 h-6 mr-2 animate-spin" /> Loading watchlist...
+      <div className="space-y-4">
+        <h2 className="text-2xl mb-1">My Watchlist</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
   }

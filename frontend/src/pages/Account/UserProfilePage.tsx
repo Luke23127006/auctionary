@@ -8,6 +8,7 @@ import {
 import MainLayout from "../../layouts/MainLayout";
 import { useProfile } from "../../hooks/useProfile";
 import { ProfileHeader } from "./components/ProfileHeader";
+import { ProfileHeaderSkeleton } from "./components/ProfileHeaderSkeleton";
 import { WatchlistTab } from "./components/WatchlistTab";
 import { ActiveBidsTab } from "./components/ActiveBidsTab";
 import { WonAuctionsTab } from "./components/WonAuctionsTab";
@@ -20,8 +21,20 @@ export default function UserProfilePage() {
   if (isLoading && !user) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          Loading profile...
+        <div className="container mx-auto px-4 py-8">
+          <ProfileHeaderSkeleton />
+          {/* Skeleton for tabs */}
+          <div className="space-y-6">
+            <div className="grid w-full grid-cols-5 gap-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-10 bg-secondary/50 rounded animate-pulse"
+                />
+              ))}
+            </div>
+            <div className="h-64 bg-secondary/30 rounded-lg animate-pulse" />
+          </div>
         </div>
       </MainLayout>
     );
