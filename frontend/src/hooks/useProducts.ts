@@ -89,7 +89,7 @@ export const useProducts = () => {
     updatedSlugs.forEach((slug) => newParams.append("category", slug));
 
     newParams.set("page", "1");
-    setSearchParams(newParams);
+    setSearchParams(newParams); 
   };
 
   const handleRemoveSearch = () => {
