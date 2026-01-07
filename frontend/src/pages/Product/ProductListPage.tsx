@@ -54,10 +54,8 @@ export default function ProductListPage() {
             categories={categories}
             categoriesLoading={categoriesLoading}
             selectedCategories={categorySlugs}
-            priceRange={priceRange}
             disabled={productsLoading}
             onCategoryChange={handleCategoryChange}
-            onPriceRangeChange={setPriceRange}
             onResetFilters={handleResetFilters}
           />
 
